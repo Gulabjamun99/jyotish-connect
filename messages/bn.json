@@ -1,0 +1,55 @@
+{
+    "Index": {
+        "title": "নমস্তে, জ্যোতিষকানেক্টে স্বাগতম",
+        "hero_title": "ঐশ্বরিক নির্দেশিকা, মাত্র এক ক্লিকে",
+        "hero_subtitle": "রিয়েল-টাইম ভিডিও পরামর্শের জন্য ৫০০+ যাচাইকৃত বিশেষজ্ঞ জ্যোতিষীদের সাথে সংযোগ করুন।",
+        "cta_user": "জ্যোতিষী খুঁজুন",
+        "cta_expert": "বিশেষজ্ঞ হিসাবে যোগ দিন",
+        "horoscope_title": "দৈনিক রাশিফল",
+        "horoscope_desc": "মহাজাগতিক শক্তির সাথে আপনার আত্মাকে সংযুক্ত করুন।",
+        "marriageStability": "বিবাহ স্থায়িত্ব",
+        "finalMatchingResult": "চূড়ান্ত মিলনের ফলাফল",
+        "gunaScoreDistribution": "৩৬ গুণ স্কোর বন্টন",
+        "vedicPanchang": "বৈদিক পঞ্জিকা",
+        "attribute": "বৈশিষ্ট্য",
+        "boy": "বর",
+        "girl": "কনে",
+        "mahadasha": "মহাদশা",
+        "currentCycle": "বর্তমান চক্র",
+        "conclusion": "উপসংহার",
+        "manglikNote": "দ্রষ্টব্য: উভয় অংশীদার যদি মাঙ্গলিক হয়, তবে শক্তিগুলি প্রায়শই নিষ্ক্রিয় হয়ে যায়। বিস্তারিত পরিহারের জন্য বিশেষজ্ঞের সাথে পরামর্শ করুন।",
+        "vimshottariDasha": "বিংশোত্তরী দশা (বর্তমান সময়)",
+        "doshMukt": "দোষ মুক্ত",
+        "manglikPresence": "মাঙ্গলিক উপস্থিতি",
+        "label_nakshatra": "নক্ষত্র",
+        "label_tithi": "তিথি",
+        "label_yoga": "যোগ",
+        "label_karan": "করণ",
+        "label_vara": "বার",
+        "label_sunrise": "সূর্যোদয়",
+        "label_sunset": "সূর্যাস্ত",
+        "tabs": {
+            "overview": "Overview",
+            "panchang": "Panchang",
+            "ashtakoot": "Ashtakoot",
+            "analysis": "Analysis",
+            "remedies": "Remedies"
+        },
+        "table": {
+            "koota": "Koota",
+            "boyValue": "Boy Value",
+            "girlValue": "Girl Value",
+            "max": "Max",
+            "obtained": "Obtained"
+        }
+    },
+    "Nav": {
+        "find_astrologers": "জ্যোতিষী খুঁজুন",
+        "daily_horoscope": "দৈনিক রাশিফল",
+        "free_kundli": "বিনামূল্যে কুন্ডলী",
+        "matching": "মিলন",
+        "horoscope": "রাশিফল",
+        "login": "লগইন / সাইনআপ",
+        "dashboard": "ড্যাশবোর্ড"
+    }
+}

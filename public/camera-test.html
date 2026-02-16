@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Test - AstroPandit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .warning { background: #f59e0b; }
+        .info { background: #3b82f6; }
+        video {
+            width: 100%;
+            max-width: 640px;
+            border-radius: 12px;
+            margin: 20px 0;
+            background: #000;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #f97316;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ea580c;
+        }
+        .log {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎥 Camera & Microphone Test</h1>
+    <p>This page will help diagnose camera issues on your device.</p>
+
+    <div id="status"></div>
+    
+    <button onclick="testCamera()">Test Camera</button>
+    <button onclick="testAudio()">Test Audio Only</button>
+    <button onclick="stopAll()">Stop</button>
+
+    <video id="video" autoplay playsinline muted></video>
+
+    <div class="log" id="log"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        const video = document.getElementById('video');
+        let stream = null;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div style="color: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#60a5fa'}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function showStatus(message, type) {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Initial checks
+        log('🔍 Starting diagnostics...');
+        log(`Browser: ${navigator.userAgent}`);
+        log(`Protocol: ${window.location.protocol}`);
+        log(`Host: ${window.location.host}`);
+
+        if (!navigator.mediaDevices) {
+            log('❌ navigator.mediaDevices is NOT available', 'error');
+            showStatus('❌ Your browser does not support camera access. This usually means you need HTTPS.', 'error');
+        } else {
+            log('✅ navigator.mediaDevices is available', 'success');
+        }
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+            log('❌ getUserMedia is NOT available', 'error');
+            showStatus('❌ getUserMedia API is not available. Please use HTTPS or enable browser flags.', 'error');
+        } else {
+            log('✅ getUserMedia is available', 'success');
+        }
+
+        async function testCamera() {
+            log('📹 Attempting to access camera...');
+            showStatus('⏳ Requesting camera access...', 'warning');
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+                
+                log('✅ Camera access granted!', 'success');
+                showStatus('✅ SUCCESS! Camera is working perfectly!', 'success');
+                
+                video.srcObject = stream;
+                
+                const videoTracks = stream.getVideoTracks();
+                const audioTracks = stream.getAudioTracks();
+                
+                log(`Video tracks: ${videoTracks.length}`);
+                log(`Audio tracks: ${audioTracks.length}`);
+                
+                if (videoTracks.length > 0) {
+                    log(`Video device: ${videoTracks[0].label}`);
+                }
+                if (audioTracks.length > 0) {
+                    log(`Audio device: ${audioTracks[0].label}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.name} - ${error.message}`, 'error');
+                
+                if (error.name === 'NotAllowedError') {
+                    showStatus('❌ Permission Denied: You blocked camera access. Click the camera icon in your address bar to allow.', 'error');
+                } else if (error.name === 'NotFoundError') {
+                    showStatus('❌ No camera found on this device.', 'error');
+                } else if (error.name === 'NotReadableError') {
+                    showStatus('❌ Camera is already in use by another application.', 'error');
+                } else if (error.name === 'SecurityError') {
+                    showStatus('❌ Security Error: This page must be served over HTTPS to access the camera.', 'error');
+                } else {
+                    showStatus(`❌ Error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testAudio() {
+            log('🎤 Attempting to access audio only...');
+            showStatus('⏳ Requesting microphone access...', 'warning');
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: false,
+                    audio: true
+                });
+                
+                log('✅ Microphone access granted!', 'success');
+                showStatus('✅ SUCCESS! Microphone is working!', 'success');
+                
+            } catch (error) {
+                log(`❌ Error: ${error.name} - ${error.message}`, 'error');
+                showStatus(`❌ Microphone Error: ${error.message}`, 'error');
+            }
+        }
+
+        function stopAll() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                log('⏹️ Stopped all media streams');
+                showStatus('⏹️ Camera stopped', 'info');
+            }
+        }
+    </script>
+</body>
+</html>

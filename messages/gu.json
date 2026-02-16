@@ -1,0 +1,55 @@
+{
+    "Index": {
+        "title": "નમસ્તે, જ્યોતિષ કનેક્ટમાં આપનું સ્વાગત છે",
+        "hero_title": "દૈવી માર્ગદર્શન, માત્ર એક ક્લિક પર",
+        "hero_subtitle": "રીઅલ-ટાઇમ વિડિયો પરામર્શ માટે 500+ ચકાસાયેલ નિષ્ણાત જ્યોતિષીઓ સાથે જોડાઓ.",
+        "cta_user": "જ્યોતિષી શોધો",
+        "cta_expert": "નિષ્ણાત તરીકે જોડાઓ",
+        "horoscope_title": "દૈનિક જન્માક્ષર",
+        "horoscope_desc": "તમારી આત્માને કોસ્મિક ઉર્જા સાથે જોડો.",
+        "marriageStability": "લગ્ન સ્થિરતા",
+        "finalMatchingResult": "અંતિમ મેળાપ પરિણામ",
+        "gunaScoreDistribution": "36 ગુણ સ્કોર વિતરણ",
+        "vedicPanchang": "વૈદિક પંચાંગ",
+        "attribute": "ગુણ",
+        "boy": "વર",
+        "girl": "કન્યા",
+        "mahadasha": "મહાદશા",
+        "currentCycle": "વર્તમાન ચક્ર",
+        "conclusion": "નિષ્કર્ષ",
+        "manglikNote": "નોંધ: જો બંને ભાગીદારોમાં માંગલિક હાજરી હોય, તો ઉર્જા ઘણીવાર તટસ્થ થઈ જાય છે. વિગતવાર પરિહાર વિધિઓ માટે નિષ્ણાતની સલાહ લો.",
+        "vimshottariDasha": "વિંશોત્તરી દશા (વર્તમાન સમય)",
+        "doshMukt": "દોષ મુક્ત",
+        "manglikPresence": "માંગલિક હાજરી",
+        "label_nakshatra": "નક્ષત્ર",
+        "label_tithi": "તિથિ",
+        "label_yoga": "યોગ",
+        "label_karan": "કરણ",
+        "label_vara": "વાર",
+        "label_sunrise": "સૂર્યોદય",
+        "label_sunset": "સૂર્યાસ્ત",
+        "tabs": {
+            "overview": "Overview",
+            "panchang": "Panchang",
+            "ashtakoot": "Ashtakoot",
+            "analysis": "Analysis",
+            "remedies": "Remedies"
+        },
+        "table": {
+            "koota": "Koota",
+            "boyValue": "Boy Value",
+            "girlValue": "Girl Value",
+            "max": "Max",
+            "obtained": "Obtained"
+        }
+    },
+    "Nav": {
+        "find_astrologers": "જ્યોતિષી શોધો",
+        "daily_horoscope": "દૈનિક જન્માક્ષર",
+        "free_kundli": "મફત કુંડળી",
+        "matching": "મેળવવું",
+        "horoscope": "જન્માક્ષર",
+        "login": "લોગિન / સાઇનઅપ",
+        "dashboard": "ડેશબોર્ડ"
+    }
+}

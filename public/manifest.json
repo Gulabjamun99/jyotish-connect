@@ -1,0 +1,21 @@
+{
+  "name": "JyotishConnect",
+  "short_name": "Jyotish",
+  "description": "Premium Astrology Consultation Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/shapes/svg?seed=jyotish&backgroundColor=f97316",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/shapes/svg?seed=jyotish&backgroundColor=f97316",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+    "Index": {
+        "title": "Namaste, JyotishConnect-க்கு வரவேற்கிறோம்",
+        "hero_title": "தெய்வீக வழிகாட்டுதல், ஒரு கிளிக் தூரத்தில்",
+        "hero_subtitle": "நிகழ்நேர வீடியோ ஆலோசனைக்காக 500+ சரிபார்க்கப்பட்ட நிபுணத்துவ ஜோதிடர்களுடன் இணையுங்கள்.",
+        "cta_user": "ஜோதிடரைத் தேடுங்கள்",
+        "cta_expert": "நிபுணராக சேருங்கள்",
+        "horoscope_title": "தினசரி ராசிபலன்",
+        "horoscope_desc": "விண்வெளி ஆற்றலுடன் உங்கள் ஆன்மாவை இணைக்கவும்.",
+        "marriageStability": "திருமண நிலைத்தன்மை",
+        "finalMatchingResult": "இறுதிப் பொருத்த முடிவு",
+        "gunaScoreDistribution": "36 குண மதிப்பெண் விநியோகம்",
+        "vedicPanchang": "வேத பஞ்சாங்கம்",
+        "attribute": "பண்பு",
+        "boy": "ஆண்",
+        "girl": "பெண்",
+        "mahadasha": "மகாதிசை",
+        "currentCycle": "தற்போதைய சுழற்சி",
+        "conclusion": "முடிவு",
+        "manglikNote": "குறிப்பு: இரு கூட்டாளிகளுக்கும் மாங்கல்ய தோஷம் இருந்தால், ஆற்றல்கள் பெரும்பாலும் சமநிலைபெறும். விரிவான பரிகாரங்களுக்கு நிபுணரை அணுகவும்.",
+        "vimshottariDasha": "விம்சோத்தரி தசை (தற்போதைய காலம்)",
+        "doshMukt": "தோஷ முக்தி",
+        "manglikPresence": "மாங்கல்ய தோஷ இருப்பு",
+        "label_nakshatra": "நட்சத்திரம்",
+        "label_tithi": "திதி",
+        "label_yoga": "யோகம்",
+        "label_karan": "கரணம்",
+        "label_vara": "வாரம்",
+        "label_sunrise": "சூரிய உதயம்",
+        "label_sunset": "சூரிய அஸ்தமனம்",
+        "tabs": {
+            "overview": "Overview",
+            "panchang": "Panchang",
+            "ashtakoot": "Ashtakoot",
+            "analysis": "Analysis",
+            "remedies": "Remedies"
+        },
+        "table": {
+            "koota": "Koota",
+            "boyValue": "Boy Value",
+            "girlValue": "Girl Value",
+            "max": "Max",
+            "obtained": "Obtained"
+        }
+    },
+    "Nav": {
+        "find_astrologers": "ஜோதிடர்களைக் கண்டறியவும்",
+        "daily_horoscope": "தினசரி ராசிபலன்",
+        "free_kundli": "இலவச ஜாதகம்",
+        "matching": "பொருத்தம்",
+        "horoscope": "ராசிபலன்",
+        "login": "உள்நுழை / பதிவு செய்க",
+        "dashboard": "டாஷ்போர்டு"
+    }
+}
