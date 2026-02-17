@@ -14,14 +14,32 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+let app: any;
+let auth: any;
+let db: any;
+let storage: any;
 
-// Ensure network is enabled
-if (typeof window !== 'undefined') {
-    enableNetwork(db).catch(err => console.warn("Network enable failed:", err));
+try {
+    if (!firebaseConfig.apiKey) {
+        throw new Error("Missing Firebase API Key");
+    }
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+
+    // Ensure network is enabled
+    if (typeof window !== 'undefined') {
+        enableNetwork(db).catch(err => console.warn("Network enable failed:", err));
+    }
+} catch (error) {
+    console.warn("⚠️ Firebase Client Init Failed (Missing Env Vars?):", error);
+    // Provide mocks to prevent build crashes on import
+    app = {};
+    auth = {};
+    // Mock db to satisfy simple checks, but it will fail if used
+    db = { type: 'dummy', app: {} };
+    storage = {};
 }
 
 export { app, auth, db, storage };
