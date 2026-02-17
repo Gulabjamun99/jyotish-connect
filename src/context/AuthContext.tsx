@@ -26,6 +26,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Safe check for mock/missing auth
+        if (!auth || !auth.currentUser && !auth.app) {
+            console.warn("Auth not initialized (missing env vars?), skipping auth check.");
+            setLoading(false);
+            return;
+        }
+
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
@@ -37,6 +44,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                     while (retries > 0) {
                         try {
+                            // Safe check for dummy db
+                            if ((db as any).type === 'dummy') {
+                                console.warn("Firestore is in dummy mode. Skipping user data fetch.");
+                                break;
+                            }
                             userDoc = await getDoc(doc(db, "users", user.uid));
                             break;
                         } catch (err: any) {
