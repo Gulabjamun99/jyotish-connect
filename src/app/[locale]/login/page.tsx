@@ -175,17 +175,19 @@ export default function LoginPage() {
 
                 if (targetRole === "astrologer") {
                     console.log("Redirecting to astrologer onboarding");
+                    toast.success("Login Successful! Redirecting...");
                     setTimeout(() => {
-                        router.push("/astrologer/onboarding");
-                    }, 500);
+                        window.location.href = "/astrologer/onboarding";
+                    }, 1000);
                     return;
                 }
             }
 
             console.log("Redirecting to:", redirect);
+            toast.success("Welcome back!");
             setTimeout(() => {
-                router.push(redirect);
-            }, 500);
+                window.location.href = redirect;
+            }, 1000);
         } catch (error: any) {
             console.error("User Auth Error:", error);
             toast.error("Failed to complete authentication. Please try again.");
