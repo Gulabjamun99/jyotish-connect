@@ -43,6 +43,13 @@ export default function LoginPage() {
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
     const handleGoogleLogin = async () => {
+        // Safe check for mock auth (if env vars missing)
+        if (!auth || !auth.app) {
+            console.error("Auth object is invalid/mock.", auth);
+            toast.error("Configuration Error: Firebase keys missing. Please redeploy.");
+            return;
+        }
+
         setLoading(true);
         const provider = new GoogleAuthProvider();
         try {

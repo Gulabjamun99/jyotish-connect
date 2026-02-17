@@ -33,7 +33,14 @@ try {
         enableNetwork(db).catch(err => console.warn("Network enable failed:", err));
     }
 } catch (error) {
-    console.warn("⚠️ Firebase Client Init Failed (Missing Env Vars?):", error);
+    console.warn("⚠️ Firebase Client Init Failed:", error);
+    if (typeof window !== 'undefined') {
+        const missing = [];
+        if (!firebaseConfig.apiKey) missing.push("apiKey");
+        if (!firebaseConfig.authDomain) missing.push("authDomain");
+        if (!firebaseConfig.projectId) missing.push("projectId");
+        console.warn("Missing Env Vars:", missing.join(", "));
+    }
     // Provide mocks to prevent build crashes on import
     app = {};
     auth = {};
