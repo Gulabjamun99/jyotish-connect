@@ -236,8 +236,17 @@ export default function LoginPage() {
                         toast.error("Failed to upgrade account");
                     }
                 } else if (roleParam === "astrologer" && astroDoc?.exists()) {
-                    // Already an astrologer, just redirect
-                    console.log("Already an astrologer, redirecting...");
+                    // Already an astrologer
+                    console.log("Already an astrologer, checking for cleanup...");
+
+                    // Self-healing: If user doc still exists, delete it to fix "Unauthorized" error
+                    if (userDoc?.exists()) {
+                        console.log("Found duplicate user doc, deleting...");
+                        await deleteDoc(doc(db, "users", user.uid));
+                        toast.success("Profile fixed! Redirecting...");
+                    }
+
+                    console.log("Redirecting to dashboard...");
                     setTimeout(() => {
                         window.location.href = "/astrologer/dashboard";
                     }, 1000);
