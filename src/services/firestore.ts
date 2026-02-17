@@ -58,6 +58,11 @@ export interface Astrologer {
 
 export const getAstrologers = async (filters?: any, limitCount: number = 10, lastDoc?: any) => {
     try {
+        if ((db as any).type === 'dummy') {
+            console.warn("Firestore is in dummy mode. Returning empty list.");
+            return { astrologers: [], lastDoc: null };
+        }
+
         const astroRef = collection(db, "astrologers");
 
         // Always filter for verified astrologers only
