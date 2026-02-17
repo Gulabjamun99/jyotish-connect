@@ -181,6 +181,46 @@ export default function LoginPage() {
                     }, 1000);
                     return;
                 }
+            } else {
+                // User ALREADY EXISTS
+                // Check if they are trying to become an astrologer but currently are just a user
+                const roleParam = searchParams.get("role");
+                if (roleParam === "astrologer" && !astroDoc?.exists()) {
+                    console.log("Upgrading existing user to astrologer...");
+                    try {
+                        await setDoc(doc(db, "astrologers", user.uid), {
+                            uid: user.uid,
+                            email: user.email || "",
+                            phoneNumber: user.phoneNumber || "",
+                            displayName: user.displayName || "New Expert",
+                            photoURL: user.photoURL || "",
+                            role: "astrologer",
+                            createdAt: new Date().toISOString(),
+                            verified: false,
+                            profileComplete: false,
+                            experience: 0,
+                            rating: 0,
+                            consultations: 0,
+                            bio: "New Expert from Upgrade",
+                            walletBalance: 0 // separate wallet or shared? Shared logic might be complex, keeping 0 for now
+                        });
+                        toast.success("Account upgraded to Expert! Redirecting...");
+                        setTimeout(() => {
+                            window.location.href = "/astrologer/onboarding";
+                        }, 1000);
+                        return;
+                    } catch (err) {
+                        console.error("Upgrade failed:", err);
+                        toast.error("Failed to upgrade account");
+                    }
+                } else if (roleParam === "astrologer" && astroDoc?.exists()) {
+                    // Already an astrologer, just redirect
+                    console.log("Already an astrologer, redirecting...");
+                    setTimeout(() => {
+                        window.location.href = "/astrologer/dashboard";
+                    }, 1000);
+                    return;
+                }
             }
 
             console.log("Redirecting to:", redirect);
