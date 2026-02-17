@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { auth, db } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
@@ -202,6 +202,8 @@ export default function LoginPage() {
                 if (roleParam === "astrologer" && !astroDoc?.exists()) {
                     console.log("Upgrading existing user to astrologer...");
                     try {
+                        const currentBalance = userDoc?.exists() ? userDoc.data().walletBalance || 0 : 0;
+
                         await setDoc(doc(db, "astrologers", user.uid), {
                             uid: user.uid,
                             email: user.email || "",
@@ -216,8 +218,14 @@ export default function LoginPage() {
                             rating: 0,
                             consultations: 0,
                             bio: "New Expert from Upgrade",
-                            walletBalance: 0 // separate wallet or shared? Shared logic might be complex, keeping 0 for now
+                            walletBalance: currentBalance
                         });
+
+                        // CRITICAL: Delete the old 'users' doc so AuthContext finds the 'astrologers' doc
+                        if (userDoc?.exists()) {
+                            await deleteDoc(doc(db, "users", user.uid));
+                        }
+
                         toast.success("Account upgraded to Expert! Redirecting...");
                         setTimeout(() => {
                             window.location.href = "/astrologer/onboarding";
