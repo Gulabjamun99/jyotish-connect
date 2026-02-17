@@ -140,6 +140,7 @@ export default function LoginPage() {
             // If Firestore is offline OR user doesn't exist, treat as new user
             if (!firestoreAvailable || (!userDoc?.exists() && !astroDoc?.exists())) {
                 const roleParam = searchParams.get("role");
+                console.log("New User Setup. Role Param:", roleParam);
                 const targetRole = roleParam === "astrologer" ? "astrologer" : "user";
 
                 if (firestoreAvailable) {
@@ -183,8 +184,21 @@ export default function LoginPage() {
                 }
             } else {
                 // User ALREADY EXISTS
+                let roleParam = searchParams.get("role");
+
+                // Fallback to localStorage if query param lost
+                if (!roleParam && typeof window !== "undefined") {
+                    const storedIntent = localStorage.getItem("loginIntent");
+                    if (storedIntent === "astrologer") {
+                        roleParam = "astrologer";
+                        // Clear it so it doesn't persist forever
+                        localStorage.removeItem("loginIntent");
+                    }
+                }
+
+                console.log("Existing User Detected. Role Param:", roleParam, "AstroDoc Exists:", astroDoc?.exists());
+
                 // Check if they are trying to become an astrologer but currently are just a user
-                const roleParam = searchParams.get("role");
                 if (roleParam === "astrologer" && !astroDoc?.exists()) {
                     console.log("Upgrading existing user to astrologer...");
                     try {
