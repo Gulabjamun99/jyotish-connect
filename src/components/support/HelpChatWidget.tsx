@@ -35,14 +35,20 @@ export function HelpChatWidget() {
     const [userDetails, setUserDetails] = useState({ name: "", email: "", phone: "" });
     const [loading, setLoading] = useState(false);
 
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: "1",
-            sender: "bot",
-            text: "Namaste! 🙏 Welcome to JyotishConnect. How can I help you today?",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-    ]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]); // Start empty to avoid hydration mismatch
+
+    useEffect(() => {
+        // Set initial message on mount
+        setMessages([
+            {
+                id: "1",
+                sender: "bot",
+                text: "Namaste! 🙏 Welcome to JyotishConnect. How can I help you today?",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+        ]);
+        scrollToBottom();
+    }, []);
     const [inputText, setInputText] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
