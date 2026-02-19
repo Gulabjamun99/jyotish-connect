@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-hot-toast";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, setDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { CheckCircle, Upload, Sparkles } from "lucide-react";
@@ -114,8 +114,9 @@ export default function AstrologerOnboardingPage() {
                 certificationURL = await getDownloadURL(certRef);
             }
 
-            // Update Firestore
-            await updateDoc(doc(db, "astrologers", user.uid), {
+            // Update Firestore with setDoc (merge) to handle both new and existing docs
+            console.log("Saving profile to Firestore...");
+            await setDoc(doc(db, "astrologers", user.uid), {
                 displayName: formData.displayName,
                 phoneNumber: formData.phoneNumber,
                 email: formData.email,
@@ -128,8 +129,11 @@ export default function AstrologerOnboardingPage() {
                 education: formData.education,
                 certificationURL,
                 profileComplete: true,
+                rating: 5.0, // Default rating for new astrologers
+                consultations: 0,
                 updatedAt: new Date().toISOString()
-            });
+            }, { merge: true });
+            console.log("Profile saved successfully!");
 
             toast.success("Profile completed! Waiting for admin verification.");
             router.push("/astrologer/dashboard");

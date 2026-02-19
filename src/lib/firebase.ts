@@ -23,6 +23,7 @@ try {
     if (!firebaseConfig.apiKey) {
         throw new Error("Missing Firebase API Key");
     }
+    // Initialize Firebase
     app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
@@ -33,20 +34,9 @@ try {
         enableNetwork(db).catch(err => console.warn("Network enable failed:", err));
     }
 } catch (error) {
-    console.warn("⚠️ Firebase Client Init Failed:", error);
-    if (typeof window !== 'undefined') {
-        const missing = [];
-        if (!firebaseConfig.apiKey) missing.push("apiKey");
-        if (!firebaseConfig.authDomain) missing.push("authDomain");
-        if (!firebaseConfig.projectId) missing.push("projectId");
-        console.warn("Missing Env Vars:", missing.join(", "));
-    }
-    // Provide mocks to prevent build crashes on import
-    app = {};
-    auth = {};
-    // Mock db to satisfy simple checks, but it will fail if used
-    db = { type: 'dummy', app: {} };
-    storage = {};
+    console.error("🔥 Firebase Init Critical Failure:", error);
+    // In production, we WANT this to fail so we know keys are missing
+    throw new Error("Application failed to connect to database. Please check configuration.");
 }
 
 export { app, auth, db, storage };

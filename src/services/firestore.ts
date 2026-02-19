@@ -81,20 +81,32 @@ export const getAstrologers = async (filters?: any, limitCount: number = 10, las
         const querySnapshot = await getDocs(q);
         const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
 
-        const data = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().displayName || "Unknown",
-            expertise: doc.data().specializations?.[0] || "Astrology",
-            languages: doc.data().languages || ["English"],
-            rating: doc.data().rating || 5.0,
-            reviews: doc.data().consultations || 0,
-            price: doc.data().consultationRate || 50,
-            image: doc.data().photoURL || "/placeholder-avatar.png",
-            verified: doc.data().verified || false,
-            online: true,
-            bio: doc.data().bio || "",
-            ...doc.data()
-        } as Astrologer));
+        const ensureArray = (data: any) => {
+            if (Array.isArray(data)) return data;
+            if (data && typeof data === 'object') return Object.values(data);
+            return [];
+        };
+
+        const data = querySnapshot.docs.map(doc => {
+            const raw = doc.data();
+            return {
+                id: doc.id,
+                name: raw.displayName || "Unknown",
+                expertise: ensureArray(raw.specializations)[0] || "Astrology",
+                languages: ensureArray(raw.languages).length > 0 ? ensureArray(raw.languages) : ["English"],
+                rating: raw.rating || 5.0,
+                reviews: raw.consultations || 0,
+                price: raw.consultationRate || 50,
+                image: raw.photoURL || "/placeholder-avatar.png",
+                verified: raw.verified || false,
+                online: true,
+                bio: raw.bio || "",
+                ...raw,
+                // Force overwrite potentially bad data with sanitized versions
+                specializations: ensureArray(raw.specializations),
+                languages: ensureArray(raw.languages)
+            } as Astrologer;
+        });
 
         return { astrologers: data, lastDoc: lastVisible };
     } catch (error: any) {
@@ -220,7 +232,7 @@ export const checkAvailability = async (astrologerId: string, date: Date) => {
 
     // 2. Generate Slots
     const slots: string[] = [];
-    let current = new Date(date);
+    const current = new Date(date);
     const [startHour, startMinute] = availability.startTime.split(':').map(Number);
     const [endHour, endMinute] = availability.endTime.split(':').map(Number);
 
@@ -252,4 +264,50 @@ export const checkAvailability = async (astrologerId: string, date: Date) => {
         .map(b => b.time);
 
     return slots.filter(time => !bookedTimes.includes(time));
+};
+export const getAllAstrologers = async () => {
+    try {
+        const astroRef = collection(db, "astrologers");
+        const q = query(astroRef, orderBy("createdAt", "desc")); // Fetch all, newest first
+        const snapshot = await getDocs(q);
+
+        const ensureArray = (data: any) => {
+            if (Array.isArray(data)) return data;
+            if (data && typeof data === 'object') return Object.values(data);
+            return [];
+        };
+
+        return snapshot.docs.map(doc => {
+            const raw = doc.data();
+            return {
+                id: doc.id,
+                name: raw.displayName || "Unknown",
+                email: raw.email,
+                expertise: ensureArray(raw.specializations)[0] || "Astrology",
+                languages: ensureArray(raw.languages).length > 0 ? ensureArray(raw.languages) : ["English"],
+                rating: raw.rating || 5.0,
+                reviews: raw.consultations || 0,
+                price: raw.consultationRate || 50,
+                image: raw.photoURL || "/placeholder-avatar.png",
+                verified: raw.verified || false,
+                online: raw.online || false,
+                bio: raw.bio || "",
+                experience: raw.experience || 0
+            } as Astrologer;
+        });
+    } catch (error) {
+        console.error("Error fetching all astrologers:", error);
+        return [];
+    }
+};
+
+export const toggleVerification = async (astrologerId: string, status: boolean) => {
+    try {
+        const ref = doc(db, "astrologers", astrologerId);
+        await updateDoc(ref, { verified: status });
+        return true;
+    } catch (error) {
+        console.error("Error toggling verification:", error);
+        throw error;
+    }
 };

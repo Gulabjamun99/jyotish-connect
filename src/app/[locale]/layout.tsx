@@ -15,6 +15,7 @@ import "./globals.css";
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { EnvVarChecker } from "@/components/debug/EnvVarChecker"; // Import added
 import { Toaster } from "react-hot-toast";
 import { HelpChatWidget } from "@/components/support/HelpChatWidget";
 
@@ -109,6 +110,7 @@ export default async function SelectedLocaleLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
+              <EnvVarChecker />
               {children}
               <Toaster position="bottom-right" />
               <HelpChatWidget />

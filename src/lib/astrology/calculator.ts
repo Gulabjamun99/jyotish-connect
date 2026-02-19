@@ -83,7 +83,7 @@ export function calculateVimshottari(nakshatraId: number, longitude: number, bir
     const firstMahadashaUsed = durations[startLordIdx] * percentDone;
     const firstMahadashaLeft = durations[startLordIdx] - firstMahadashaUsed;
 
-    let mahadashas = [];
+    const mahadashas = [];
     let currentPtr = new Date(birthDate);
 
     // Calculate 108 years (full cycle is 120, but 108 is usually enough for a report)

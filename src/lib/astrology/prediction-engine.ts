@@ -79,19 +79,54 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     const moon = currentPlanets.find(p => p.name === "Moon");
     const mars = currentPlanets.find(p => p.name === "Mars");
     const venus = currentPlanets.find(p => p.name === "Venus");
+    const mercury = currentPlanets.find(p => p.name === "Mercury");
+    const jupiter = currentPlanets.find(p => p.name === "Jupiter");
+    const saturn = currentPlanets.find(p => p.name === "Saturn");
 
-    const sunHouse = getHouse(sun?.sign || "Aries");
-    const moonHouse = getHouse(moon?.sign || "Aries");
-    const marsHouse = getHouse(mars?.sign || "Aries");
-    const venusHouse = getHouse(venus?.sign || "Aries");
-    const mercuryHouse = getHouse(currentPlanets.find(p => p.name === "Mercury")?.sign || "Aries");
+    const housing = {
+        Sun: getHouse(sun?.sign || "Aries"),
+        Moon: getHouse(moon?.sign || "Aries"),
+        Mars: getHouse(mars?.sign || "Aries"),
+        Venus: getHouse(venus?.sign || "Aries"),
+        Mercury: getHouse(mercury?.sign || "Aries"),
+        Jupiter: getHouse(jupiter?.sign || "Aries"),
+        Saturn: getHouse(saturn?.sign || "Aries")
+    };
 
-    // Dynamic Predictions using transit data
-    const moonPred = (data as any).transits.Moon[moonHouse] || "";
-    const sunPred = (data as any).transits.Sun[sunHouse] || "";
-    const marsPred = (data as any).transits.Mars?.[marsHouse] || "";
-    const venusPred = (data as any).transits.Venus?.[venusHouse] || "";
-    const mercuryPred = (data as any).transits.Mercury?.[mercuryHouse] || "";
+    // Helper: Determine aspect/nature
+    const getNature = (house: number) => {
+        if ([6, 8, 12].includes(house)) return "negative";
+        if ([1, 5, 9, 11].includes(house)) return "positive";
+        return "neutral";
+    };
+
+    // --- Generate Categorized Predictions ---
+
+    // 1. Career (Sun + Saturn + 10th/2nd/6th House transits)
+    // We prioritize Sun and Saturn.
+    const careerPred = (data as any).transits.Sun[housing.Sun] + " " + ((data as any).transits.Saturn?.[housing.Saturn] || "");
+
+    // 2. Love (Venus + 5th/7th House transits)
+    const lovePred = (data as any).transits.Venus[housing.Venus] || "";
+
+    // 3. Health (Mars + 6th House + Sun)
+    // If Mars is in 6/8/12, warn.
+    const healthPred = (data as any).transits.Mars[housing.Mars] || "";
+
+    // 4. Positive (Luck/Gains/Good News) - Jupiter or any planet in 1/5/9/11
+    let positiveHighlight = "";
+    if (getNature(housing.Jupiter) === "positive") positiveHighlight += (data as any).transits.Jupiter?.[housing.Jupiter] || "Jupiter brings luck. ";
+    if (getNature(housing.Moon) === "positive") positiveHighlight += (data as any).transits.Moon[housing.Moon];
+    // Fallback if empty
+    if (!positiveHighlight) positiveHighlight = (data as any).transits.Sun[housing.Sun];
+
+    // 5. Negative (Caution/Challenges) - Saturn/Rahu or planets in 6/8/12
+    let negativeHighlight = "";
+    if (getNature(housing.Saturn) === "negative") negativeHighlight += ((data as any).transits.Saturn?.[housing.Saturn] || "Saturn indicates delays. ");
+    if (getNature(housing.Mars) === "negative") negativeHighlight += (data as any).transits.Mars[housing.Mars];
+    // Fallback
+    if (!negativeHighlight) negativeHighlight = "Avoid unnecessary risks today. Meditate for peace.";
+
 
     // Day-based seed for Luck Factors
     const now = new Date();
@@ -117,10 +152,11 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     };
 
     return {
-        personal: moonPred,
-        career: sunPred,
-        health: marsPred,
-        love: venusPred,
+        career: careerPred,
+        love: lovePred,
+        health: healthPred,
+        positive: positiveHighlight,
+        negative: negativeHighlight,
         luckyColor,
         luckyNumber,
         labels: {
@@ -129,14 +165,10 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
         },
         transitInfo: (() => {
             const transitMap: any = {
-                en: `Moon is transiting your ${moonHouse}th House and Sun is in your ${sunHouse}th House.`,
-                hi: `चंद्रमा आपके ${moonHouse}वें भाव में और सूर्य ${sunHouse}वें भाव में गोचर कर रहा है।`,
-                mr: `चंद्र तुमच्या ${moonHouse}व्या घरात आणि सूर्य तुमच्या ${sunHouse}व्या घरात गोचर करत आहे.`,
-                gu: `ચંદ્ર તમારા ${moonHouse}મા ઘરમાં અને સૂર્ય તમારા ${sunHouse}મા ઘરમાં ગોચર કરી રહ્યો છે.`,
-                bn: `চন্দ্র আপনার ${moonHouse}তম ঘরে এবং সূর্য আপনার ${sunHouse}তম ঘরে গোচর করছে।`,
-                ta: `சந்திரன் உங்கள் ${moonHouse}வது வீட்டில் மற்றும் சூரியன் உங்கள் ${sunHouse}வது வீட்டில் சஞ்சரிக்கிறார்கள்.`,
-                te: `చంద్రుడు మీ ${moonHouse}వ ఇంట్లో మరియు సూర్యుడు ${sunHouse}వ ఇంట్లో సంచరిస్తున్నాడు.`,
-                kn: `ಚಂದ್ರನು ನಿಮ್ಮ ${moonHouse}ನೇ ಮನೆಯಲ್ಲಿ ಮತ್ತು ಸೂರ್ಯನು ನಿಮ್ಮ ${sunHouse}ನೇ ಮನೆಯಲ್ಲಿ ಸಂಚರಿಸುತ್ತಿದ್ದಾನೆ.`
+                en: `Sun in House ${housing.Sun}, Moon in House ${housing.Moon}`,
+                hi: `सूर्य घर ${housing.Sun}, चंद्रमा घर ${housing.Moon}`,
+                // Fillers for others to avoid crash, ideal to translate later
+                mr: `Sun in House ${housing.Sun}, Moon in House ${housing.Moon}`,
             };
             return transitMap[lang] || transitMap.en;
         })()

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Star, CheckCircle, Video, Phone, MessageSquare, Calendar } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
+import { SchedulingModal } from "@/components/consultation/SchedulingModal";
 
 export default function AstrologerProfilePage() {
     const { id } = useParams();
@@ -17,6 +18,7 @@ export default function AstrologerProfilePage() {
     const { user } = useAuth();
     const [astrologer, setAstrologer] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [isSchedulingOpen, setIsSchedulingOpen] = useState(false);
 
     useEffect(() => {
         const fetchAstrologer = async () => {
@@ -125,43 +127,89 @@ export default function AstrologerProfilePage() {
 
                     {/* Booking Options */}
                     <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-                        <h2 className="text-2xl font-bold mb-6">Book Consultation</h2>
+                        <h2 className="text-2xl font-bold mb-6">Start Consultation</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button
-                                onClick={() => handleInstantBooking("video")}
-                                className="p-6 border-2 border-orange-500 rounded-2xl hover:bg-orange-50 transition-colors group"
-                            >
-                                <Video className="w-12 h-12 text-orange-500 mb-4 mx-auto group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold text-lg mb-2">Video Call</h3>
-                                <p className="text-sm text-gray-600">Face-to-face consultation</p>
-                            </button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            {/* Instant Connect */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                    Connect Instantly
+                                </h3>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => handleInstantBooking("video")}
+                                        className="flex items-center gap-4 p-4 border-2 border-orange-100 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group w-full text-left"
+                                    >
+                                        <div className="p-3 bg-orange-100 rounded-full text-orange-600 group-hover:scale-110 transition-transform">
+                                            <Video className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-gray-900">Video Call</div>
+                                            <div className="text-xs text-gray-500">Face-to-face</div>
+                                        </div>
+                                    </button>
 
-                            <button
-                                onClick={() => handleInstantBooking("audio")}
-                                className="p-6 border-2 border-blue-500 rounded-2xl hover:bg-blue-50 transition-colors group"
-                            >
-                                <Phone className="w-12 h-12 text-blue-500 mb-4 mx-auto group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold text-lg mb-2">Audio Call</h3>
-                                <p className="text-sm text-gray-600">Voice consultation</p>
-                            </button>
+                                    <button
+                                        onClick={() => handleInstantBooking("audio")}
+                                        className="flex items-center gap-4 p-4 border-2 border-blue-100 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group w-full text-left"
+                                    >
+                                        <div className="p-3 bg-blue-100 rounded-full text-blue-600 group-hover:scale-110 transition-transform">
+                                            <Phone className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-gray-900">Audio Call</div>
+                                            <div className="text-xs text-gray-500">Voice only</div>
+                                        </div>
+                                    </button>
 
-                            <button
-                                onClick={() => handleInstantBooking("chat")}
-                                className="p-6 border-2 border-green-500 rounded-2xl hover:bg-green-50 transition-colors group"
-                            >
-                                <MessageSquare className="w-12 h-12 text-green-500 mb-4 mx-auto group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold text-lg mb-2">Chat</h3>
-                                <p className="text-sm text-gray-600">Text consultation</p>
-                            </button>
+                                    <button
+                                        onClick={() => handleInstantBooking("chat")}
+                                        className="flex items-center gap-4 p-4 border-2 border-green-100 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group w-full text-left"
+                                    >
+                                        <div className="p-3 bg-green-100 rounded-full text-green-600 group-hover:scale-110 transition-transform">
+                                            <MessageSquare className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-gray-900">Chat</div>
+                                            <div className="text-xs text-gray-500">Text messaging</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Schedule for Later */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-purple-500" />
+                                    Book for Later
+                                </h3>
+                                <div className="h-full bg-purple-50 border-2 border-dashed border-purple-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center">
+                                    <p className="text-purple-800 font-medium mb-4">Astrloger busy? Schedule a time that works for you.</p>
+                                    <Button
+                                        onClick={() => setIsSchedulingOpen(true)}
+                                        className="bg-purple-600 hover:bg-purple-700 w-full"
+                                    >
+                                        Schedule Appointment
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="mt-6 p-4 bg-blue-50 rounded-xl">
                             <p className="text-sm text-blue-800">
-                                💡 <strong>Demo Mode:</strong> Click any option above to start instant consultation in demo mode. No payment required for testing!
+                                💡 <strong>Demo Mode:</strong> Click "Connect Instantly" options above to start immediately. No payment required for testing!
                             </p>
                         </div>
                     </div>
+
+                    <SchedulingModal
+                        isOpen={isSchedulingOpen}
+                        onClose={() => setIsSchedulingOpen(false)}
+                        astrologerId={astrologer.id}
+                        astrologerName={astrologer.name}
+                        price={astrologer.price}
+                    />
 
                     {/* About */}
                     <div className="bg-white rounded-3xl shadow-xl p-8">

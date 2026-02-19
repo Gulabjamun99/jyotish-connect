@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
 interface AuthContextType {
@@ -26,87 +26,98 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Safe check for mock/missing auth
-        if (!auth || !auth.currentUser && !auth.app) {
-            console.warn("Auth not initialized (missing env vars?), skipping auth check.");
-            setLoading(false);
-            return;
-        }
+        let unsubscribeUser: () => void;
+        let unsubscribeAstro: () => void;
 
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setUser(user);
-            if (user) {
-                try {
-                    // Retry logic for flaky connections
-                    let retries = 3;
-                    let userDoc = null;
-                    let astroDoc = null;
+        const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
+            setUser(authUser);
+            setLoading(true);
 
-                    while (retries > 0) {
-                        try {
-                            // Safe check for dummy db
-                            if ((db as any).type === 'dummy') {
-                                console.warn("Firestore is in dummy mode. Skipping user data fetch.");
-                                break;
-                            }
-                            userDoc = await getDoc(doc(db, "users", user.uid));
-                            break;
-                        } catch (err: any) {
-                            if ((err.message?.includes("offline") || err.code === 'unavailable') && retries > 1) {
-                                console.warn("Firestore offline/unavailable, retrying...", retries);
-                                await new Promise(r => setTimeout(r, 1500));
-                                retries--;
-                                continue;
-                            }
-                            console.error("Firestore read failed:", err);
-                            // If it's a critical failure, we might want to fallback to a 'guest' state or stop retrying
-                            if (retries <= 1) throw err; // Throw on last retry
-                            retries--;
-                        }
-                    }
+            if (authUser) {
+                // 1. Listen to the generic 'users' collection first
+                unsubscribeUser = onSnapshot(doc(db, "users", authUser.uid),
+                    (userSnap: any) => {
+                        if (userSnap.exists()) {
+                            const data = userSnap.data();
+                            const userRole = data.role || "user";
 
-                    if (userDoc && userDoc.exists()) {
-                        const data = userDoc.data();
-                        setUserData(data);
-                        setRole(data.role || "user");
-                    } else {
-                        // Reset retries for second fetch
-                        retries = 3;
+                            // If role is astrologer, we MUST listen to the astrologers collection
+                            // because that's where profileComplete lives
+                            if (userRole === "astrologer") {
+                                setRole("astrologer");
 
-                        // Check in astrologers collection if not in users
-                        while (retries > 0) { // Reuse retry count if needed or reset
-                            try {
-                                astroDoc = await getDoc(doc(db, "astrologers", user.uid));
-                                break;
-                            } catch (err: any) {
-                                if ((err.message?.includes("offline") || err.code === 'unavailable') && retries > 1) {
-                                    console.warn("Firestore (Astro) offline/unavailable, retrying...", retries);
-                                    await new Promise(r => setTimeout(r, 1500));
-                                    retries--;
-                                    continue;
+                                // Subscribe to astrologer profile
+                                if (unsubscribeAstro) unsubscribeAstro(); // Clear existing if any
+                                unsubscribeAstro = onSnapshot(doc(db, "astrologers", authUser.uid),
+                                    (astroSnap: any) => {
+                                        if (astroSnap.exists()) {
+                                            // Merge user doc data with astrologer doc data, giving priority to astrologer data
+                                            setUserData({ ...data, ...astroSnap.data() });
+                                        } else {
+                                            // Fallback if astrologer doc doesn't exist yet (signup phase)
+                                            setUserData(data);
+                                        }
+                                        setLoading(false);
+                                    },
+                                    (error: any) => {
+                                        console.error("Error listening to astrologer profile:", error);
+                                        setLoading(false);
+                                    }
+                                );
+                            } else {
+                                // Regular user
+                                setRole(userRole as any);
+                                setUserData(data);
+                                setLoading(false);
+                                if (unsubscribeAstro) {
+                                    unsubscribeAstro();
+                                    unsubscribeAstro = undefined as any;
                                 }
-                                if (retries <= 1) throw err;
-                                retries--;
                             }
+                        } else {
+                            // 2. User doc not found in 'users', check 'astrologers' directly
+                            // This handles cases where they might only exist in 'astrologers'
+                            if (unsubscribeAstro) unsubscribeAstro();
+                            unsubscribeAstro = onSnapshot(doc(db, "astrologers", authUser.uid),
+                                (astroSnap: any) => {
+                                    if (astroSnap.exists()) {
+                                        setRole("astrologer");
+                                        setUserData(astroSnap.data());
+                                    } else {
+                                        // User exists in Auth but no DB record yet
+                                        setUserData(null);
+                                        setRole(null);
+                                    }
+                                    setLoading(false);
+                                },
+                                (error: any) => {
+                                    console.error("Error listening to astrologer profile (fallback):", error);
+                                    setLoading(false);
+                                }
+                            );
                         }
-
-                        if (astroDoc && astroDoc.exists()) {
-                            const data = astroDoc.data();
-                            setUserData(data);
-                            setRole("astrologer");
-                        }
+                    },
+                    (error: any) => {
+                        console.error("Error listening to user profile:", error);
+                        setLoading(false);
                     }
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                }
+                );
             } else {
+                // No user
                 setUserData(null);
                 setRole(null);
+                setLoading(false);
+                if (unsubscribeUser) unsubscribeUser();
+                if (unsubscribeAstro) unsubscribeAstro();
             }
-            setLoading(false);
         });
 
-        return () => unsubscribe();
+        // Cleanup function
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeUser) unsubscribeUser();
+            if (unsubscribeAstro) unsubscribeAstro();
+        };
     }, []);
 
     return (

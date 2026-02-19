@@ -69,6 +69,8 @@ export default function VerifyAstrologersPage() {
         try {
             await updateDoc(doc(db, "astrologers", uid), {
                 verified: true,
+                rating: 5.0, // Ensure rating exists for visibility
+                consultations: 0,
                 verifiedAt: new Date().toISOString()
             });
             toast.success("Astrologer approved successfully!");

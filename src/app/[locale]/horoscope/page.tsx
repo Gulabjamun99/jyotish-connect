@@ -102,7 +102,8 @@ export default function HoroscopePage() {
             }
 
             return {
-                personal: dynamicHoroscope.personal,
+                positive: dynamicHoroscope.positive,
+                negative: dynamicHoroscope.negative,
                 career: dynamicHoroscope.career,
                 health: dynamicHoroscope.health,
                 love: dynamicHoroscope.love,
@@ -235,17 +236,18 @@ export default function HoroscopePage() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                             <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-10">
                                 {[
-                                    { title: t("personal"), content: prediction.personal, icon: "🧘", color: "text-blue-500" },
+                                    { title: t("positive") || "Positive Highlights", content: prediction.positive, icon: "✨", color: "text-amber-500" },
+                                    { title: t("negative") || "Challenges", content: prediction.negative, icon: "⚠️", color: "text-red-500" },
                                     { title: t("career"), content: prediction.career, icon: "💼", color: "text-orange-500" },
                                     { title: t("health"), content: prediction.health, icon: "💪", color: "text-rose-500" },
                                     { title: t("love"), content: prediction.love, icon: "❤️", color: "text-pink-500" },
                                 ].map((item, i) => (
-                                    <div key={i} className="space-y-4">
+                                    <div key={i} className={`space-y-4 ${item.title.includes("Positive") || item.title.includes("Negative") ? "md:col-span-1 bg-slate-50 p-6 rounded-3xl border border-slate-100" : ""}`}>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-lg">
+                                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-lg shadow-sm">
                                                 {item.icon}
                                             </div>
-                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">{item.title}</h3>
+                                            <h3 className={`text-[10px] font-black uppercase tracking-widest ${item.color}`}>{item.title}</h3>
                                         </div>
                                         <p className="text-sm text-slate-600 leading-relaxed font-medium">
                                             {item.content}

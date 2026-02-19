@@ -148,7 +148,7 @@ export default function MatchingPage() {
         doc.setFontSize(11);
         doc.text(splitVerdict, 15, 135);
 
-        let currentY = 135 + (splitVerdict.length * 6) + 10;
+        const currentY = 135 + (splitVerdict.length * 6) + 10;
         doc.setFontSize(14);
         doc.text("Ashtakoot Guna Milan Summary", 15, currentY);
 

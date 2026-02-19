@@ -121,7 +121,11 @@
         "deep_analysis_title": "Deep Analysis",
         "deep_analysis_desc": "Connect with our expert astrologers for a personalized birth chart analysis.",
         "consult_expert": "Consult a Master",
-        "calculating": "Calculating..."
+        "calculating": "Calculating...",
+        "positive": "Positive Aspects",
+        "negative": "Cautions",
+        "transaction_history": "Transaction History",
+        "no_transactions": "No transactions recorded yet in this timeline."
     },
     "Nav": {
         "find_astrologers": "Find Astrologers",

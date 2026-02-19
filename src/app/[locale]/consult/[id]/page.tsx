@@ -165,7 +165,7 @@ export default function ConsultPage() {
                 recognition.lang = 'en-IN'; // Default to Indian English
 
                 recognition.onresult = (event: any) => {
-                    let interimTranscript = '';
+                    const interimTranscript = '';
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
                         if (event.results[i].isFinal) {
                             const text = event.results[i][0].transcript;
@@ -339,6 +339,7 @@ export default function ConsultPage() {
                                 local: `${user?.displayName || 'You'} (${participantRole})`,
                                 remote: remoteName
                             }}
+                            consultationId={id}
                         />
                     )}
                 </div>

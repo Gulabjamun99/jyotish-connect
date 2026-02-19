@@ -90,7 +90,7 @@ export default function LoginPage() {
             const result = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
             setConfirmationResult(result);
             setShowOtpInput(true);
-            toast.success("OTP sent! (Use 123456 if testing)");
+            toast.success("OTP sent to your phone");
         } catch (error: any) {
             console.error("OTP Error:", error);
             toast.error(error.message || "Failed to send OTP");

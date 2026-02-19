@@ -22,6 +22,7 @@ interface VideoInterfaceProps {
         local: string;
         remote: string;
     };
+    consultationId?: string;
 }
 
 export function VideoInterface({
@@ -38,7 +39,8 @@ export function VideoInterface({
     transcript = [],
     isDemo = false,
     onRetryCamera,
-    labels = { local: "You (Local)", remote: "Remote Participant" }
+    labels = { local: "You (Local)", remote: "Remote Participant" },
+    consultationId
 }: VideoInterfaceProps) {
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -77,158 +79,170 @@ export function VideoInterface({
     };
 
     return (
-        <div className="relative w-full h-full bg-zinc-950 flex flex-col overflow-hidden">
-            {/* Main Video Area (Remote/Astrologer) */}
-            <div className="flex-1 relative bg-zinc-900 rounded-3xl m-4 overflow-hidden border border-white/10 shadow-2xl">
-                {/* Placeholder for remote stream */}
-                <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
-                    {!remoteStream && !isDemo && (
-                        <div className="text-center space-y-4">
-                            <div className="w-24 h-24 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center mx-auto text-4xl font-bold animate-pulse">
-                                {astrologerName[0]}
-                            </div>
-                            <p className="text-muted-foreground animate-pulse">Waiting for {astrologerName} to join video...</p>
-                            {/* Debug info */}
-                            <div className="text-xs text-gray-500 mt-4">
-                                <p>Room Status: {typeof window !== 'undefined' && (window as any).__twilioRoom ? 'Connected' : 'Not Connected'}</p>
-                                <p>Participants: {typeof window !== 'undefined' && (window as any).__participantCount || 0}</p>
-                            </div>
-                        </div>
-                    )}
-                    {isDemo && !remoteStream && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
-                            {/* Professional Simulated Feed */}
-                            <img
-                                src="/acharya_demo.png"
-                                alt="Acharya Ravi Singh"
-                                className="w-full h-full object-cover opacity-60 mix-blend-luminosity grayscale-[0.2]"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-orange-950/40 via-transparent to-black/60" />
-
-                            <div className="relative flex flex-col items-center justify-center space-y-6">
-                                <div className="relative w-40 h-40 rounded-full border-4 border-orange-500/50 p-2 shadow-[0_0_50px_rgba(249,115,22,0.3)] animate-pulse">
-                                    <div className="w-full h-full rounded-full bg-orange-500/10 flex items-center justify-center text-6xl font-black text-white backdrop-blur-sm">
-                                        {astrologerName[0]}
-                                    </div>
-                                </div>
-                                <div className="text-center space-y-1">
-                                    <h3 className="text-4xl font-black text-white uppercase tracking-[0.3em] drop-shadow-2xl">
-                                        {astrologerName}
-                                    </h3>
-                                    <div className="flex items-center justify-center gap-2 bg-black/40 px-4 py-1 rounded-full border border-white/10 backdrop-blur-md">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
-                                        <p className="text-orange-500 font-bold text-[10px] uppercase tracking-widest">Divine Feed Active</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className={`w-full h-full object-cover ${(!remoteStream || isDemo) ? 'hidden' : ''}`}
-                    />
+        <div className="relative w-full h-full bg-[#202124] flex flex-col overflow-hidden text-white font-sans">
+            {/* Top Bar (Google Meet style) */}
+            <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/70 to-transparent">
+                <div className="flex items-center gap-3">
+                    <span className="text-lg font-medium tracking-wide">{astrologerName}</span>
+                    <span className="px-2 py-0.5 bg-orange-600/30 text-orange-400 text-xs rounded-full border border-orange-500/20 font-bold uppercase tracking-wider">
+                        {isDemo ? "Demo Consultation" : "Live"}
+                    </span>
                 </div>
-
-                {/* Overlays */}
-                <div className="absolute top-6 left-6 z-10">
-                    <div className="glass px-4 py-2 rounded-full flex items-center gap-2 border-white/10">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-bold text-white uppercase tracking-wider">{labels.remote}</span>
-                    </div>
-                </div>
-
-                <div className="absolute top-6 right-6 z-10">
-                    <div className={`glass px-6 py-2 rounded-full font-mono font-bold text-xl border ${timeLeft < 300 ? 'text-red-500 border-red-500/50 animate-pulse' : 'text-primary border-primary/20'
+                <div className="flex items-center gap-4">
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border ${timeLeft < 300 ? 'border-red-500/50 text-red-500' : 'border-white/10 text-white'
                         }`}>
-                        {formatTime(timeLeft)}
-                    </div>
-                </div>
-
-                {/* Live Captions Overlay (Google Meet Style) */}
-                {lastCaption && (
-                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 max-w-[80%] z-20">
-                        <div className="glass bg-black/60 backdrop-blur-md px-8 py-4 rounded-2xl border-white/10 text-center animate-slide-up">
-                            <div className="text-[10px] uppercase font-black tracking-widest text-orange-400 mb-1">
-                                {lastCaption.speaker}
-                            </div>
-                            <p className="text-lg font-medium text-white leading-relaxed">
-                                {lastCaption.text}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* PiP View (Local/User) */}
-                <div className="absolute bottom-6 right-6 w-48 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/20 transition-all hover:scale-105 z-20 group">
-                    {stream ? (
-                        <video
-                            ref={localVideoRef}
-                            autoPlay
-                            muted
-                            playsInline
-                            className={`w-full h-full object-cover transform scale-x-[-1] ${!videoOn ? 'hidden' : ''}`}
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-zinc-800 flex flex-col items-center justify-center p-4 text-center space-y-3">
-                            <VideoOff className="w-6 h-6 text-orange-500/50" />
-                            <div className="space-y-1">
-                                <p className="text-[10px] text-muted-foreground leading-tight">Camera access is needed for your feed</p>
-                                <Button
-                                    onClick={onRetryCamera}
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-[9px] px-3 bg-white/5 hover:bg-white/10 border-white/10 border-orange-500/20 text-orange-500"
-                                >
-                                    Enable Camera
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {!videoOn && stream && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
-                            <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-                                <VideoOff className="w-5 h-5 text-muted-foreground" />
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="absolute bottom-2 left-2 text-[10px] font-black text-white bg-black/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/10 shadow-lg uppercase tracking-wider">
-                        {labels.local}
+                        <div className={`w-2 h-2 rounded-full ${timeLeft < 300 ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} />
+                        <span className="font-mono font-medium">{formatTime(timeLeft)}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Controls Bar */}
-            <div className="h-24 glass border-t border-white/5 flex items-center justify-center gap-6 px-8 backdrop-blur-xl z-30">
-                <Button
-                    onClick={onToggleMic}
-                    variant={micOn ? "outline" : "destructive"}
-                    size="icon"
-                    className={`w-14 h-14 rounded-full border-white/10 ${micOn ? 'hover:bg-white/5 bg-white/5' : 'bg-red-500 hover:bg-red-600'}`}
-                >
-                    {micOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
-                </Button>
+            {/* Main Stage */}
+            <div className="flex-1 relative flex items-center justify-center p-4">
+                {/* Remote Video / Audio Visualizer */}
+                <div className="relative w-full h-full max-w-6xl max-h-[85vh] bg-[#3c4043] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
 
-                <Button
-                    onClick={onToggleVideo}
-                    variant={videoOn ? "outline" : "destructive"}
-                    size="icon"
-                    className={`w-14 h-14 rounded-full border-white/10 ${videoOn ? 'hover:bg-white/5 bg-white/5' : 'bg-red-500 hover:bg-red-600'}`}
-                >
-                    {videoOn ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
-                </Button>
+                    {/* Remote Video Stream */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        {(!remoteStream && !isDemo) ? (
+                            <div className="flex flex-col items-center justify-center space-y-6 animate-pulse">
+                                <div className="w-24 h-24 rounded-full bg-orange-500 flex items-center justify-center text-4xl font-bold text-white shadow-xl">
+                                    {astrologerName[0]}
+                                </div>
+                                <p className="text-gray-300 font-medium tracking-wide">Waiting for {astrologerName} to join...</p>
+                            </div>
+                        ) : (
+                            <>
+                                {isDemo ? (
+                                    <div className="relative w-full h-full">
+                                        <img
+                                            src="/acharya_demo.png"
+                                            className="w-full h-full object-cover opacity-80"
+                                            alt="Demo"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            {/* Audio Waves Simulation for Demo */}
+                                            <div className="flex items-center justify-center gap-1">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className="w-2 bg-white/80 rounded-full animate-bounce"
+                                                        style={{
+                                                            height: '40px',
+                                                            animationDuration: `${0.8 + i * 0.1}s`
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <video
+                                        ref={remoteVideoRef}
+                                        autoPlay
+                                        playsInline
+                                        className="w-full h-full object-contain"
+                                    />
+                                )}
+                            </>
+                        )}
+                    </div>
 
-                <Button
-                    onClick={onDisconnect}
-                    variant="destructive"
-                    size="icon"
-                    className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 shadow-[0_0_30px_rgba(220,38,38,0.4)] transition-transform active:scale-95"
-                >
-                    <PhoneOff className="w-8 h-8" />
-                </Button>
+                    {/* Captions Overlay */}
+                    {lastCaption && (
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 max-w-2xl w-full px-6">
+                            <div className="bg-black/70 backdrop-blur-md p-4 rounded-xl text-center space-y-1 transform transition-all hover:scale-105">
+                                <div className="flex items-center justify-center gap-2 mb-1">
+                                    <img
+                                        src={lastCaption.speaker === 'Astrologer' ? "/acharya_demo.png" : "https://api.dicebear.com/7.x/avataaars/svg?seed=" + userName}
+                                        className="w-6 h-6 rounded-full border border-white/20"
+                                        alt="Speaker"
+                                    />
+                                    <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">
+                                        {lastCaption.speaker}
+                                    </span>
+                                </div>
+                                <p className="text-white text-lg font-medium leading-relaxed">
+                                    {lastCaption.text}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Remote Name Label */}
+                    <div className="absolute bottom-4 left-4">
+                        <div className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-md text-sm font-medium text-white select-none">
+                            {astrologerName}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Local User PiP */}
+                <div className="absolute bottom-8 right-8 w-64 aspect-video bg-[#3c4043] rounded-xl overflow-hidden shadow-2xl border border-white/10 group transition-all hover:w-80 hover:z-50 cursor-pointer">
+                    {stream ? (
+                        <>
+                            {videoOn ? (
+                                <video
+                                    ref={localVideoRef}
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    className="w-full h-full object-cover transform scale-x-[-1]"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-[#202124]">
+                                    <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-xl font-bold text-white shadow-lg">
+                                        {userName[0]}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-zinc-800">
+                            <div className="w-12 h-12 rounded-full bg-zinc-700 animate-pulse" />
+                        </div>
+                    )}
+                    <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-xs font-medium">You</div>
+                </div>
+            </div>
+
+            {/* Bottom Controls Bar */}
+            <div className="h-20 bg-[#202124] flex items-center justify-between px-8 border-t border-white/5 relative z-30">
+                <div className="flex-1 flex justify-start text-white/50 text-sm font-medium">
+                    {/* Left details */}
+                    <span className="hidden md:inline">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {consultationId ? `| ${consultationId}` : ''}</span>
+                </div>
+
+                <div className="flex-1 flex items-center justify-center gap-4">
+                    <Button
+                        onClick={onToggleMic}
+                        className={`w-12 h-12 rounded-full border-none transition-all duration-300 ${micOn ? 'bg-[#3c4043] hover:bg-[#4d5155] text-white' : 'bg-red-600 hover:bg-red-700 text-white'
+                            }`}
+                    >
+                        {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+                    </Button>
+
+                    <Button
+                        onClick={onToggleVideo}
+                        className={`w-12 h-12 rounded-full border-none transition-all duration-300 ${videoOn ? 'bg-[#3c4043] hover:bg-[#4d5155] text-white' : 'bg-red-600 hover:bg-red-700 text-white'
+                            }`}
+                    >
+                        {videoOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+                    </Button>
+
+                    <Button
+                        onClick={onDisconnect}
+                        className="w-16 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white px-6 shadow-lg shadow-red-900/20"
+                    >
+                        <PhoneOff className="w-6 h-6 fill-current" />
+                    </Button>
+                </div>
+
+                <div className="flex-1 flex justify-end gap-3">
+                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/10 rounded-full">
+                        <Maximize2 className="w-5 h-5" />
+                    </Button>
+                </div>
             </div>
         </div>
     );

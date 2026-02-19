@@ -128,48 +128,6 @@ export default function ProfilePage() {
                         // But let's keep the existing notification logic for now, just trigger it.
                         // Actually, let's duplicate the email logic or trust the API (Plan said secure booking only).
 
-                        // Legacy Email Logic (Client-Side Trigger) - Consider moving to API later
-                        try {
-                            const response = await fetch("/api/email/send", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                    to: user.email,
-                                    subject: `Booking Confirmed: ${consultationType} with ${profile.name}`,
-                                    html: `
-                                            <h1>Booking Confirmed!</h1>
-                                            <p>You have successfully booked an instant ${consultationType} session with <strong>${profile.name}</strong>.</p>
-                                            <p><strong>Link:</strong> <a href="${window.location.origin}/consult/${bookingId}">Join Consultation Room</a></p>
-                                            <p>Please join immediately.</p>
-                                        `
-                                })
-                            });
-                            if (!response.ok) console.error("Failed to send user email");
-                        } catch (e) {
-                            console.error("Email error (User):", e);
-                        }
-
-                        if (profile.email) {
-                            try {
-                                await fetch("/api/email/send", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                        to: profile.email,
-                                        subject: `New Instant Booking: ${user.displayName || "User"}`,
-                                        html: `
-                                                <h1>New Instant Booking!</h1>
-                                                <p><strong>${user.displayName || "A user"}</strong> has booked an instant ${consultationType} session.</p>
-                                                <p><strong>Link:</strong> <a href="${window.location.origin}/consult/${bookingId}">Join Consultation Room</a></p>
-                                                <p>Please join immediately as the user is waiting.</p>
-                                            `
-                                    })
-                                });
-                            } catch (e) {
-                                console.error("Email error (Astrologer):", e);
-                            }
-                        }
-
                         toast.success("Payment verified! Session confirmed.");
                         router.push("/user/dashboard");
                     } catch (error: any) {

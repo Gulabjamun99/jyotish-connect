@@ -121,7 +121,11 @@
         "deep_analysis_title": "गहन विश्लेषण चाहते हैं?",
         "deep_analysis_desc": "अपनी व्यक्तिगत जन्म कुंडली के लिए हमारे विशेषज्ञों से जुड़ें।",
         "consult_expert": "विशेषज्ञ से बात करें",
-        "calculating": "गणना हो रही है..."
+        "calculating": "गणना हो रही है...",
+        "positive": "सकारात्मक पहलु",
+        "negative": "सावधानियाँ",
+        "transaction_history": "लेन-देन का इतिहास",
+        "no_transactions": "इस समयरेखा में अभी तक कोई लेन-देन दर्ज नहीं किया गया है।"
     },
     "Nav": {
         "find_astrologers": "ज्योतिषी खोजें",

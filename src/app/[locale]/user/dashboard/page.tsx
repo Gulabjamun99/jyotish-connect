@@ -10,6 +10,8 @@ import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect } from "react";
 import { getUserBookings } from "@/services/firestore";
 
+import { TransactionHistory } from "@/components/profile/TransactionHistory";
+
 export default function UserDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["user"]);
     const router = useRouter();
@@ -25,6 +27,11 @@ export default function UserDashboard() {
         }
     }, [user]);
 
+    // Mock Transactions for now (until we have real payment history API/Store)
+    const transactions = [
+        { id: '1', amount: 500, type: 'credit', description: 'Wallet Recharge', date: new Date(), status: 'success' },
+        { id: '2', amount: 50, type: 'debit', description: 'Consultation Fee', date: new Date(Date.now() - 86400000), status: 'success' }
+    ];
 
     if (loading || !user) {
         return (
@@ -161,6 +168,11 @@ END:VCALENDAR`;
                         </div>
                     </div>
                 </div>
+
+                {/* Transaction History Section */}
+                <section className="mb-20 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+                    <TransactionHistory transactions={transactions as any} />
+                </section>
 
                 <section className="space-y-10 pb-20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                     <div className="flex items-center justify-between">

@@ -57,7 +57,7 @@ export function SearchFilters({ onFilterChange }: { onFilterChange: (filters: an
 
             {/* Expertise */}
             <div className="space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/20">Sacred Expertise</h4>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Expertise</h4>
                 <div className="flex flex-wrap gap-2">
                     {EXPERTISE_OPTIONS.map((item) => (
                         <button
@@ -78,7 +78,7 @@ export function SearchFilters({ onFilterChange }: { onFilterChange: (filters: an
 
             {/* Languages */}
             <div className="space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/20">Vocal Resonance</h4>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Languages</h4>
                 <div className="flex flex-wrap gap-2">
                     {LANGUAGE_OPTIONS.map((item) => (
                         <button
@@ -99,7 +99,7 @@ export function SearchFilters({ onFilterChange }: { onFilterChange: (filters: an
 
             {/* Minimum Rating */}
             <div className="space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/20">Minimum Arcana</h4>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Minimum Rating</h4>
                 <div className="grid grid-cols-2 gap-3">
                     {RATING_OPTIONS.map((item) => (
                         <button
@@ -115,14 +115,6 @@ export function SearchFilters({ onFilterChange }: { onFilterChange: (filters: an
                             {item}
                         </button>
                     ))}
-                </div>
-            </div>
-
-            <div className="pt-6">
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 text-center">
-                    <p className="text-[9px] font-black text-primary/60 uppercase tracking-widest leading-relaxed">
-                        Filters are ethically synchronized with the cosmic flow.
-                    </p>
                 </div>
             </div>
         </div>
