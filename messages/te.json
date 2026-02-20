@@ -95,7 +95,18 @@
         "label_karan": "కరణం",
         "label_vara": "వారం",
         "label_sunrise": "సూర్యోదయం",
-        "label_sunset": "సూర్యాస్తమయం"
+        "label_sunset": "సూర్యాస్తమయం",
+        "positive": "సానుకూల అంశాలు",
+        "negative": "జాగ్రత్తలు",
+        "career": "కెరీర్",
+        "health": "ఆరోగ్యం",
+        "love": "ప్రేమ",
+        "lucky_number": "అదృష్ట సంఖ్య",
+        "lucky_color": "అదృష్ట రంగు",
+        "todays_panchang": "నేటి పంచాంగం",
+        "deep_analysis_title": "లోతైన విశ్లేషణ",
+        "deep_analysis_desc": "వ్యక్తిగత జాతక విశ్లేషణ కోసం మా నిపుణులైన జ్యోతిష్కులతో కనెక్ట్ అవ్వండి.",
+        "consult_expert": "నిపుణుడిని సంప్రదించండి"
     },
     "Nav": {
         "find_astrologers": "జ్యోతిష్కులను కనుగొనండి",

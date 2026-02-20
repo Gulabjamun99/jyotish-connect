@@ -41,7 +41,18 @@
             "girlValue": "Girl Value",
             "max": "Max",
             "obtained": "Obtained"
-        }
+        },
+        "positive": "હકારાત્મક પાસાઓ",
+        "negative": "સાવચેતીઓ",
+        "career": "કારકિર્દી",
+        "health": "આરોગ્ય",
+        "love": "પ્રેમ",
+        "lucky_number": "લકી નંબર",
+        "lucky_color": "લકી કલર",
+        "todays_panchang": "આજનું પંચાંગ",
+        "deep_analysis_title": "ઊંડું વિશ્લેષણ",
+        "deep_analysis_desc": "વ્યક્તિગત જન્માક્ષર વિશ્લેષણ માટે અમારા નિષ્ણાત જ્યોતિષીઓ સાથે જોડાઓ.",
+        "consult_expert": "નિષ્ણાતની સલાહ લો"
     },
     "Nav": {
         "find_astrologers": "જ્યોતિષી શોધો",

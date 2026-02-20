@@ -41,7 +41,18 @@
             "girlValue": "Girl Value",
             "max": "Max",
             "obtained": "Obtained"
-        }
+        },
+        "positive": "நேர்மறை அம்சங்கள்",
+        "negative": "எச்சரிக்கைகள்",
+        "career": "தொழில்",
+        "health": "ஆரோக்கியம்",
+        "love": "காதல்",
+        "lucky_number": "அதிர்ஷ்ட எண்",
+        "lucky_color": "அதிர்ஷ்ட நிறம்",
+        "todays_panchang": "இன்றைய பஞ்சாங்கம்",
+        "deep_analysis_title": "ஆழ்ந்த பகுப்பாய்வு",
+        "deep_analysis_desc": "தனிப்பயனாக்கப்பட்ட ஜாதகப் பகுப்பாய்விற்கு எங்கள் நிபுணரான ஜோதிடர்களுடன் இணையுங்கள்.",
+        "consult_expert": "நிபுணரை அணுகவும்"
     },
     "Nav": {
         "find_astrologers": "ஜோதிடர்களைக் கண்டறியவும்",

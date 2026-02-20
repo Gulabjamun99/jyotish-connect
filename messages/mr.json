@@ -121,7 +121,9 @@
         "deep_analysis_title": "सखोल विश्लेषण हवे आहे?",
         "deep_analysis_desc": "आपल्या वैयक्तिक जन्मकुंडलीच्या विश्लेषणासाठी आमच्या तज्ञांशी संपर्क साधा.",
         "consult_expert": "तज्ञांशी बोला",
-        "calculating": "गणना होत आहे..."
+        "calculating": "गणना होत आहे...",
+        "positive": "सकारात्मक पैलू",
+        "negative": "सावधगिरी"
     },
     "Nav": {
         "find_astrologers": "ज्योतिषी शोधा",

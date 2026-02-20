@@ -41,7 +41,18 @@
             "girlValue": "Girl Value",
             "max": "Max",
             "obtained": "Obtained"
-        }
+        },
+        "positive": "ইতিবাচক দিক",
+        "negative": "সতর্কতা",
+        "career": "পেশা",
+        "health": "স্বাস্থ্য",
+        "love": "প্রেম",
+        "lucky_number": "শুভ সংখ্যা",
+        "lucky_color": "শুভ রং",
+        "todays_panchang": "আজকের পঞ্জিকা",
+        "deep_analysis_title": "গভীর বিশ্লেষণ",
+        "deep_analysis_desc": "ব্যক্তিগত জন্মকুণ্ডলী বিশ্লেষণের জন্য আমাদের বিশেষজ্ঞ জ্যোতিষীদের সাথে যোগাযোগ করুন।",
+        "consult_expert": "বিশেষজ্ঞের পরামর্শ নিন"
     },
     "Nav": {
         "find_astrologers": "জ্যোতিষী খুঁজুন",
