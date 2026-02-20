@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useLocale } from "next-intl";
-import { translatePlanet, translateSign } from "@/lib/astrology/i18n";
+import { translatePlanet } from "@/lib/astrology/i18n";
+import { useState } from "react";
 
 interface PlanetData {
     name: string;
@@ -16,8 +16,8 @@ interface LagnaChartProps {
     chart: {
         [house: number]: string[];
     };
-    planets?: PlanetData[]; // Full planet data with degrees
-    ascendant?: number; // Ascendant degree in longitude
+    planets?: PlanetData[];
+    ascendant?: number;
     title?: string;
     subTitle?: string;
 }
@@ -26,187 +26,170 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
     const locale = useLocale();
     const [hoveredHouse, setHoveredHouse] = useState<number | null>(null);
 
-    // Helper to get planet full data
     const getPlanetData = (planetName: string) => {
         if (!planets) return null;
         return planets.find((p: any) => p.name === planetName);
     };
 
-    // Helper to format degree
-    const formatDegree = (longitude: number) => {
-        const deg = Math.floor(longitude % 30);
-        const min = Math.floor(((longitude % 30) - deg) * 60);
-        return `${deg}°${min.toString().padStart(2, '0')}'`;
-    };
-
-    // Get sign for house based on ascendant
     const getHouseSign = (house: number) => {
-        if (!ascendant) return null;
-        const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+        if (ascendant === undefined) return null;
         const ascSign = Math.floor(ascendant / 30);
-        const houseSign = (ascSign + house - 1) % 12;
-        return translateSign(signs[houseSign], locale);
+        const houseSignIndex = (ascSign + house - 1) % 12;
+        return houseSignIndex + 1;
     };
-
-    // North Indian Diamond Style Chart - Traditional Layout
-    // Grid Structure (4 rows x 4 cols):
-    //      12    1    2
-    //   11    center   3
-    //   10    center   4  
-    //      9    8    7
-    //               6
-    //               5
-    const housePositions = [
-        // Row 1: Houses 12, 1 (Lagna), 2
-        { house: 12, className: "col-start-2 row-start-1" },
-        { house: 1, className: "col-start-3 row-start-1 bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-300 dark:border-orange-700" }, // Ascendant
-        { house: 2, className: "col-start-4 row-start-1" },
-
-        // Row 2: Houses 11, center, 3
-        { house: 11, className: "col-start-1 row-start-2" },
-        { house: 0, className: "col-start-2 row-start-2 col-span-2 row-span-2 flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20" }, // Center
-        { house: 3, className: "col-start-4 row-start-2" },
-
-        // Row 3: Houses 10, center, 4
-        { house: 10, className: "col-start-1 row-start-3" },
-        { house: 4, className: "col-start-4 row-start-3" },
-
-        // Row 4: Houses 9, 8, 7, 6
-        { house: 9, className: "col-start-1 row-start-4" },
-        { house: 8, className: "col-start-2 row-start-4" },
-        { house: 7, className: "col-start-3 row-start-4" },
-        { house: 6, className: "col-start-4 row-start-4" },
-
-        // Row 5: House 5 (centered in column 3-4)
-        { house: 5, className: "col-start-3 row-start-5 col-span-2" }
-    ];
 
     const getPlanetColor = (planet: string) => {
-        const colors: { [key: string]: string } = {
-            "Sun": "text-orange-600 dark:text-orange-400",
-            "Moon": "text-blue-600 dark:text-blue-400",
-            "Mars": "text-red-600 dark:text-red-400",
-            "Mercury": "text-green-600 dark:text-green-400",
-            "Jupiter": "text-yellow-600 dark:text-yellow-400",
-            "Venus": "text-pink-600 dark:text-pink-400",
-            "Saturn": "text-purple-700 dark:text-purple-400",
-            "Rahu": "text-gray-700 dark:text-gray-400",
-            "Ketu": "text-gray-600 dark:text-gray-500",
-            "Asc": "text-primary"
+        const colors: Record<string, string> = {
+            "Sun": "#ea580c",
+            "Moon": "#2563eb",
+            "Mars": "#dc2626",
+            "Mercury": "#16a34a",
+            "Jupiter": "#ca8a04",
+            "Venus": "#db2777",
+            "Saturn": "#7e22ce",
+            "Rahu": "#334155",
+            "Ketu": "#475569",
+            "Asc": "#f97316"
         };
-        return colors[planet] || "text-foreground";
+        return colors[planet] || "#0f172a";
     };
 
+    const getPlanetShort = (planetName: string) => {
+        if (planetName === "Asc") return locale === 'hi' ? "ल" : "As";
+        const translated = translatePlanet(planetName, locale);
+        return translated.substring(0, 2);
+    };
+
+    const housePolygons = [
+        { house: 1, points: "200,0 100,100 200,200 300,100", cx: 200, cy: 100 },
+        { house: 2, points: "0,0 100,100 200,0", cx: 100, cy: 40 },
+        { house: 3, points: "0,0 0,200 100,100", cx: 40, cy: 100 },
+        { house: 4, points: "0,200 100,300 200,200 100,100", cx: 100, cy: 200 },
+        { house: 5, points: "0,200 100,300 0,400", cx: 40, cy: 300 },
+        { house: 6, points: "0,400 200,400 100,300", cx: 100, cy: 360 },
+        { house: 7, points: "200,400 300,300 200,200 100,300", cx: 200, cy: 300 },
+        { house: 8, points: "200,400 300,300 400,400", cx: 300, cy: 360 },
+        { house: 9, points: "400,200 400,400 300,300", cx: 360, cy: 300 },
+        { house: 10, points: "400,200 300,100 200,200 300,300", cx: 300, cy: 200 },
+        { house: 11, points: "400,0 400,200 300,100", cx: 360, cy: 100 },
+        { house: 12, points: "200,0 300,100 400,0", cx: 300, cy: 40 },
+    ];
+
     return (
-        <div className="w-full max-w-3xl mx-auto">
-            <div className="grid grid-cols-4 grid-rows-5 gap-0 border-2 border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900 shadow-lg">
-                {housePositions.map(({ house, className }) => {
-                    if (house === 0) {
-                        return (
-                            <div key="center" className={className}>
-                                <div className="text-center">
-                                    <div className="text-3xl mb-2">🕉️</div>
-                                    <div className="text-sm font-black text-primary uppercase tracking-wider">{title}</div>
-                                    <div className="text-xs text-muted-foreground font-medium">{subTitle}</div>
-                                    {ascendant !== undefined && (
-                                        <div className="text-[10px] text-orange-600 dark:text-orange-400 font-bold mt-2 px-2 py-1 bg-orange-100 dark:bg-orange-950/30 rounded-md inline-block">
-                                            Asc: {formatDegree(ascendant)}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    }
-
-                    const housePlanets = chart[house] || [];
-                    const isHovered = hoveredHouse === house;
-                    const houseSign = getHouseSign(house);
-
-                    return (
-                        <div
-                            key={house}
-                            className={`${className} relative border border-slate-200 dark:border-slate-700 p-2 min-h-[110px] transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer`}
-                            onMouseEnter={() => setHoveredHouse(house)}
-                            onMouseLeave={() => setHoveredHouse(null)}
-                        >
-                            {/* House Number */}
-                            <div className="absolute top-1.5 left-1.5 text-xs font-black text-slate-400 dark:text-slate-600">
-                                {house}
-                            </div>
-
-                            {/* House Sign */}
-                            {houseSign && (
-                                <div className="absolute top-1.5 right-1.5 text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded">
-                                    {houseSign.substring(0, 3).toUpperCase()}
-                                </div>
-                            )}
-
-                            {/* Planets */}
-                            <div className="flex flex-col items-center justify-center h-full gap-1 pt-6 pb-2">
-                                {housePlanets.length > 0 ? (
-                                    housePlanets.map((planetName, idx) => {
-                                        const planetData = getPlanetData(planetName);
-
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className={`text-center w-full ${isHovered ? "scale-105" : ""} transition-transform`}
-                                            >
-                                                <div className={`text-sm font-bold ${getPlanetColor(planetName)} leading-tight flex items-center justify-center gap-1`}>
-                                                    <span>{planetName === "Asc" ? (locale === 'hi' ? "लग्न" : "ASC") : translatePlanet(planetName, locale)}</span>
-                                                    {planetData?.isRetrograde && <span className="text-[9px] text-red-500">(R)</span>}
-                                                </div>
-                                                {planetData && planetData.longitude !== undefined && (
-                                                    <div className="text-[9px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">
-                                                        {formatDegree(planetData.longitude)}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="text-sm text-slate-300 dark:text-slate-700">—</div>
-                                )}
-                            </div>
-
-                            {/* Hover Tooltip */}
-                            {isHovered && housePlanets.length > 0 && (
-                                <div className="absolute z-10 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border border-slate-700 dark:border-slate-300 rounded-lg shadow-xl text-xs whitespace-nowrap">
-                                    <div className="font-bold mb-1">House {house} - {houseSign}</div>
-                                    <div className="text-slate-300 dark:text-slate-700">
-                                        {housePlanets.map((p, i) => translatePlanet(p, locale)).join(", ")}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+        <div className="w-full max-w-[500px] mx-auto bg-white dark:bg-slate-900 rounded-3xl p-6 lg:p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-[10px] font-black tracking-widest uppercase mb-3">
+                    {subTitle}
+                </div>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{title}</h3>
             </div>
 
-            {/* Legend */}
-            <div className="mt-6 p-5 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Planet Legend</h4>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                    {[
-                        { name: "Sun", color: "bg-orange-500" },
-                        { name: "Moon", color: "bg-blue-400" },
-                        { name: "Mars", color: "bg-red-500" },
-                        { name: "Mercury", color: "bg-green-500" },
-                        { name: "Jupiter", color: "bg-yellow-500" },
-                        { name: "Venus", color: "bg-pink-500" },
-                        { name: "Saturn", color: "bg-purple-600" },
-                        { name: "Rahu", color: "bg-gray-600" },
-                        { name: "Ketu", color: "bg-gray-500" }
-                    ].map((planet) => (
-                        <div key={planet.name} className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${planet.color} shadow-sm`} />
-                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{translatePlanet(planet.name, locale)}</span>
+            <div className="relative w-full aspect-square border-2 border-orange-200 dark:border-orange-900/50 bg-[#fffdfa] dark:bg-slate-950 rounded-lg overflow-hidden flex items-center justify-center p-2 lg:p-4">
+                <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-sm">
+                    <rect x="0" y="0" width="400" height="400" fill="transparent" stroke="#f97316" strokeWidth="2.5" />
+
+                    <line x1="0" y1="0" x2="400" y2="400" stroke="#fbd38d" strokeWidth="2" strokeOpacity="0.8" />
+                    <line x1="400" y1="0" x2="0" y2="400" stroke="#fbd38d" strokeWidth="2" strokeOpacity="0.8" />
+
+                    <polygon points="200,0 400,200 200,400 0,200" fill="transparent" stroke="#f97316" strokeWidth="2.5" />
+
+                    {housePolygons.map(({ house, points, cx, cy }) => {
+                        const isHovered = hoveredHouse === house;
+                        const housePlanets = chart[house] || [];
+                        const signNumber = getHouseSign(house);
+
+                        return (
+                            <g
+                                key={house}
+                                onMouseEnter={() => setHoveredHouse(house)}
+                                onMouseLeave={() => setHoveredHouse(null)}
+                                className="cursor-pointer transition-all duration-300"
+                            >
+                                <polygon
+                                    points={points}
+                                    fill={isHovered ? "rgba(249, 115, 22, 0.08)" : "transparent"}
+                                    stroke={isHovered ? "#ea580c" : "transparent"}
+                                    strokeWidth="2"
+                                />
+
+                                {signNumber && (
+                                    <text
+                                        x={cx} y={cy - 20}
+                                        textAnchor="middle"
+                                        fill="#94a3b8"
+                                        fontSize="12"
+                                        fontWeight="600"
+                                    >
+                                        {signNumber}
+                                    </text>
+                                )}
+
+                                {housePlanets.map((planet, idx) => {
+                                    const yOffset = cy + (idx * 16) - ((housePlanets.length - 1) * 8);
+                                    const planetData = getPlanetData(planet);
+                                    let retro = planetData?.isRetrograde ? "(R)" : "";
+                                    return (
+                                        <text
+                                            key={idx}
+                                            x={cx}
+                                            y={yOffset}
+                                            textAnchor="middle"
+                                            fill={getPlanetColor(planet)}
+                                            fontSize="15"
+                                            fontWeight="800"
+                                        >
+                                            {getPlanetShort(planet)}{retro}
+                                        </text>
+                                    );
+                                })}
+                            </g>
+                        );
+                    })}
+                </svg>
+
+                {hoveredHouse && (
+                    <div className="absolute top-4 right-4 bg-slate-900/95 backdrop-blur-md text-white px-4 py-3 rounded-xl shadow-2xl z-20 pointer-events-none border border-slate-700 w-48 animate-fade-in">
+                        <div className="font-bold text-sm mb-2 border-b border-slate-700 pb-2 flex justify-between items-center">
+                            <span>House {hoveredHouse}</span>
+                            {getHouseSign(hoveredHouse) && (
+                                <span className="text-orange-400 text-xs">Sign {getHouseSign(hoveredHouse)}</span>
+                            )}
                         </div>
-                    ))}
-                </div>
-                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                    <span className="font-bold">Note:</span> (R) indicates Retrograde planet • Degree format: DD°MM'
-                </div>
+                        <div className="flex flex-col gap-1.5">
+                            {chart[hoveredHouse]?.length > 0 ? (
+                                chart[hoveredHouse].map((p, i) => (
+                                    <div key={i} className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getPlanetColor(p) }} />
+                                        <span className="text-sm font-medium">
+                                            {translatePlanet(p, locale)} {getPlanetData(p)?.isRetrograde ? '(R)' : ''}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <span className="text-slate-400 text-sm">Empty House</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">
+                {[
+                    { name: "Sun", color: "bg-[#ea580c]" },
+                    { name: "Moon", color: "bg-[#2563eb]" },
+                    { name: "Mars", color: "bg-[#dc2626]" },
+                    { name: "Mercury", color: "bg-[#16a34a]" },
+                    { name: "Jupiter", color: "bg-[#ca8a04]" },
+                    { name: "Venus", color: "bg-[#db2777]" },
+                    { name: "Saturn", color: "bg-[#7e22ce]" },
+                    { name: "Rahu", color: "bg-[#334155]" },
+                    { name: "Ketu", color: "bg-[#475569]" },
+                ].map(p => (
+                    <div key={p.name} className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <div className={`w-2.5 h-2.5 rounded-full ${p.color} shadow-inner`} />
+                        {getPlanetShort(p.name)}
+                    </div>
+                ))}
             </div>
         </div>
     );

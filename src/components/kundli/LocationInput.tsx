@@ -17,6 +17,10 @@ interface Suggestion {
 
 export function LocationInput({ value, onChange, required }: LocationInputProps) {
     const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceTimer = useRef<any>(null);
 
