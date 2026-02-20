@@ -104,30 +104,32 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     };
 
     // --- Generate Categorized Predictions ---
+    const currentTransits = (data as any).transits || INTERPRETATIONS.en.transits;
+    const enTransits = INTERPRETATIONS.en.transits;
+
+    const getTransit = (planet: keyof typeof enTransits, house: number) => {
+        return currentTransits[planet]?.[house] || enTransits[planet][house as keyof typeof enTransits.Sun] || "";
+    };
 
     // 1. Career (Sun + Saturn + 10th/2nd/6th House transits)
-    // We prioritize Sun and Saturn.
-    const careerPred = (data as any).transits.Sun[housing.Sun] + " " + ((data as any).transits.Saturn?.[housing.Saturn] || "");
+    const careerPred = (getTransit("Sun", housing.Sun) + " " + getTransit("Saturn", housing.Saturn)).trim();
 
     // 2. Love (Venus + 5th/7th House transits)
-    const lovePred = (data as any).transits.Venus[housing.Venus] || "";
+    const lovePred = getTransit("Venus", housing.Venus);
 
     // 3. Health (Mars + 6th House + Sun)
-    // If Mars is in 6/8/12, warn.
-    const healthPred = (data as any).transits.Mars[housing.Mars] || "";
+    const healthPred = getTransit("Mars", housing.Mars);
 
     // 4. Positive (Luck/Gains/Good News) - Jupiter or any planet in 1/5/9/11
     let positiveHighlight = "";
-    if (getNature(housing.Jupiter) === "positive") positiveHighlight += (data as any).transits.Jupiter?.[housing.Jupiter] || (data as any).defaults?.positive || "Jupiter brings luck. ";
-    if (getNature(housing.Moon) === "positive") positiveHighlight += (data as any).transits.Moon[housing.Moon];
-    // Fallback if empty
-    if (!positiveHighlight) positiveHighlight = (data as any).transits.Sun[housing.Sun];
+    if (getNature(housing.Jupiter) === "positive") positiveHighlight += (getTransit("Jupiter", housing.Jupiter) || (data as any).defaults?.positive || "Jupiter brings luck. ");
+    if (getNature(housing.Moon) === "positive") positiveHighlight += getTransit("Moon", housing.Moon);
+    if (!positiveHighlight) positiveHighlight = getTransit("Sun", housing.Sun);
 
     // 5. Negative (Caution/Challenges) - Saturn/Rahu or planets in 6/8/12
     let negativeHighlight = "";
-    if (getNature(housing.Saturn) === "negative") negativeHighlight += ((data as any).transits.Saturn?.[housing.Saturn] || (data as any).defaults?.negative || "Saturn indicates delays. ");
-    if (getNature(housing.Mars) === "negative") negativeHighlight += (data as any).transits.Mars[housing.Mars];
-    // Fallback
+    if (getNature(housing.Saturn) === "negative") negativeHighlight += (getTransit("Saturn", housing.Saturn) || (data as any).defaults?.negative || "Saturn indicates delays. ");
+    if (getNature(housing.Mars) === "negative") negativeHighlight += getTransit("Mars", housing.Mars);
     if (!negativeHighlight) negativeHighlight = (data as any).defaults?.caution || "Avoid unnecessary risks today. Meditate for peace.";
 
 

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/lib/firebase";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
@@ -9,7 +8,7 @@ import { Moon, Sun, User as UserIcon, LogOut, Menu, Languages } from "lucide-rea
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter, Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 
 export function Navbar() {
