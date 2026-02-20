@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { dbAdmin } from '@/lib/firebase-admin';
-import { sendEmail } from '@/lib/email';
+import { sendBookingConfirmation, sendAstrologerAlert } from '@/services/email';
 
 export async function POST(req: Request) {
     try {
@@ -44,32 +44,31 @@ export async function POST(req: Request) {
 
         await bookingRef.set(newBooking);
 
-        // 3. Send Confirmation Emails (Server-Side)
-        // User Email
-        if ((bookingData as any).userEmail) {
-            await sendEmail({
-                to: (bookingData as any).userEmail,
-                subject: `Booking Confirmed: ${bookingData.type} with ${bookingData.astrologerName}`,
-                html: `
-                    <h1>Booking Confirmed!</h1>
-                    <p>You have successfully booked an instant ${bookingData.type} session with <strong>${bookingData.astrologerName}</strong>.</p>
-                    <p><strong>Link:</strong> <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jyotishconnect.com'}/consult/${bookingId}">Join Consultation Room</a></p>
-                    <p>Please join immediately.</p>
-                `
+        // 3. Send Confirmation Emails (Server-Side using Resend Free Tier)
+        const userEmail = (bookingData as any).userEmail;
+        const astrologerEmail = (bookingData as any).astrologerEmail;
+        const userName = (bookingData as any).userName || "Seeker";
+        const astrologerName = bookingData.astrologerName || "Master";
+
+        if (userEmail) {
+            await sendBookingConfirmation({
+                userEmail,
+                userName,
+                astrologerName,
+                date: bookingData.date,
+                time: bookingData.time,
+                bookingId: bookingId,
+                amount: bookingData.price || 0
             });
         }
 
-        // Astrologer Email (if email is available/known)
-        if ((bookingData as any).astrologerEmail) {
-            await sendEmail({
-                to: (bookingData as any).astrologerEmail,
-                subject: `New Instant Booking: ${(bookingData as any).userName}`,
-                html: `
-                    <h1>New Instant Booking!</h1>
-                    <p><strong>${(bookingData as any).userName}</strong> has booked an instant ${bookingData.type} session.</p>
-                    <p><strong>Link:</strong> <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jyotishconnect.com'}/consult/${bookingId}">Join Consultation Room</a></p>
-                    <p>Please join immediately.</p>
-                `
+        if (astrologerEmail) {
+            await sendAstrologerAlert({
+                astrologerEmail,
+                astrologerName,
+                userName,
+                date: bookingData.date,
+                time: bookingData.time
             });
         }
 
