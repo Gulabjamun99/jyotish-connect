@@ -158,7 +158,7 @@ export default function SeederPage() {
 
                 {status && (
                     <div className="pt-6 border-t border-white/10 text-xs font-mono text-white/70 bg-black/50 p-4 rounded-xl text-left h-32 overflow-y-auto">
-                        > {status}
+                        {'>'} {status}
                     </div>
                 )}
             </div>
