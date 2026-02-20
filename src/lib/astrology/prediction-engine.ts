@@ -31,8 +31,11 @@ export function generateLifePredictions(chart: any, lang: string) {
         }
 
         const hData = (data as any).houses[house];
-        if (lang === 'hi') return `${(data as any).planets[planetName] || planetName} ${house}वें भाव (${hData}) में स्थित है।`;
-        return `${planetName} is placed in the ${house}th House of ${hData}.`;
+        const template = (data as any).defaults?.planet_placed || "{planet} is placed in the {house}th House of {sign}.";
+        return template
+            .replace("{planet}", (data as any).planets[planetName] || planetName)
+            .replace("{house}", house.toString())
+            .replace("{sign}", hData);
     };
 
     return {
@@ -115,17 +118,17 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
 
     // 4. Positive (Luck/Gains/Good News) - Jupiter or any planet in 1/5/9/11
     let positiveHighlight = "";
-    if (getNature(housing.Jupiter) === "positive") positiveHighlight += (data as any).transits.Jupiter?.[housing.Jupiter] || "Jupiter brings luck. ";
+    if (getNature(housing.Jupiter) === "positive") positiveHighlight += (data as any).transits.Jupiter?.[housing.Jupiter] || (data as any).defaults?.positive || "Jupiter brings luck. ";
     if (getNature(housing.Moon) === "positive") positiveHighlight += (data as any).transits.Moon[housing.Moon];
     // Fallback if empty
     if (!positiveHighlight) positiveHighlight = (data as any).transits.Sun[housing.Sun];
 
     // 5. Negative (Caution/Challenges) - Saturn/Rahu or planets in 6/8/12
     let negativeHighlight = "";
-    if (getNature(housing.Saturn) === "negative") negativeHighlight += ((data as any).transits.Saturn?.[housing.Saturn] || "Saturn indicates delays. ");
+    if (getNature(housing.Saturn) === "negative") negativeHighlight += ((data as any).transits.Saturn?.[housing.Saturn] || (data as any).defaults?.negative || "Saturn indicates delays. ");
     if (getNature(housing.Mars) === "negative") negativeHighlight += (data as any).transits.Mars[housing.Mars];
     // Fallback
-    if (!negativeHighlight) negativeHighlight = "Avoid unnecessary risks today. Meditate for peace.";
+    if (!negativeHighlight) negativeHighlight = (data as any).defaults?.caution || "Avoid unnecessary risks today. Meditate for peace.";
 
 
     // Day-based seed for Luck Factors

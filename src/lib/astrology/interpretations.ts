@@ -149,6 +149,12 @@ export const INTERPRETATIONS = {
         lucky: {
             colors: ["Red", "Blue", "Green", "Yellow", "White", "Orange", "Pink"],
             numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        },
+        defaults: {
+            positive: "Jupiter brings luck.",
+            negative: "Saturn indicates delays.",
+            caution: "Avoid unnecessary risks today. Meditate for peace.",
+            planet_placed: "{planet} is placed in the {house}th House of {sign}."
         }
     },
     hi: {
@@ -297,6 +303,12 @@ export const INTERPRETATIONS = {
         lucky: {
             colors: ["लाल", "नीला", "हरा", "पीला", "सफेদ", "नारंगी", "गुलाबी"],
             numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        },
+        defaults: {
+            positive: "बृहस्पति भाग्य लाता है।",
+            negative: "शनि विलंब का संकेत देता है।",
+            caution: "आज अनावश्यक जोखिमों से बचें। शांति के लिए ध्यान करें।",
+            planet_placed: "{planet} {house}वें भाव ({sign}) में स्थित है।"
         }
     },
     mr: {

@@ -16,15 +16,13 @@ interface Suggestion {
 }
 
 export function LocationInput({ value, onChange, required }: LocationInputProps) {
-    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+    const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceTimer = useRef<any>(null);
 
     useEffect(() => {
-        if (value.length < 3) {
+        // If the current value matches what we just selected, don't search
+        if (value === selectedLocation || value.length < 3) {
             setSuggestions([]);
             return;
         }
@@ -65,9 +63,12 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
                 clearTimeout(debounceTimer.current);
             }
         };
-    }, [value]);
+    }, [value, selectedLocation]);
 
     const handleSelect = (suggestion: any) => {
+        // Mark this value as the "selected" one so useEffect ignores it
+        setSelectedLocation(suggestion.description);
+
         onChange(suggestion.description, suggestion.lat, suggestion.lng);
         setCoordinates({ lat: suggestion.lat, lng: suggestion.lng });
         setShowSuggestions(false);
@@ -82,7 +83,13 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
                     className="h-16 pl-12 pr-6 bg-primary/5 border-primary/10 rounded-2xl focus:border-primary/50 transition-all font-bold text-lg placeholder:text-foreground/10 text-foreground"
                     placeholder="Search city or location..."
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
+                    onChange={(e) => {
+                        // When typing, we might diverge from the selected location.
+                        // However, we don't strictly need to clear 'selectedLocation' here 
+                        // because the strict equality check in useEffect will naturally fail
+                        // as soon as 'value' differs from 'selectedLocation'.
+                        onChange(e.target.value);
+                    }}
                     required={required}
                     autoComplete="off"
                 />
