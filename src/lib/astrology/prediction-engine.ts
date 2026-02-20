@@ -107,8 +107,10 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     const currentTransits = (data as any).transits || INTERPRETATIONS.en.transits;
     const enTransits = INTERPRETATIONS.en.transits;
 
-    const getTransit = (planet: keyof typeof enTransits, house: number) => {
-        return currentTransits[planet]?.[house] || enTransits[planet][house as keyof typeof enTransits.Sun] || "";
+    const getTransit = (planet: string, house: number) => {
+        if (currentTransits[planet] && currentTransits[planet][house]) return currentTransits[planet][house];
+        if ((enTransits as any)[planet] && (enTransits as any)[planet][house]) return (enTransits as any)[planet][house];
+        return "";
     };
 
     // 1. Career (Sun + Saturn + 10th/2nd/6th House transits)

@@ -42,191 +42,288 @@ export default function UserDashboard() {
     }
 
     return (
-        <main className="min-h-screen flex flex-col bg-transparent overflow-hidden selection:bg-primary/30">
+        <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
 
-            <div className="container mx-auto px-6 py-16 flex-grow relative">
-                {/* Cosmic Background Elements */}
-                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -z-10 animate-float" />
-                <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-accent/5 blur-[120px] rounded-full -z-10 animate-float" style={{ animationDelay: '-2s' }} />
+            {/* Top Greeting Section */}
+            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-8 pb-12 overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-l from-orange-500/10 to-transparent" />
+                    <div className="absolute -top-40 -left-40 w-96 h-96 bg-orange-500/20 blur-[120px] rounded-full" />
+                </div>
 
-                <header className="mb-16 space-y-4 animate-slide-up">
+                <div className="container mx-auto px-4 md:px-8 relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-[1.5rem] orange-gradient flex items-center justify-center shadow-2xl shadow-primary/20 border border-white/20">
-                            <span className="text-3xl font-black text-white">{user.displayName?.[0] || "U"}</span>
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-2xl font-black text-white shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                            {user.displayName?.[0] || "U"}
                         </div>
                         <div>
-                            <h1 className="text-5xl font-black text-gradient tracking-tighter leading-none">Namaste, {user.displayName?.split(' ')[0]}</h1>
-                            <p className="text-sm text-foreground/40 font-medium italic">Your celestial journey unfolds here</p>
+                            <h1 className="text-3xl font-black text-white tracking-tight">Namaste, {user.displayName?.split(' ')[0]}</h1>
+                            <p className="text-sm font-medium text-zinc-400">Your celestial journey unfolds here</p>
                         </div>
                     </div>
-                </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                    <div className="glass p-8 rounded-[2.5rem] space-y-6 group hover:border-primary/30 transition-all border-primary/10">
-                        <div className="flex justify-between items-center">
-                            <span className="text-xs font-black uppercase tracking-[0.2em] text-foreground/40 group-hover:text-primary transition-colors">Orbit Balance</span>
-                            <Wallet className="text-foreground/20 group-hover:text-primary transition-colors w-5 h-5" />
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-6 hover:border-orange-500/30 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                                    <Wallet className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Wallet Balance</p>
+                                    <p className="text-xl font-black text-white">₹{userData?.walletBalance || 0}</p>
+                                </div>
+                            </div>
+                            <Button className="h-10 px-4 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-xs uppercase tracking-wider">
+                                Recharge
+                            </Button>
                         </div>
-                        <div className="space-y-1">
-                            <div className="text-4xl font-black text-foreground">₹{userData?.walletBalance || 0}</div>
-                            <div className="text-[10px] text-foreground/40 font-medium uppercase tracking-widest">Available Credit</div>
-                        </div>
-                        <Button className="w-full orange-gradient font-black h-14 rounded-2xl shadow-xl shadow-primary/20 text-white uppercase tracking-widest text-[10px]">Recharge Now</Button>
                     </div>
+                </div>
+            </div>
 
-                    <div className="glass p-8 rounded-[2.5rem] space-y-6 group hover:border-primary/30 transition-all border-primary/10">
-                        <div className="flex justify-between items-center">
-                            <span className="text-xs font-black uppercase tracking-[0.2em] text-foreground/40 group-hover:text-primary transition-colors">Celestial Transit</span>
-                            <Video className="text-foreground/20 group-hover:text-primary transition-colors w-5 h-5" />
+            <div className="container mx-auto px-4 md:px-8 py-10 space-y-10">
+
+                {/* TOP ROW: Next Session & Horoscope */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    {/* Active Consultation */}
+                    <div className="lg:col-span-2 glass bg-zinc-900 border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full group-hover:bg-orange-500/20 transition-colors" />
+
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
+                                <Video className="w-4 h-4 text-orange-500" />
+                                Up Next
+                            </h2>
+                            {bookings.length > 0 && bookings[0].status !== 'completed' && (
+                                <span className="px-3 py-1 bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-widest rounded text-center">
+                                    Ready to Join
+                                </span>
+                            )}
                         </div>
 
                         {bookings.length > 0 && bookings[0].status !== 'completed' ? (
-                            <>
-                                <div className="space-y-1">
-                                    <div className="text-xl font-bold text-foreground">{bookings[0].astrologerName}</div>
-                                    <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">
-                                        {bookings[0].time === 'Instant' ? 'Ready to Join' : `Scheduled: ${bookings[0].time}`}
-                                    </p>
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                <div className="flex gap-5 items-center z-10">
+                                    <div className="w-16 h-16 rounded-2xl bg-zinc-800 flex items-center justify-center font-black text-2xl text-orange-500 shadow-xl">
+                                        {bookings[0].astrologerName?.[0] || 'A'}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-bold text-white tracking-tight">{bookings[0].astrologerName}</h3>
+                                        <p className="text-sm font-medium text-zinc-400 capitalize">{bookings[0].type} Consultation • {bookings[0].time === 'Instant' ? 'Starting Now' : bookings[0].time}</p>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex w-full md:w-auto gap-3 mt-4 md:mt-0 z-10">
                                     <Button
-                                        className="flex-1 h-14 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-bold animate-pulse shadow-lg shadow-green-500/20 text-[11px] uppercase tracking-widest transition-all"
                                         onClick={() => router.push(`/consult/${bookings[0].id}?type=${bookings[0].type}`)}
+                                        className="h-14 flex-1 md:px-8 bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-pulse"
                                     >
-                                        Join Ritual Room
+                                        Join Session
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="h-14 w-14 rounded-2xl border-primary/10 hover:bg-primary/5 flex items-center justify-center"
-                                        title="Add to Calendar"
-                                        onClick={() => {
-                                            const b = bookings[0];
-                                            const bookingDate = b.date?.toDate ? b.date.toDate() : new Date(b.date);
-                                            const [hours, minutes] = b.time.split(':').map(Number);
-                                            bookingDate.setHours(hours || 0, minutes || 0);
-
-                                            const end = new Date(bookingDate.getTime() + 30 * 60000);
-                                            const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-
-                                            const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//JyotishConnect//EN
-BEGIN:VEVENT
-UID:${b.id}@jyotishconnect.com
-DTSTAMP:${fmt(new Date())}
-DTSTART:${fmt(bookingDate)}
-DTEND:${fmt(end)}
-SUMMARY:Astrology Session with ${b.astrologerName}
-DESCRIPTION:Join here: https://jyotishconnect.com/consult/${b.id}
-LOCATION:https://jyotishconnect.com/consult/${b.id}
-END:VEVENT
-END:VCALENDAR`;
-
-                                            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-                                            const url = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = url;
-                                            a.download = 'session.ics';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            document.body.removeChild(a);
-                                        }}
-                                    >
-                                        <Calendar className="w-5 h-5 text-primary" />
+                                    <Button variant="outline" className="h-14 w-14 p-0 rounded-xl border-zinc-800 hover:bg-zinc-800 text-white flex-shrink-0 flex justify-center items-center">
+                                        <Calendar className="w-5 h-5" />
                                     </Button>
                                 </div>
-                            </>
+                            </div>
                         ) : (
-                            <>
-                                <div className="space-y-1">
-                                    <div className="text-xl font-bold text-foreground/60 italic">No Active Transits</div>
-                                    <p className="text-[10px] text-foreground/40 font-medium uppercase tracking-widest">Next guidance awaiting booking</p>
+                            <div className="text-center py-8 z-10 relative">
+                                <div className="w-16 h-16 bg-zinc-800/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
+                                    <svg className="w-6 h-6 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-14 rounded-2xl border-primary/10 bg-primary/5 hover:bg-primary/10 font-bold text-primary text-[11px] uppercase tracking-widest transition-all"
-                                    onClick={() => router.push('/consult/demo-session?demo=true')}
-                                >
-                                    Start Demo Ritual
-                                </Button>
-                            </>
+                                <h3 className="text-sm font-bold text-zinc-300">No Upcoming Sessions</h3>
+                                <p className="text-xs text-zinc-500 mt-1">Book an astrologer to seek guidance.</p>
+                            </div>
                         )}
                     </div>
 
-                    <div className="glass p-8 rounded-[2.5rem] space-y-6 group hover:border-accent/30 transition-all border-accent/10">
-                        <div className="flex justify-between items-center">
-                            <span className="text-xs font-black uppercase tracking-[0.2em] text-foreground/40 group-hover:text-accent transition-colors">Soul Reviews</span>
-                            <Star className="text-foreground/20 group-hover:text-accent transition-colors w-5 h-5" />
+                    {/* Daily Horoscope Snapshot */}
+                    <div className="glass bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/5 rounded-3xl p-6 md:p-8 relative">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
+                                <Star className="w-4 h-4 text-amber-500" />
+                                Daily Snapshot
+                            </h2>
+                            <span className="text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Today</span>
                         </div>
-                        <div className="space-y-1">
-                            <div className="text-4xl font-black text-foreground">0</div>
-                            <div className="text-[10px] text-foreground/40 font-medium uppercase tracking-widest">Shared Insights</div>
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                                <span className="text-2xl">♈</span>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white">Aries</h3>
+                                <p className="text-[10px] uppercase tracking-widest text-zinc-500">March 21 - April 19</p>
+                            </div>
                         </div>
-                        <div className="h-14 flex items-center justify-center border border-dashed border-primary/10 rounded-2xl text-[9px] font-bold text-foreground/20 uppercase tracking-widest">
-                            Contribute Wisdom
+                        <p className="text-sm text-zinc-400 line-clamp-3 leading-relaxed mb-6">
+                            The moon transits your sector of communication today, bringing mental clarity. A highly favorable day to solve outstanding problems at work.
+                        </p>
+                        <Button
+                            variant="ghost"
+                            className="w-full h-12 border border-zinc-800 hover:bg-zinc-800 text-xs font-bold uppercase tracking-widest rounded-xl"
+                            onClick={() => router.push('/horoscope')}
+                        >
+                            Read Full Horoscope
+                        </Button>
+                    </div>
+                </div>
+
+                {/* MIDDLE ROW: Saved Kundlis & Recs */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    {/* Saved Kundlis */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-white">My Saved Kundlis</h2>
+                            <Button variant="ghost" className="text-xs uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0">
+                                View All
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Profile 1 */}
+                            <div className="glass bg-zinc-900 border border-white/5 p-5 rounded-2xl flex items-start justify-between group hover:border-orange-500/30 transition-all cursor-pointer hover:shadow-xl">
+                                <div className="space-y-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 font-bold border border-orange-500/20">
+                                        M
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-white text-sm">Main Profile</p>
+                                        <p className="text-xs text-zinc-500 mt-0.5">14 Jun 1995 • 05:30 PM</p>
+                                        <p className="text-xs text-zinc-500">New Delhi, India</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" className="text-zinc-500 group-hover:text-orange-500 border border-transparent group-hover:border-orange-500/20">
+                                    <FileText className="w-4 h-4" />
+                                </Button>
+                            </div>
+
+                            {/* Profile 2 (Family) */}
+                            <div className="glass bg-zinc-900 border border-white/5 p-5 rounded-2xl flex items-start justify-between group hover:border-orange-500/30 transition-all cursor-pointer hover:shadow-xl">
+                                <div className="space-y-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 font-bold border border-blue-500/20">
+                                        S
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-white text-sm">Sister Khushi</p>
+                                        <p className="text-xs text-zinc-500 mt-0.5">22 Aug 1999 • 02:15 AM</p>
+                                        <p className="text-xs text-zinc-500">Mumbai, India</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" className="text-zinc-500 group-hover:text-blue-500 border border-transparent group-hover:border-blue-500/20">
+                                    <FileText className="w-4 h-4" />
+                                </Button>
+                            </div>
+
+                            {/* Add New */}
+                            <div
+                                onClick={() => router.push('/kundli')}
+                                className="glass bg-zinc-900/50 border border-dashed border-zinc-700 p-5 rounded-2xl flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:bg-zinc-800 transition-all hover:border-orange-500/50"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                </div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Add New Profile</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Transaction History (Small preview) */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-white">Recent Transactions</h2>
+                            <Button variant="ghost" className="text-xs uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0">
+                                History
+                            </Button>
+                        </div>
+                        <div className="glass bg-zinc-900 border border-white/5 rounded-3xl p-6">
+                            {transactions.length > 0 ? (
+                                <div className="space-y-4">
+                                    {transactions.slice(0, 3).map((tx, i) => (
+                                        <div key={i} className={`flex items-center justify-between pb-4 ${i !== Math.min(transactions.length - 1, 2) ? 'border-b border-zinc-800/50' : ''}`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                    {tx.type === 'credit' ? '↓' : '↑'}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-sm text-white">{tx.description}</p>
+                                                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(tx.date).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className={`font-black text-sm ${tx.type === 'credit' ? 'text-green-500' : 'text-red-500'}`}>
+                                                    {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}
+                                                </p>
+                                                <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{tx.status}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-center text-sm text-zinc-500 py-6">No recent transactions</p>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Transaction History Section */}
-                <section className="mb-20 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-                    <TransactionHistory transactions={transactions as any} />
-                </section>
-
-                <section className="space-y-10 pb-20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-2xl">
-                                <History className="w-6 h-6 text-primary" />
-                            </div>
-                            <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">Previous Alignments</h2>
-                        </div>
-                        <div className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Scroll for more</div>
+                {/* BOTTOM ROW: Consultation History Log */}
+                <section className="space-y-6 pt-6">
+                    <div className="flex items-center gap-3">
+                        <History className="w-5 h-5 text-zinc-400" />
+                        <h2 className="text-xl font-bold text-white">Consultation History</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6">
-                        {bookings.map((session) => (
-                            <div key={session.id} className="relative group overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]" />
-                                <div className="glass p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-primary/10 transition-all group-hover:scale-[1.01] group-hover:border-primary/20 shadow-xl">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-20 h-20 rounded-[1.5rem] bg-white flex items-center justify-center font-black text-3xl text-primary border border-primary/10 shadow-2xl transition-transform group-hover:rotate-6">
+                    <div className="grid grid-cols-1 gap-4">
+                        {bookings.length > 0 ? (
+                            bookings.map((session) => (
+                                <div key={session.id} className="glass bg-zinc-900 border border-white/5 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:border-zinc-700 transition-[border-color]">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center font-black text-xl text-zinc-400 border border-zinc-700">
                                             {session.astrologerName?.[0] || 'A'}
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <h3 className="text-2xl font-black tracking-tighter group-hover:text-primary transition-colors uppercase text-foreground">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white">
                                                 {session.astrologerName}
                                             </h3>
-                                            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-foreground/40">
+                                            <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 mt-1">
                                                 <span>{new Date(session.createdAt).toLocaleDateString()}</span>
-                                                <span className="w-1 h-1 bg-primary/20 rounded-full" />
-                                                <span className="text-primary capitalize">{session.type} Mode</span>
+                                                <span className="w-1 h-1 bg-zinc-700 rounded-full" />
+                                                <span className="text-orange-500 capitalize">{session.type} Mode</span>
+                                                <span className="w-1 h-1 bg-zinc-700 rounded-full" />
+                                                <span className={session.status === 'completed' ? 'text-green-500' : 'text-amber-500'}>
+                                                    {session.status}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-8 w-full md:w-auto">
-                                        <div className="text-right hidden md:block space-y-1">
-                                            <div className="text-xl font-black text-foreground/80">30 min</div>
-                                            <div className={`text-[9px] font-black uppercase tracking-[0.2em] ${session.status === 'completed' ? 'text-green-500' : 'text-orange-500'}`}>
-                                                {session.status === 'completed' ? 'Transited' : 'Confirmed'}
-                                            </div>
-                                        </div>
-                                        <Button
-                                            variant="outline"
-                                            size="lg"
-                                            className="flex-grow md:flex-grow-0 h-16 px-10 rounded-2xl glass border-primary/10 hover:bg-primary hover:text-white hover:border-primary transition-all font-black text-[10px] uppercase tracking-[0.2em] gap-4"
-                                            onClick={() => router.push(`/consultation-summary/${session.id}`)}
-                                        >
-                                            <FileText className="w-5 h-5" /> View Transcript
-                                        </Button>
-                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full md:w-auto h-12 rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 px-6"
+                                        onClick={() => router.push(`/consultation-summary/${session.id}`)}
+                                    >
+                                        <FileText className="w-4 h-4" /> View Report
+                                    </Button>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="glass bg-zinc-900/50 border border-dashed border-zinc-800 rounded-2xl p-12 text-center">
+                                <p className="text-zinc-500 text-sm">You haven't had any consultations yet.</p>
+                                <Button
+                                    className="mt-4 bg-white text-black hover:bg-zinc-200 font-bold uppercase tracking-wider text-xs px-6 py-2 rounded-xl"
+                                    onClick={() => router.push('/search')}
+                                >
+                                    Browse Astrologers
+                                </Button>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </section>
             </div>
+
             <Footer />
         </main>
     );

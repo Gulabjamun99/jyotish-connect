@@ -242,7 +242,7 @@ export default function HoroscopePage() {
                                     { title: t("health"), content: prediction.health, icon: "💪", color: "text-rose-500" },
                                     { title: t("love"), content: prediction.love, icon: "❤️", color: "text-pink-500" },
                                 ].map((item, i) => (
-                                    <div key={i} className={`space-y-4 ${item.title.includes("Positive") || item.title.includes("Negative") ? "md:col-span-1 bg-slate-50 p-6 rounded-3xl border border-slate-100" : ""}`}>
+                                    <div key={i} className={`space-y-4 ${item.icon === "✨" || item.icon === "⚠️" ? "md:col-span-1 bg-slate-50 p-6 rounded-3xl border border-slate-100" : ""}`}>
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-lg shadow-sm">
                                                 {item.icon}

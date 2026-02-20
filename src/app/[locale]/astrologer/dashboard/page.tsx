@@ -84,199 +84,206 @@ export default function AstrologerDashboard() {
     }
 
     return (
-        <main className="min-h-screen flex flex-col bg-transparent overflow-hidden selection:bg-primary/30">
+        <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
-            <div className="container mx-auto px-6 py-16 flex-grow relative">
-                {/* Background Glows */}
-                <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full -z-10" />
-                <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-accent/5 blur-[150px] rounded-full -z-10" />
 
-                <header className="flex flex-col md:flex-row justify-between items-end md:items-center gap-8 mb-20 animate-slide-up">
-                    <div className="space-y-4">
-                        <h1 className="text-7xl font-black text-gradient tracking-tighter leading-none">Master Console</h1>
-                        <p className="text-sm text-foreground/40 font-medium italic">Architect of Destiny: <span className="text-primary font-black uppercase tracking-widest">{user.displayName}</span></p>
-                    </div>
-                    <div className="flex items-center gap-3 px-5 py-2.5 bg-green-500/10 text-green-500 rounded-full border border-green-500/20 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-green-500/5">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        In Resonance & Active
-                    </div>
-                </header>
+            {/* Top Greeting Section */}
+            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-8 pb-12 overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-r from-orange-500/10 to-transparent" />
+                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/20 blur-[120px] rounded-full" />
+                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-20 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                    {[
-                        { label: "Divine Earnings", value: `₹${userData?.walletBalance || 0}`, icon: IndianRupee, color: "from-primary/20" },
-                        { label: "Sacred Sessions", value: userData?.consultations || "0", icon: Clock, color: "from-blue-500/20" },
-                        { label: "Seeker Circle", value: "0", icon: Users, color: "from-accent/20" },
-                        { label: "Celestial Favor", value: userData?.rating?.toFixed(1) || "5.0", icon: TrendingUp, color: "from-green-500/20" },
-                    ].map((stat, i) => (
-                        <div key={i} className="glass p-8 rounded-[3rem] space-y-4 group hover:border-primary/20 transition-all relative overflow-hidden shadow-xl border-primary/10">
-                            <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${stat.color} blur-[80px] opacity-30`} />
-                            <div className="flex justify-between items-center text-foreground/20 text-[10px] font-black uppercase tracking-[0.3em]">
-                                {stat.label}
-                                <stat.icon className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity text-primary" />
+                <div className="container mx-auto px-4 md:px-8 relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex items-center gap-6">
+                        <div className="relative">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-2xl font-black text-white shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                                {user.displayName?.[0] || "A"}
                             </div>
-                            <div className="text-5xl font-black text-foreground group-hover:scale-105 transition-transform origin-left">{stat.value}</div>
+                            <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-zinc-900 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-black text-white tracking-tight">Master {user.displayName?.split(' ')[0] || "Astrologer"}</h1>
+                            <p className="text-sm font-medium text-zinc-400">Your spiritual dashboard</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-2 rounded-2xl border border-white/5 flex items-center gap-2 hover:border-orange-500/30 transition-colors">
+                            <Button className="flex-1 md:flex-none h-10 px-6 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                                Online Now
+                            </Button>
+                            <Button variant="ghost" className="h-10 px-4 text-zinc-400 hover:text-white font-bold text-[10px] uppercase tracking-wider">
+                                Go Offline
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="container mx-auto px-4 md:px-8 py-10 space-y-10">
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    {[
+                        { label: "Today's Earnings", value: `₹${userData?.walletBalance || 0}`, icon: IndianRupee, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
+                        { label: "Sessions Today", value: "3", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+                        { label: "Total Seekers", value: userData?.consultations || "0", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
+                        { label: "Global Rating", value: userData?.rating?.toFixed(1) || "5.0", icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+                    ].map((stat, i) => (
+                        <div key={i} className="glass bg-zinc-900 border border-white/5 p-6 rounded-3xl group hover:border-zinc-700 transition-[border-color] relative overflow-hidden">
+                            <div className={`absolute -top-10 -right-10 w-24 h-24 ${stat.bg} blur-[40px] rounded-full opacity-50`} />
+
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className={`w-10 h-10 rounded-xl ${stat.bg} border ${stat.border} flex items-center justify-center`}>
+                                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                                </div>
+                            </div>
+                            <div className="relative z-10">
+                                <div className="text-3xl font-black text-white">{stat.value}</div>
+                                <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mt-1">{stat.label}</div>
+                            </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    {/* Calendar/Availability */}
-                    <section className="lg:col-span-8 space-y-10 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                    {/* LEFT COLUMN: Upcoming Appointments */}
+                    <div className="lg:col-span-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-xl">
-                                    <Calendar className="w-6 h-6 text-primary" />
-                                </div>
-                                <h2 className="text-4xl font-black tracking-tighter text-foreground uppercase">Timeline of Truth</h2>
+                            <div className="flex items-center gap-3">
+                                <Calendar className="w-5 h-5 text-zinc-400" />
+                                <h2 className="text-xl font-bold text-white">Upcoming Sessions</h2>
                             </div>
-                            <Button size="sm" variant="outline" className="h-12 px-8 rounded-2xl glass border-primary/10 text-primary font-black text-[10px] uppercase tracking-widest hover:bg-primary/5 transition-all">
-                                Adjust Slots
+                            <Button variant="ghost" className="text-xs uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0">
+                                Manage Schedule
                             </Button>
                         </div>
 
-                        <div className="glass rounded-[3rem] p-8 border-primary/10 shadow-2xl space-y-6">
-                            {(bookings.length === 0) ? (
-                                <div className="text-center py-10 space-y-6">
-                                    <div className="text-7xl opacity-50">🗓️</div>
-                                    <div className="space-y-4">
-                                        <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">The Silence of the Stars</h3>
-                                        <p className="text-sm text-foreground/40 max-w-sm mx-auto font-medium italic">
-                                            The orbits of your future callers are yet to intersect with yours. Clear your mental path.
-                                        </p>
+                        <div className="space-y-4">
+                            {bookings.length === 0 ? (
+                                <div className="glass bg-zinc-900/50 border border-dashed border-zinc-800 rounded-3xl p-16 text-center">
+                                    <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-700/50">
+                                        <Clock className="w-6 h-6 text-zinc-500" />
                                     </div>
-                                    <Button
-                                        className="orange-gradient text-white font-black h-14 px-8 rounded-2xl shadow-xl uppercase tracking-[0.2em] text-xs hover:scale-105 transition-transform"
-                                        onClick={() => router.push('/consult/demo-session?demo=true')}
-                                    >
-                                        Initiate Live Test
+                                    <h3 className="text-base font-bold text-zinc-300">No Upcoming Sessions</h3>
+                                    <p className="text-xs text-zinc-500 mt-2 max-w-sm mx-auto">
+                                        Your schedule is currently clear. Ensure your availability is set correctly to receive bookings.
+                                    </p>
+                                    <Button className="mt-6 bg-white text-black hover:bg-zinc-200 font-bold uppercase tracking-wider text-xs px-6 py-2 rounded-xl">
+                                        Update Availability
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
-                                    {bookings.map((booking: any) => (
-                                        <div key={booking.id} className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-[2rem] bg-white/50 border border-primary/5 hover:border-primary/20 transition-all group hover:shadow-lg">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-600 font-black text-xl">
+                                bookings.map((booking: any, index: number) => (
+                                    <div key={booking.id} className={`glass bg-zinc-900 border p-5 md:p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 transition-[border-color] relative overflow-hidden ${index === 0 && booking.status !== 'completed' ? 'border-orange-500/30 shadow-[0_0_30px_rgba(249,115,22,0.05)]' : 'border-white/5 hover:border-zinc-700'}`}>
+
+                                        {index === 0 && booking.status !== 'completed' && (
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full" />
+                                        )}
+
+                                        <div className="flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-8 w-full md:w-auto relative z-10">
+                                            {/* Date/Time Block */}
+                                            <div className="flex items-center gap-4 min-w-[120px]">
+                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${index === 0 && booking.status !== 'completed' ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700/50'}`}>
                                                     {new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date).getDate()}
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs font-black uppercase tracking-widest text-primary mb-1">
-                                                        {new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                                                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-0.5">
+                                                        {new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date).toLocaleString(undefined, { month: 'short' })}
                                                     </div>
-                                                    <div className="text-xl font-bold text-foreground">
-                                                        {booking.time} IST
-                                                    </div>
-                                                    <div className="text-xs text-foreground/40 font-medium mt-1">
-                                                        User: {booking.userName || "Seeker"} • {booking.type}
+                                                    <div className={`text-lg font-black ${index === 0 && booking.status !== 'completed' ? 'text-white' : 'text-zinc-300'}`}>
+                                                        {booking.time}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex gap-2 w-full md:w-auto">
-                                                <Button
-                                                    onClick={() => router.push(`/consult/${booking.id}?type=${booking.type}`)}
-                                                    className="flex-1 md:flex-none h-12 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider"
-                                                >
-                                                    Join Room
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    className="h-12 w-12 rounded-xl border-primary/10 hover:bg-primary/5 p-0 flex items-center justify-center"
-                                                    title="Add to Calendar"
-                                                    onClick={() => {
-                                                        const b = booking;
-                                                        const bookingDate = b.date?.toDate ? b.date.toDate() : new Date(b.date?.seconds ? b.date.seconds * 1000 : b.date);
-                                                        const [hours, minutes] = b.time.split(':').map(Number);
-                                                        bookingDate.setHours(hours || 0, minutes || 0);
+                                            {/* Divider hidden on mobile */}
+                                            <div className="hidden md:block w-px h-10 bg-zinc-800"></div>
 
-                                                        const end = new Date(bookingDate.getTime() + 30 * 60000);
-                                                        const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                                            {/* User Details */}
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="text-xl font-bold text-white tracking-tight">{booking.userName || "Seeker Profile"}</h3>
+                                                    {index === 0 && booking.status !== 'completed' && (
+                                                        <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-bold uppercase tracking-widest rounded">Up Next</span>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm font-medium text-zinc-400 capitalize">{booking.type} Consultation • 30 Mins</p>
+                                            </div>
+                                        </div>
 
-                                                        const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//JyotishConnect//EN
-BEGIN:VEVENT
-UID:${b.id}@jyotishconnect.com
-DTSTAMP:${fmt(new Date())}
-DTSTART:${fmt(bookingDate)}
-DTEND:${fmt(end)}
-SUMMARY:Consultation with ${b.userName || 'Seeker'}
-DESCRIPTION:Join here: https://jyotishconnect.com/consult/${b.id}
-LOCATION:https://jyotishconnect.com/consult/${b.id}
-END:VEVENT
-END:VCALENDAR`;
+                                        <div className="flex w-full md:w-auto gap-3 relative z-10 mt-2 md:mt-0">
+                                            <Button
+                                                onClick={() => router.push(`/consult/${booking.id}?type=${booking.type}`)}
+                                                className={`h-12 flex-1 md:flex-none md:px-8 font-bold uppercase tracking-wider text-[10px] rounded-xl transition-all ${index === 0 && booking.status !== 'completed' ? 'bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse' : 'bg-white text-black hover:bg-zinc-200'}`}
+                                            >
+                                                Join Room
+                                            </Button>
+                                            <Button variant="outline" className="h-12 w-12 p-0 rounded-xl border-zinc-800 hover:bg-zinc-800 text-zinc-300 flex-shrink-0 flex justify-center items-center">
+                                                <Calendar className="w-5 h-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
 
-                                                        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-                                                        const url = window.URL.createObjectURL(blob);
-                                                        const a = document.createElement('a');
-                                                        a.href = url;
-                                                        a.download = 'session.ics';
-                                                        document.body.appendChild(a);
-                                                        a.click();
-                                                        document.body.removeChild(a);
-                                                    }}
-                                                >
-                                                    <Calendar className="w-5 h-5 text-primary" />
-                                                </Button>
+                    {/* RIGHT COLUMN: Withdraw & Recent */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <div className="flex items-center gap-3">
+                            <IndianRupee className="w-5 h-5 text-zinc-400" />
+                            <h2 className="text-xl font-bold text-white">Quick Actions</h2>
+                        </div>
+
+                        <Button className="w-full h-20 justify-between px-6 rounded-[2rem] bg-gradient-to-r from-orange-500/10 to-orange-500/5 hover:from-orange-500/20 hover:to-orange-500/10 border border-orange-500/20 text-white group transition-all">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500">
+                                    <IndianRupee className="w-5 h-5" />
+                                </div>
+                                <div className="text-left flex flex-col justify-center">
+                                    <div className="text-sm font-bold">Withdraw Funds</div>
+                                    <div className="text-[10px] text-zinc-400 uppercase tracking-widest leading-none mt-0.5">Wallet: ₹{userData?.walletBalance || 0}</div>
+                                </div>
+                            </div>
+                            <span className="text-zinc-500 group-hover:text-orange-500 group-hover:translate-x-1 transition-all">→</span>
+                        </Button>
+
+                        <div className="pt-6">
+                            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Past Sessions</h3>
+                            {bookings.filter((b: any) => b.status === 'completed').length === 0 ? (
+                                <div className="p-8 rounded-3xl bg-zinc-900 border border-white/5 text-center">
+                                    <p className="text-xs text-zinc-500">No completed sessions yet.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {bookings.filter((b: any) => b.status === 'completed').slice(0, 4).map((b: any) => (
+                                        <div key={b.id} className="p-4 rounded-2xl glass bg-zinc-900 border border-white/5 group hover:border-zinc-700 transition-[border-color] flex justify-between items-center">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold border border-zinc-700/50">
+                                                    {b.userName?.[0] || 'S'}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-zinc-200">{b.userName || "Seeker"}</div>
+                                                    <div className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(b.createdAt).toLocaleDateString()}</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-bold text-green-500">+ ₹{b.amount || 250}</div>
+                                                <div className="text-[9px] text-zinc-500 uppercase tracking-wider">{b.type}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
-                    </section>
-
-                    {/* Past Actions */}
-                    <aside className="lg:col-span-4 space-y-10 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                        <h2 className="text-2xl font-black text-foreground/20 uppercase tracking-[0.4em]">Direct Rituals</h2>
-                        <div className="flex flex-col gap-4">
-                            <Button className="w-full h-24 justify-between px-8 rounded-[2.5rem] orange-gradient text-white shadow-2xl shadow-primary/20 group overflow-hidden transition-all hover:scale-[1.02]">
-                                <div className="flex items-center gap-6">
-                                    <IndianRupee className="w-8 h-8" />
-                                    <div className="text-left">
-                                        <div className="font-black text-[10px] uppercase tracking-[0.3em] opacity-80">Wealth</div>
-                                        <div className="text-lg font-black uppercase tracking-tight">Withdraw Funds</div>
-                                    </div>
-                                </div>
-                                <span className="text-2xl group-hover:translate-x-2 transition-transform">→</span>
-                            </Button>
-
-                            {/* Past Sessions List */}
-                            <div className="space-y-4">
-                                <h3 className="text-sm font-black text-foreground/40 uppercase tracking-widest pl-2">Past Alignments</h3>
-                                {bookings.filter(b => b.status === 'completed').length === 0 ? (
-                                    <div className="p-8 rounded-[2.5rem] bg-primary/5 text-center text-xs text-foreground/40 font-medium italic">
-                                        No completed sessions yet.
-                                    </div>
-                                ) : (
-                                    bookings.filter(b => b.status === 'completed').slice(0, 3).map(b => (
-                                        <div key={b.id} className="p-6 rounded-[2rem] glass border-primary/5 group hover:border-primary/20 transition-all flex justify-between items-center">
-                                            <div>
-                                                <div className="text-sm font-bold">{b.userName || "Seeker"}</div>
-                                                <div className="text-[10px] text-foreground/40 uppercase tracking-wider">{new Date(b.createdAt).toLocaleDateString()}</div>
-                                            </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => router.push(`/consultation-summary/${b.id}`)}
-                                                className="rounded-xl border-primary/10 hover:bg-primary/5 text-[10px] uppercase tracking-wider font-bold"
-                                            >
-                                                Transcript
-                                            </Button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            <button className="w-full h-20 px-10 rounded-[2.5rem] border border-dashed border-red-500/20 hover:bg-red-500/5 group transition-all flex items-center justify-center gap-4">
-                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                <span className="font-black text-[10px] uppercase tracking-[0.4em] text-red-500/60 group-hover:text-red-500 transition-colors">Go Offline</span>
-                            </button>
-                        </div>
-                    </aside>
+                    </div>
                 </div>
             </div>
+
             <Footer />
         </main>
     );

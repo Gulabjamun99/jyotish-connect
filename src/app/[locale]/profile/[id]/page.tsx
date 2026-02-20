@@ -163,154 +163,195 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="min-h-screen border-t">
+        <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
-            <div className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-                    {/* Main Info */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-                            <div className="w-48 h-48 rounded-3xl bg-secondary overflow-hidden flex-shrink-0 relative">
-                                <img src={profile.image} alt={profile.name} className="w-full h-full object-cover" />
-                                {profile.online && (
-                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 " />
-                                        Online
+            {/* HERO SECTION */}
+            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-10 pb-20 md:pt-16 md:pb-28 overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-0 right-0 w-full md:w-[800px] h-full bg-gradient-to-l from-orange-500/10 to-transparent" />
+                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/20 blur-[120px] rounded-full" />
+                </div>
+
+                <div className="container mx-auto px-4 md:px-8 relative z-10">
+                    <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start text-center md:text-left">
+                        {/* Avatar */}
+                        <div className="relative group">
+                            <div className="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-zinc-800 shadow-2xl relative z-10">
+                                <img src={profile.image} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            </div>
+                            {profile.online && (
+                                <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-green-500/30 text-green-500 text-[10px] font-black uppercase tracking-widest backdrop-blur-md z-20 shadow-xl">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
+                                    Online
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 space-y-4 md:pt-4">
+                            <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
+                                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">{profile.name}</h1>
+                                {profile.verified && (
+                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-green-500 text-[10px] font-bold uppercase tracking-widest">
+                                        <ShieldCheck className="w-3.5 h-3.5" />
+                                        Verified Astrologer
                                     </div>
                                 )}
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <h1 className="text-4xl font-extrabold">{profile.name}</h1>
-                                    {profile.verified && <CheckCircle className="w-8 h-8 text-orange-500 fill-orange-500/10" />}
-                                </div>
-                                <p className="text-xl text-orange-500 font-semibold">{profile.expertise}</p>
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-1.5">
-                                        <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                                        <span className="font-bold text-lg">{profile.rating}</span>
-                                        <span className="text-muted-foreground">({profile.reviews} sessions)</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Languages className="w-5 h-5" />
-                                        <span>{profile.languages.join(", ")}</span>
+
+                            <p className="text-xl md:text-2xl text-orange-400 font-semibold">{profile.expertise}</p>
+
+                            <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 md:gap-8 pt-2">
+                                <div className="flex items-center gap-2">
+                                    <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="font-black text-2xl text-white">{profile.rating}</span>
+                                        <span className="text-zinc-500 font-medium text-sm">/ 5 ({profile.reviews} reviews)</span>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="rounded-full gap-2">
-                                        <Heart className="w-4 h-4" /> Save
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="rounded-full gap-2">
-                                        <Share2 className="w-4 h-4" /> Share
-                                    </Button>
+                                <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                                <div className="flex items-center gap-2 text-zinc-400 font-medium">
+                                    <Clock className="w-5 h-5 text-zinc-500" />
+                                    {profile.experience} Years Exp.
+                                </div>
+                                <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                                <div className="flex items-center gap-2 text-zinc-400 font-medium">
+                                    <Languages className="w-5 h-5 text-zinc-500" />
+                                    {profile.languages.join(", ")}
                                 </div>
                             </div>
-                        </div>
 
-                        <section className="glass p-8 rounded-3xl space-y-4">
-                            <h2 className="text-2xl font-bold">About Me</h2>
-                            <p className="text-muted-foreground leading-relaxed text-lg">
-                                {profile.bio}
-                            </p>
+                            {/* Actions */}
+                            <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-6">
+                                <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 h-12 px-6">
+                                    <Heart className="w-4 h-4" /> Save
+                                </Button>
+                                <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 h-12 px-6">
+                                    <Share2 className="w-4 h-4" /> Share Profile
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="container mx-auto px-4 md:px-8 py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+                    {/* LEFT COLUMN: ABOUT & REVIEWS */}
+                    <div className="lg:col-span-7 xl:col-span-8 space-y-12">
+
+                        {/* Expertise Cloud */}
+                        <section className="space-y-6">
+                            <h2 className="text-sm font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-4">
+                                Area of Expertise
+                                <div className="h-px flex-1 bg-zinc-800" />
+                            </h2>
+                            <div className="flex flex-wrap gap-2">
+                                {profile.specializations.map((spec: string, i: number) => (
+                                    <span key={i} className="px-4 py-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-lg text-sm font-semibold tracking-wide">
+                                        {spec}
+                                    </span>
+                                ))}
+                            </div>
                         </section>
 
+                        {/* Bio */}
                         <section className="space-y-6">
-                            <h2 className="text-2xl font-bold">What Clients Say</h2>
-                            <div className="space-y-4">
-                                {[1, 2].map(i => (
-                                    <div key={i} className="p-6 border rounded-2xl bg-secondary/20">
-                                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-sm font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-4">
+                                About {profile.name.split(' ')[0]}
+                                <div className="h-px flex-1 bg-zinc-800" />
+                            </h2>
+                            <div className="bg-zinc-900/50 border border-zinc-800/50 p-8 rounded-3xl">
+                                <p className="text-zinc-300 leading-relaxed text-lg">
+                                    {profile.bio}
+                                </p>
+                                {profile.education && (
+                                    <div className="mt-8 pt-8 border-t border-zinc-800/50">
+                                        <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Education & Certifications</p>
+                                        <p className="font-semibold text-zinc-200">{profile.education}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        {/* Reviews */}
+                        <section className="space-y-6">
+                            <h2 className="text-sm font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-4">
+                                Celestial Feedback
+                                <div className="h-px flex-1 bg-zinc-800" />
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[
+                                    { name: "Amit K.", date: "2 days ago", comment: "Very accurate and helpful session. Explained everything in detail and provided simple remedies. Highly recommended!" },
+                                    { name: "Priya S.", date: "1 week ago", comment: "The tarot reading was spot on. I got clarity on my career path and feel much more confident now." },
+                                    { name: "Rahul V.", date: "2 weeks ago", comment: "Excellent Kundli matching analysis. Answered all our doubts patiently." },
+                                    { name: "Neha G.", date: "1 month ago", comment: "Felt very positive after the session. Guided me perfectly through a tough phase." }
+                                ].map((review, i) => (
+                                    <div key={i} className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-4">
+                                        <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-1">
                                                 {[...Array(5)].map((_, j) => (
-                                                    <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                                                    <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                                 ))}
                                             </div>
-                                            <span className="text-xs text-muted-foreground">2 days ago</span>
+                                            <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-600">{review.date}</span>
                                         </div>
-                                        <p className="italic text-muted-foreground">
-                                            "Very accurate and helpful session. Acharya ji explained everything in detail
-                                            and provided simple remedies. Highly recommended!"
-                                        </p>
-                                        <p className="mt-4 font-bold text-sm text-white">— Amit K.</p>
+                                        <p className="text-zinc-400 text-sm leading-relaxed italic">"{review.comment}"</p>
+                                        <p className="font-black text-xs text-zinc-200 uppercase tracking-wider">{review.name}</p>
                                     </div>
                                 ))}
                             </div>
                         </section>
                     </div>
 
-                    {/* Booking Card */}
-                    <aside>
-                        <div className="glass p-8 rounded-3xl sticky top-24 space-y-6 border-orange-500/20 shadow-xl shadow-orange-500/5">
-                            {/* Availability Status */}
-                            <div className="flex items-center justify-between pb-4 border-b border-primary/10">
-                                <span className="text-sm font-medium text-muted-foreground">Status</span>
-                                {profile.online ? (
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                        <span className="text-xs font-bold text-green-600">Available Now</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                                        <span className="text-xs font-bold text-amber-600">Schedule Later</span>
-                                    </div>
-                                )}
-                            </div>
+                    {/* RIGHT COLUMN: BOOKING CARD */}
+                    <aside className="lg:col-span-5 xl:col-span-4">
+                        <div className="glass bg-zinc-900/80 p-8 rounded-[2rem] sticky top-24 space-y-8 border border-white/5 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 to-red-500" />
 
                             {/* Consultation Type Selector */}
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-foreground">Choose Consultation Type</label>
-                                <div className="grid grid-cols-3 gap-2">
+                            <div className="space-y-4">
+                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Select Connect Mode</label>
+                                <div className="grid grid-cols-3 gap-3">
                                     <button
                                         onClick={() => setConsultationType("video")}
-                                        className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${consultationType === "video"
-                                            ? "border-orange-500 bg-orange-500/10"
-                                            : "border-primary/10 hover:border-primary/20"
+                                        className={`relative p-4 rounded-2xl border transition-all flex flex-col items-center gap-3 ${consultationType === "video"
+                                            ? "border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.1)]"
+                                            : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
                                             }`}
                                     >
-                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 border border-white/10 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-xl">
-                                            Video & Audio
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-900 border-r border-b border-white/10 rotate-45" />
-                                        </div>
-                                        <Video className={`w-5 h-5 ${consultationType === "video" ? "text-orange-500" : "text-muted-foreground"}`} />
-                                        <span className={`text-xs font-bold ${consultationType === "video" ? "text-orange-500" : "text-muted-foreground"}`}>
+                                        <Video className={`w-6 h-6 ${consultationType === "video" ? "text-orange-500" : "text-zinc-500"}`} />
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${consultationType === "video" ? "text-orange-500" : "text-zinc-500"}`}>
                                             Video
                                         </span>
                                     </button>
                                     <button
                                         onClick={() => setConsultationType("audio")}
-                                        className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${consultationType === "audio"
-                                            ? "border-orange-500 bg-orange-500/10"
-                                            : "border-primary/10 hover:border-primary/20"
+                                        className={`relative p-4 rounded-2xl border transition-all flex flex-col items-center gap-3 ${consultationType === "audio"
+                                            ? "border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.1)]"
+                                            : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
                                             }`}
                                     >
-                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 border border-white/10 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-xl">
-                                            Audio Only
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-900 border-r border-b border-white/10 rotate-45" />
-                                        </div>
-                                        <svg className={`w-5 h-5 ${consultationType === "audio" ? "text-orange-500" : "text-muted-foreground"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className={`w-6 h-6 ${consultationType === "audio" ? "text-orange-500" : "text-zinc-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                                         </svg>
-                                        <span className={`text-xs font-bold ${consultationType === "audio" ? "text-orange-500" : "text-muted-foreground"}`}>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${consultationType === "audio" ? "text-orange-500" : "text-zinc-500"}`}>
                                             Audio
                                         </span>
                                     </button>
                                     <button
                                         onClick={() => setConsultationType("chat")}
-                                        className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${consultationType === "chat"
-                                            ? "border-orange-500 bg-orange-500/10"
-                                            : "border-primary/10 hover:border-primary/20"
+                                        className={`relative p-4 rounded-2xl border transition-all flex flex-col items-center gap-3 ${consultationType === "chat"
+                                            ? "border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.1)]"
+                                            : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
                                             }`}
                                     >
-                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 border border-white/10 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-xl">
-                                            Live Chat
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-900 border-r border-b border-white/10 rotate-45" />
-                                        </div>
-                                        <svg className={`w-5 h-5 ${consultationType === "chat" ? "text-orange-500" : "text-muted-foreground"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className={`w-6 h-6 ${consultationType === "chat" ? "text-orange-500" : "text-zinc-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                         </svg>
-                                        <span className={`text-xs font-bold ${consultationType === "chat" ? "text-orange-500" : "text-muted-foreground"}`}>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${consultationType === "chat" ? "text-orange-500" : "text-zinc-500"}`}>
                                             Chat
                                         </span>
                                     </button>
@@ -318,101 +359,103 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Pricing */}
-                            <div className="flex justify-between items-end pb-6 border-b">
-                                <div>
-                                    <p className="text-muted-foreground text-sm">Session Rate</p>
-                                    <div className="flex items-end gap-1">
-                                        <span className="text-4xl font-bold text-orange-500">₹{getCurrentPrice()}</span>
-                                        <span className="text-muted-foreground mb-1">/ session</span>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    {consultationType !== "video" && (
-                                        <>
-                                            <p className="text-xs text-muted-foreground line-through">₹{profile.pricing?.video}</p>
-                                            <p className="text-xs text-green-500 font-bold">
-                                                Save {Math.round(((profile.pricing?.video - getCurrentPrice()) / profile.pricing?.video) * 100)}%
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-sm">
-                                    <div className="p-2 bg-orange-500/10 rounded-lg text-orange-500">
-                                        <Clock className="w-5 h-5" />
-                                    </div>
-                                    <span>Up to 90 Minutes Session</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <div className="p-2 bg-orange-500/10 rounded-lg text-orange-500">
-                                        <ShieldCheck className="w-5 h-5" />
-                                    </div>
-                                    <span>Secure & Private Session</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <div className="p-2 bg-orange-500/10 rounded-lg text-orange-500">
-                                        {consultationType === "video" ? (
-                                            <Video className="w-5 h-5" />
-                                        ) : consultationType === "audio" ? (
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                                            </svg>
-                                        ) : (
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                            </svg>
+                            <div className="bg-black/20 rounded-2xl p-6 border border-white/5 flex justify-between items-center">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Consultation Fee</p>
+                                    <div className="flex flex-col">
+                                        {consultationType !== "video" && (
+                                            <span className="text-xs text-zinc-500 line-through">₹{profile.pricing?.video} / session</span>
                                         )}
+                                        <span className="text-3xl font-black text-white tracking-tight">₹{getCurrentPrice()}<span className="text-sm text-zinc-500 font-bold"> / session</span></span>
                                     </div>
-                                    <span>
-                                        {consultationType === "video" && "Instantly Join Video Room"}
-                                        {consultationType === "audio" && "High Quality Audio Call"}
-                                        {consultationType === "chat" && "Real-time Chat Session"}
-                                    </span>
+                                </div>
+                                {consultationType !== "video" && (
+                                    <div className="bg-green-500/10 border border-green-500/20 text-green-500 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest">
+                                        Save {Math.round(((profile.pricing?.video - getCurrentPrice()) / profile.pricing?.video) * 100)}%
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Features */}
+                            <div className="space-y-4 py-2 border-y border-white/5">
+                                <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                                        <Clock className="w-4 h-4 text-zinc-400" />
+                                    </div>
+                                    Full 90 Minutes Session
+                                </div>
+                                <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                                        <ShieldCheck className="w-4 h-4 text-zinc-400" />
+                                    </div>
+                                    Secure & Private Rooms
                                 </div>
                             </div>
 
-                            {profile.online ? (
-                                <div className="space-y-3">
+                            {/* Primary Action */}
+                            <div className="space-y-4 pt-2">
+                                {/* Mobile Sticky Action */}
+                                <div className="fixed bottom-0 left-0 w-full p-4 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 md:hidden z-50 flex items-center justify-between gap-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total</span>
+                                        <span className="text-xl font-black text-white">₹{getCurrentPrice()}</span>
+                                    </div>
                                     <Button
                                         onClick={handleBooking}
-                                        className="w-full h-16 text-xl font-bold bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20"
+                                        disabled={!profile.online}
+                                        className="h-14 flex-1 text-sm font-black uppercase tracking-widest bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-xl shadow-orange-500/20 rounded-xl"
                                     >
-                                        Book Instant Session
+                                        Buy Session
                                     </Button>
-                                    <div className="relative">
-                                        <div className="absolute inset-0 flex items-center">
-                                            <span className="w-full border-t border-muted" />
+                                </div>
+
+                                {/* Desktop Action */}
+                                {profile.online ? (
+                                    <div className="hidden md:block space-y-4">
+                                        <Button
+                                            onClick={handleBooking}
+                                            className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:shadow-[0_0_40px_rgba(249,115,22,0.3)] transition-all rounded-2xl"
+                                        >
+                                            Connect Instantly
+                                        </Button>
+                                        <div className="relative">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t border-zinc-800" />
+                                            </div>
+                                            <div className="relative flex justify-center text-xs uppercase font-black tracking-widest">
+                                                <span className="bg-zinc-900 px-4 text-zinc-600">Or Book Later</span>
+                                            </div>
                                         </div>
-                                        <div className="relative flex justify-center text-xs uppercase">
-                                            <span className="bg-background px-2 text-muted-foreground">Or</span>
+                                        <div className="p-4 bg-black/20 border border-white/5 rounded-2xl">
+                                            <ScheduleCalendar
+                                                astrologerId={profile.id}
+                                                astrologerName={profile.name}
+                                                consultationType={consultationType}
+                                                price={getCurrentPrice()}
+                                                onSchedule={(date, time) => {
+                                                    toast.success("Scheduled! Check your dashboard.");
+                                                }}
+                                            />
                                         </div>
                                     </div>
-                                    <ScheduleCalendar
-                                        astrologerId={profile.id}
-                                        astrologerName={profile.name}
-                                        consultationType={consultationType}
-                                        price={getCurrentPrice()}
-                                        onSchedule={(date, time) => {
-                                            toast.success("Scheduled successfully! Check your dashboard.");
-                                        }}
-                                    />
-                                </div>
-                            ) : (
-                                <ScheduleCalendar
-                                    astrologerId={profile.id}
-                                    astrologerName={profile.name}
-                                    consultationType={consultationType}
-                                    price={getCurrentPrice()}
-                                    onSchedule={(date, time) => {
-                                        toast.success("Scheduled successfully! Check your dashboard.");
-                                    }}
-                                />
-                            )}
+                                ) : (
+                                    <div className="hidden md:block p-4 bg-black/20 border border-white/5 rounded-2xl space-y-4">
+                                        <p className="text-center text-xs font-black text-amber-500 uppercase tracking-widest">Astrologer Offline. Book a slot below.</p>
+                                        <ScheduleCalendar
+                                            astrologerId={profile.id}
+                                            astrologerName={profile.name}
+                                            consultationType={consultationType}
+                                            price={getCurrentPrice()}
+                                            onSchedule={(date, time) => {
+                                                toast.success("Scheduled! Check your dashboard.");
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
 
-                            <p className="text-center text-xs text-muted-foreground">
-                                100% Satisfaction Guarantee
+                            <p className="text-center text-[10px] font-bold text-zinc-600 uppercase tracking-widest hidden md:block mt-8">
+                                Payments Secured by Razorpay
                             </p>
                         </div>
                     </aside>

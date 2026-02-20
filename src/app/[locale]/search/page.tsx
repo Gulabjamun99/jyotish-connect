@@ -63,11 +63,11 @@ export default function SearchPage() {
                     <div className="text-center space-y-8 animate-slide-up">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 mb-4">
                             <SearchIcon className="w-3.5 h-3.5 text-primary" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Master Search</span>
+                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Search Astrologers</span>
                         </div>
                         <h1 className="text-6xl md:text-8xl font-black text-gradient tracking-tighter leading-none">Find Your Guide</h1>
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium opacity-60">
-                            The universe has a voice. Select the master who will help you hear it.
+                            Find the right astrologer to guide you on your journey.
                         </p>
 
                         <div className="max-w-3xl mx-auto relative group mt-12">
@@ -101,14 +101,14 @@ export default function SearchPage() {
                                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10 font-black text-primary">
                                     {filteredAstrologers.length}
                                 </div>
-                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Available Masters</h2>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Available Astrologers</h2>
                             </div>
                             <div className="glass p-1 rounded-xl flex items-center gap-2 border-primary/10">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30 ml-4">Sort by</span>
                                 <select className="bg-transparent border-none text-xs font-black uppercase tracking-widest text-foreground/60 outline-none px-4 py-2 cursor-pointer hover:text-primary transition-colors">
-                                    <option className="bg-white">Rating: High Arcana</option>
-                                    <option className="bg-white">Price: Low Inflow</option>
-                                    <option className="bg-white">Seniority</option>
+                                    <option className="bg-white">Rating: High to Low</option>
+                                    <option className="bg-white">Price: Low to High</option>
+                                    <option className="bg-white">Experience</option>
                                 </select>
                             </div>
                         </div>
@@ -120,10 +120,10 @@ export default function SearchPage() {
                                         <SearchIcon className="w-10 h-10" />
                                     </div>
                                     <h3 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">
-                                        No Masters Found
+                                        No Astrologers Found
                                     </h3>
                                     <p className="text-foreground/60 max-w-md mx-auto">
-                                        The stars are silent for this search. Try adjusting your filters or search term to reveal more guides.
+                                        No results match your current filters. Try adjusting your search term to find more guides.
                                     </p>
                                     <Button
                                         onClick={() => {
@@ -145,7 +145,7 @@ export default function SearchPage() {
                                             {astro.online && (
                                                 <div className="absolute top-6 left-6 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse border border-green-500/20">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,1)]" />
-                                                    In Resonance
+                                                    Online
                                                 </div>
                                             )}
 
