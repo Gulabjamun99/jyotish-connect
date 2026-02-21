@@ -392,33 +392,20 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            {/* Primary Action */}
-                            <div className="space-y-4 pt-2">
-                                {/* Mobile Sticky Action */}
-                                <div className="fixed bottom-0 left-0 w-full p-4 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 md:hidden z-50 flex items-center justify-between gap-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total</span>
-                                        <span className="text-xl font-black text-white">₹{getCurrentPrice()}</span>
-                                    </div>
-                                    <Button
-                                        onClick={handleBooking}
-                                        disabled={!profile.online}
-                                        className="h-14 flex-1 text-sm font-black uppercase tracking-widest bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-xl shadow-orange-500/20 rounded-xl"
-                                    >
-                                        Buy Session
-                                    </Button>
-                                </div>
-
-                                {/* Desktop Action */}
+                            {/* Scheduling Block (Mobile & Desktop) */}
+                            <div className="space-y-4 pt-2 pb-24 md:pb-0">
                                 {profile.online ? (
-                                    <div className="hidden md:block space-y-4">
-                                        <Button
-                                            onClick={handleBooking}
-                                            className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:shadow-[0_0_40px_rgba(249,115,22,0.3)] transition-all rounded-2xl"
-                                        >
-                                            Connect Instantly
-                                        </Button>
-                                        <div className="relative">
+                                    <>
+                                        {/* Desktop-only Connect Instantly button (Mobile uses sticky footer) */}
+                                        <div className="hidden md:block">
+                                            <Button
+                                                onClick={handleBooking}
+                                                className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:shadow-[0_0_40px_rgba(249,115,22,0.3)] transition-all rounded-2xl"
+                                            >
+                                                Connect Instantly
+                                            </Button>
+                                        </div>
+                                        <div className="relative pt-4 md:pt-2">
                                             <div className="absolute inset-0 flex items-center">
                                                 <span className="w-full border-t border-zinc-800" />
                                             </div>
@@ -426,7 +413,7 @@ export default function ProfilePage() {
                                                 <span className="bg-zinc-900 px-4 text-zinc-600">Or Book Later</span>
                                             </div>
                                         </div>
-                                        <div className="p-4 bg-black/20 border border-white/5 rounded-2xl">
+                                        <div className="p-4 bg-black/20 border border-white/5 rounded-2xl mt-4">
                                             <ScheduleCalendar
                                                 astrologerId={profile.id}
                                                 astrologerName={profile.name}
@@ -437,9 +424,9 @@ export default function ProfilePage() {
                                                 }}
                                             />
                                         </div>
-                                    </div>
+                                    </>
                                 ) : (
-                                    <div className="hidden md:block p-4 bg-black/20 border border-white/5 rounded-2xl space-y-4">
+                                    <div className="p-4 bg-black/20 border border-white/5 rounded-2xl space-y-4">
                                         <p className="text-center text-xs font-black text-amber-500 uppercase tracking-widest">Astrologer Offline. Book a slot below.</p>
                                         <ScheduleCalendar
                                             astrologerId={profile.id}
@@ -452,6 +439,21 @@ export default function ProfilePage() {
                                         />
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Mobile Sticky Action */}
+                            <div className="fixed bottom-0 left-0 w-full p-4 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 md:hidden z-50 flex items-center justify-between gap-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total</span>
+                                    <span className="text-xl font-black text-white">₹{getCurrentPrice()}</span>
+                                </div>
+                                <Button
+                                    onClick={handleBooking}
+                                    disabled={!profile.online}
+                                    className="h-14 flex-1 text-sm font-black uppercase tracking-widest bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-xl shadow-orange-500/20 rounded-xl"
+                                >
+                                    Buy Session
+                                </Button>
                             </div>
 
                             <p className="text-center text-[10px] font-bold text-zinc-600 uppercase tracking-widest hidden md:block mt-8">
