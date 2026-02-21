@@ -56,7 +56,7 @@ export interface Astrologer {
     };
 }
 
-export const getAstrologers = async (filters?: any, limitCount: number = 10, lastDoc?: any) => {
+export const getAstrologers = async (filters?: any, limitCount: number = 50, lastDoc?: any) => {
     try {
         if ((db as any).type === 'dummy') {
             console.warn("Firestore is in dummy mode. Returning empty list.");
@@ -90,10 +90,10 @@ export const getAstrologers = async (filters?: any, limitCount: number = 10, las
         const data = querySnapshot.docs.map(doc => {
             const raw = doc.data();
             return {
+                ...raw,
                 id: doc.id,
                 name: raw.displayName || "Unknown",
                 expertise: ensureArray(raw.specializations)[0] || "Astrology",
-                languages: ensureArray(raw.languages).length > 0 ? ensureArray(raw.languages) : ["English"],
                 rating: raw.rating || 5.0,
                 reviews: raw.consultations || 0,
                 price: raw.consultationRate || 50,
@@ -101,10 +101,9 @@ export const getAstrologers = async (filters?: any, limitCount: number = 10, las
                 verified: raw.verified || false,
                 online: true,
                 bio: raw.bio || "",
-                ...raw,
                 // Force overwrite potentially bad data with sanitized versions
                 specializations: ensureArray(raw.specializations),
-                languages: ensureArray(raw.languages)
+                languages: ensureArray(raw.languages).length > 0 ? ensureArray(raw.languages) : ["English"]
             } as Astrologer;
         });
 
