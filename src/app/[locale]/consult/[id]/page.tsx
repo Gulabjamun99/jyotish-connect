@@ -138,7 +138,7 @@ export default function ConsultPage() {
                 let attempts = 0;
                 const pollInterval = setInterval(async () => {
                     attempts++;
-                    const res = await fetch(`/api/peer?consultationId=${id}&role=astrologer`);
+                    const res = await fetch(`/api/peer?consultationId=${id}&role=${participantRole}`);
                     const data = await res.json();
 
                     if (data.peerId) {
