@@ -152,6 +152,10 @@ END:VCALENDAR`;
             const formattedDate = format(selectedDate, "EEEE, MMMM d, yyyy");
 
             // 2. Send Emails (Dual Notification)
+            const commonSubject = `Confirmed: ${consultationType.toUpperCase()} Consultation with ${astrologerName}`;
+            const userHtml = `<p>Your consultation is confirmed for <strong>${formattedDate} at ${selectedTime}</strong>.</p><p>Join Link: <a href="${link}">${link}</a></p><p>Please find your calendar invite attached.</p>`;
+            const astroHtml = `<p>You have a new booking from <strong>${user.displayName || "a Seeker"}</strong> for <strong>${formattedDate} at ${selectedTime}</strong>.</p><p>Join Link: <a href="${link}">${link}</a></p><p>Please find your calendar invite attached.</p>`;
+
             // Fetch astrologer email first
             let astrologerEmail = "";
             try {
@@ -166,15 +170,32 @@ END:VCALENDAR`;
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         to: user.email,
+                        subject: commonSubject,
+                        html: userHtml,
+                        ics: icsContent
                     })
-                }).catch(e => console.warn("Email API trigger failed", e));
+                }).catch(e => console.warn("Email API trigger failed for user", e));
+            }
+
+            // Email to Astrologer (with ICS)
+            if (astrologerEmail) {
+                await fetch("/api/email/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        to: astrologerEmail,
+                        subject: commonSubject,
+                        html: astroHtml,
+                        ics: icsContent
+                    })
+                }).catch(e => console.warn("Email API trigger failed for astrologer", e));
             }
 
             // 3. Auto-Download ICS & Change Step
             triggerDownload(icsContent);
             setStep('success');
             onSchedule(selectedDate, selectedTime);
-            toast.success("Booking confirmed!");
+            toast.success("Booking confirmed! Calendar Invites sent.");
 
         } catch (error) {
             console.error(error);

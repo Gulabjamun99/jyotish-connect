@@ -7,20 +7,50 @@ import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
 import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
-import { useState, useEffect } from "react";
-import { getAstrologerBookings } from "@/services/firestore";
+import { useState, useEffect, useRef } from "react";
+import { subscribeAstrologerBookings } from "@/services/firestore";
+import toast from "react-hot-toast";
 
 export default function AstrologerDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["astrologer"]);
     const router = useRouter();
     const [bookings, setBookings] = useState<any[]>([]);
+    const prevBookingsLength = useRef(0);
 
     useEffect(() => {
         if (user) {
-            getAstrologerBookings(user.uid).then(data => {
+            const unsubscribe = subscribeAstrologerBookings(user.uid, (data) => {
                 const sorted = data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setBookings(sorted);
+
+                // Play sound and show toast if a NEW active booking arrives
+                const activeBookings = data.filter(b => b.status === "active");
+                if (activeBookings.length > prevBookingsLength.current && prevBookingsLength.current !== 0) {
+                    try {
+                        const audio = new Audio('/sounds/bell.mp3');
+                        audio.play().catch(e => console.log("Audio play prevented by browser", e));
+                    } catch (e) { }
+
+                    toast((t) => (
+                        <div className="flex flex-col gap-2">
+                            <span className="font-bold text-lg">🔔 New Seeker Waiting!</span>
+                            <span className="text-sm">Someone just joined your consultation room.</span>
+                            <Button
+                                className="bg-green-500 hover:bg-green-600 text-white mt-2"
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    window.scrollTo({ top: 500, behavior: 'smooth' }); // Scroll down to appointments
+                                }}
+                            >
+                                View Room Request
+                            </Button>
+                        </div>
+                    ), { duration: 15000, position: 'top-center' });
+                }
+                prevBookingsLength.current = activeBookings.length;
             });
+
+            return () => unsubscribe();
         }
     }, [user]);
 

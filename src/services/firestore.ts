@@ -249,6 +249,14 @@ export const getAstrologerBookings = async (astrologerId: string) => {
     }
 };
 
+export const subscribeAstrologerBookings = (astrologerId: string, callback: (bookings: any[]) => void) => {
+    const q = query(collection(db, "bookings"), where("astrologerId", "==", astrologerId));
+    return onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        callback(data);
+    });
+};
+
 export const checkAvailability = async (astrologerId: string, date: Date) => {
     // 1. Get Astrologer Schedule
     const astrologer = await getAstrologerById(astrologerId);
@@ -256,11 +264,11 @@ export const checkAvailability = async (astrologerId: string, date: Date) => {
 
     const dayOfWeek = date.getDay(); // 0 = Sun, 1 = Mon...
 
-    // Default availability: Mon-Sat, 9am - 6pm
+    // Default availability: Everyday, 9am - 10pm
     const availability = astrologer.availability || {
-        days: [1, 2, 3, 4, 5, 6],
+        days: [0, 1, 2, 3, 4, 5, 6],
         startTime: "09:00",
-        endTime: "18:00"
+        endTime: "22:00"
     };
 
     if (!availability.days.includes(dayOfWeek)) {
