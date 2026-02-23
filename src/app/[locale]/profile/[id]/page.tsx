@@ -14,7 +14,7 @@ import { getAstrologerById, createBooking } from "@/services/firestore";
 import { ScheduleCalendar } from "@/components/booking/ScheduleCalendar";
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const { id } = useParams() as { id: string };
     const router = useRouter();
     const [profile, setProfile] = useState<any>(null);
@@ -70,7 +70,7 @@ export default function ProfilePage() {
     };
 
     const handleBooking = async () => {
-        if (!user) {
+        if (!user || !userData) {
             toast.error("Please login to book a session");
             router.push("/login");
             return;
@@ -78,9 +78,50 @@ export default function ProfilePage() {
 
         if (!profile) return;
 
+        // Check if Profile Complete
+        if (!userData.profileComplete) {
+            toast.error("Please complete your seeker profile first");
+            router.push("/user/profile/edit");
+            return;
+        }
+
         const currentPrice = getCurrentPrice();
+        const bookingData = {
+            userId: user.uid,
+            astrologerId: profile.id,
+            astrologerName: profile.name,
+            date: new Date(),
+            time: "Instant",
+            type: consultationType,
+            price: currentPrice
+        };
 
         try {
+            // Option A: Pay via Wallet (Preferred)
+            if (userData.walletBalance >= currentPrice) {
+                toast.loading("Processing via wallet...", { id: 'booking' });
+                const res = await fetch("/api/wallet/pay", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: user.uid,
+                        astrologerId: profile.id,
+                        amount: currentPrice,
+                        bookingData
+                    })
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                toast.success("Payment via Wallet successful! Connecting...", { id: 'booking' });
+                router.push(`/consult/${data.bookingId}?type=${consultationType}`);
+                return;
+            }
+
+            // Option B: Pay via Razorpay (Fallback)
+            toast.error("Insufficient wallet balance. Redirecting to Payment Gateway.", { duration: 4000 });
+
             initiatePayment({
                 amount: currentPrice,
                 name: `Consultation with ${profile.name}`,
@@ -93,7 +134,7 @@ export default function ProfilePage() {
                 onSuccess: async (response: any) => {
                     // SERVER-SIDE VERIFICATION & BOOKING CREATION
                     try {
-                        toast.loading("Verifying payment...");
+                        toast.loading("Verifying payment...", { id: 'booking' });
 
                         const verifyRes = await fetch("/api/payment/verify", {
                             method: "POST",
@@ -102,15 +143,7 @@ export default function ProfilePage() {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_signature: response.razorpay_signature,
-                                bookingData: {
-                                    userId: user.uid,
-                                    astrologerId: profile.id,
-                                    astrologerName: profile.name,
-                                    date: new Date(),
-                                    time: "Instant",
-                                    type: consultationType,
-                                    price: currentPrice
-                                }
+                                bookingData
                             })
                         });
 
@@ -120,26 +153,18 @@ export default function ProfilePage() {
                             throw new Error(verifyData.message || "Verification Failed");
                         }
 
-                        const bookingId = verifyData.bookingId;
-
-                        // Send Emails (Optimistic or await?)
-                        // We can modify the API to send emails too, but for now we keep client logic or move it.
-                        // To be "Zero Error", email should be sent by the API.
-                        // But let's keep the existing notification logic for now, just trigger it.
-                        // Actually, let's duplicate the email logic or trust the API (Plan said secure booking only).
-
-                        toast.success("Payment verified! Session confirmed.");
-                        router.push("/user/dashboard");
+                        toast.success("Payment verified! Session confirmed.", { id: 'booking' });
+                        router.push(`/consult/${verifyData.bookingId}?type=${consultationType}`);
                     } catch (error: any) {
                         console.error("Payment Verification Failed:", error);
-                        toast.error("Payment failed verification. Money will be refunded if deducted.");
+                        toast.error("Payment failed verification.", { id: 'booking' });
                     }
                 }
             });
 
         } catch (error: any) {
             console.error("Payment failed:", error);
-            toast.error(`Payment failed: ${error.message || "Something went wrong"}`);
+            toast.error(`Payment failed: ${error.message || "Something went wrong"}`, { id: 'booking' });
         }
     };
 

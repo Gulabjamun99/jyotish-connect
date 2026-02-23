@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
-import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle } from "lucide-react";
+import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect } from "react";
 import { getAstrologerBookings } from "@/services/firestore";
@@ -239,13 +239,16 @@ export default function AstrologerDashboard() {
                             <h2 className="text-xl font-bold text-white">Quick Actions</h2>
                         </div>
 
-                        <Button className="w-full h-20 justify-between px-6 rounded-[2rem] bg-gradient-to-r from-orange-500/10 to-orange-500/5 hover:from-orange-500/20 hover:to-orange-500/10 border border-orange-500/20 text-white group transition-all">
+                        <Button
+                            onClick={() => router.push('/astrologer/transactions')}
+                            className="w-full h-20 justify-between px-6 rounded-[2rem] bg-gradient-to-r from-orange-500/10 to-orange-500/5 hover:from-orange-500/20 hover:to-orange-500/10 border border-orange-500/20 text-white group transition-all"
+                        >
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500">
                                     <IndianRupee className="w-5 h-5" />
                                 </div>
                                 <div className="text-left flex flex-col justify-center">
-                                    <div className="text-sm font-bold">Withdraw Funds</div>
+                                    <div className="text-sm font-bold">Withdraw Funds & Ledger</div>
                                     <div className="text-[10px] text-zinc-400 uppercase tracking-widest leading-none mt-0.5">Wallet: ₹{userData?.walletBalance || 0}</div>
                                 </div>
                             </div>
@@ -261,10 +264,10 @@ export default function AstrologerDashboard() {
                             ) : (
                                 <div className="space-y-3">
                                     {bookings.filter((b: any) => b.status === 'completed').slice(0, 4).map((b: any) => (
-                                        <div key={b.id} className="p-4 rounded-2xl glass bg-zinc-900 border border-white/5 group hover:border-zinc-700 transition-[border-color] flex justify-between items-center">
+                                        <div key={b.id} className="p-4 rounded-2xl glass bg-zinc-900 border border-white/5 group hover:border-zinc-700 transition-[border-color] flex justify-between items-center cursor-pointer" onClick={() => router.push(`/consultation-summary/${b.id}`)}>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold border border-zinc-700/50">
-                                                    {b.userName?.[0] || 'S'}
+                                                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold border border-zinc-700/50 group-hover:border-orange-500/30 group-hover:text-orange-500 transition-colors">
+                                                    <FileText className="w-4 h-4" />
                                                 </div>
                                                 <div>
                                                     <div className="text-sm font-bold text-zinc-200">{b.userName || "Seeker"}</div>

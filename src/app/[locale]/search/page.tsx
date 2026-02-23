@@ -50,6 +50,10 @@ export default function SearchPage() {
         return matchesSearch && matchesLanguage && matchesRating;
     });
 
+    console.log("ALL ASTROLOGERS:", astrologers);
+    console.log("FILTERED ASTROLOGERS:", filteredAstrologers);
+    console.log("CURRENT FILTERS:", filters);
+
     return (
         <main className="min-h-screen bg-transparent overflow-hidden selection:bg-primary/30">
             <Navbar />

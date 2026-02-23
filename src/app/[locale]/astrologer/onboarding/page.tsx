@@ -131,11 +131,14 @@ export default function AstrologerOnboardingPage() {
                 profileComplete: true,
                 rating: 5.0, // Default rating for new astrologers
                 consultations: 0,
+                walletBalance: 0, // NEW: Start wallet at 0
+                totalEarnings: 0, // NEW: Start lifetime earnings at 0
+                verified: true, // Auto-verify for MVP
                 updatedAt: new Date().toISOString()
             }, { merge: true });
             console.log("Profile saved successfully!");
 
-            toast.success("Profile completed! Waiting for admin verification.");
+            toast.success("Profile completed! You are now live.");
             router.push("/astrologer/dashboard");
         } catch (error: any) {
             console.error("Onboarding error:", error);

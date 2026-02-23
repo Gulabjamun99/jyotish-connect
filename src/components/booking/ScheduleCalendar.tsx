@@ -22,7 +22,7 @@ export function ScheduleCalendar({
     price,
     onSchedule
 }: ScheduleCalendarProps) {
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -108,15 +108,20 @@ END:VCALENDAR`;
     };
 
     const handleConfirm = async () => {
-        if (!selectedDate || !selectedTime || !user) {
+        if (!selectedDate || !selectedTime || !user || !userData) {
             if (!user) toast.error("Please login to book a consultation");
+            return;
+        }
+
+        if (userData.walletBalance < price) {
+            toast.error("Insufficient wallet balance. Please recharge first.");
             return;
         }
 
         setIsLoading(true);
         try {
-            // 1. Create Booking in Firestore
-            const booking = await createBooking({
+            // 1. Deduct Wallet & Create Booking in Firestore via API
+            const bookingData = {
                 userId: user.uid,
                 astrologerId,
                 astrologerName,
@@ -124,9 +129,24 @@ END:VCALENDAR`;
                 time: selectedTime,
                 type: consultationType,
                 price
+            };
+
+            const res = await fetch("/api/wallet/pay", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: user.uid,
+                    astrologerId,
+                    amount: price,
+                    bookingData
+                })
             });
 
-            const link = `https://jyotishconnect.com/consult/${booking.id}`;
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error);
+
+            const bookingId = data.bookingId;
+            const link = `https://jyotishconnect.com/consult/${bookingId}`;
             setConfirmedLink(link);
             const icsContent = generateICSContent(selectedDate, selectedTime, link);
             const formattedDate = format(selectedDate, "EEEE, MMMM d, yyyy");

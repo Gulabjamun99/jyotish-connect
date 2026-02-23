@@ -537,11 +537,11 @@ export default function KundliMatchingPage() {
                                         <table className="w-full text-left">
                                             <thead className="bg-orange-50/50">
                                                 <tr>
-                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('Index.table.koota')}</th>
-                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-orange-600 text-center">{t('Index.table.boyValue')}</th>
-                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-red-600 text-center">{t('Index.table.girlValue')}</th>
-                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">{t('Index.table.max')}</th>
-                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-900 text-right">{t('Index.table.obtained')}</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('table.koota')}</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-orange-600 text-center">{t('table.boyValue')}</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-red-600 text-center">{t('table.girlValue')}</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">{t('table.max')}</th>
+                                                    <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-900 text-right">{t('table.obtained')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100">

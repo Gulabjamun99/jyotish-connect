@@ -117,7 +117,7 @@ export default function SeederPage() {
                 const profile = MASTER_PROFILES[i];
                 // Use a predictable ID for these seeded users
                 const docId = `seed_astro_${i + 1}`;
-                const docRef = doc(collection(db, "users"), docId);
+                const docRef = doc(collection(db, "astrologers"), docId);
 
                 await setDoc(docRef, { ...profile, uid: docId });
                 setStatus(`Injected ${profile.displayName}...`);

@@ -11,11 +11,14 @@ import { useState, useEffect } from "react";
 import { getUserBookings } from "@/services/firestore";
 
 import { TransactionHistory } from "@/components/profile/TransactionHistory";
+import { WalletRechargeModal } from "@/components/payment/WalletRechargeModal";
+import { toast } from "react-hot-toast";
 
 export default function UserDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["user"]);
     const router = useRouter();
     const [bookings, setBookings] = useState<any[]>([]);
+    const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -27,11 +30,7 @@ export default function UserDashboard() {
         }
     }, [user]);
 
-    // Mock Transactions for now (until we have real payment history API/Store)
-    const transactions = [
-        { id: '1', amount: 500, type: 'credit', description: 'Wallet Recharge', date: new Date(), status: 'success' },
-        { id: '2', amount: 50, type: 'debit', description: 'Consultation Fee', date: new Date(Date.now() - 86400000), status: 'success' }
-    ];
+    // Remove mock transactions array
 
     if (loading || !user) {
         return (
@@ -63,7 +62,15 @@ export default function UserDashboard() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                        {!userData?.profileComplete && (
+                            <Button
+                                onClick={() => router.push('/user/profile/edit')}
+                                className="w-full md:w-auto h-10 px-6 bg-red-500 hover:bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-red-500/20 animate-pulse"
+                            >
+                                Complete Profile
+                            </Button>
+                        )}
                         <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-6 hover:border-orange-500/30 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
@@ -74,13 +81,34 @@ export default function UserDashboard() {
                                     <p className="text-xl font-black text-white">₹{userData?.walletBalance || 0}</p>
                                 </div>
                             </div>
-                            <Button className="h-10 px-4 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-xs uppercase tracking-wider">
+                            <Button
+                                onClick={() => {
+                                    if (!userData?.profileComplete) {
+                                        toast.error("Please complete your profile first.");
+                                        router.push('/user/profile/edit');
+                                    } else {
+                                        setIsRechargeModalOpen(true);
+                                    }
+                                }}
+                                className="h-10 px-4 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-xs uppercase tracking-wider"
+                            >
                                 Recharge
                             </Button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
+
+            {/* Profile Incomplete Banner */}
+            {
+                !userData?.profileComplete && (
+                    <div className="bg-red-500/10 border-y border-red-500/20 py-3 px-4 text-center">
+                        <p className="text-red-400 text-xs font-bold tracking-widest uppercase">
+                            ⚠️ Action Required: Please complete your profile to book consultations and recharge your wallet.
+                        </p>
+                    </div>
+                )
+            }
 
             <div className="container mx-auto px-4 md:px-8 py-10 space-y-10">
 
@@ -235,36 +263,18 @@ export default function UserDashboard() {
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-bold text-white">Recent Transactions</h2>
-                            <Button variant="ghost" className="text-xs uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0">
-                                History
+                            <Button
+                                onClick={() => router.push('/user/transactions')}
+                                variant="ghost"
+                                className="text-xs uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0"
+                            >
+                                View History
                             </Button>
                         </div>
                         <div className="glass bg-zinc-900 border border-white/5 rounded-3xl p-6">
-                            {transactions.length > 0 ? (
-                                <div className="space-y-4">
-                                    {transactions.slice(0, 3).map((tx, i) => (
-                                        <div key={i} className={`flex items-center justify-between pb-4 ${i !== Math.min(transactions.length - 1, 2) ? 'border-b border-zinc-800/50' : ''}`}>
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                    {tx.type === 'credit' ? '↓' : '↑'}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-sm text-white">{tx.description}</p>
-                                                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(tx.date).toLocaleDateString()}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className={`font-black text-sm ${tx.type === 'credit' ? 'text-green-500' : 'text-red-500'}`}>
-                                                    {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}
-                                                </p>
-                                                <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{tx.status}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-center text-sm text-zinc-500 py-6">No recent transactions</p>
-                            )}
+                            <p className="text-center text-sm text-zinc-500 py-6">
+                                Please visit your detailed <span className="text-orange-500 cursor-pointer" onClick={() => router.push('/user/transactions')}>History</span> page.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -324,7 +334,13 @@ export default function UserDashboard() {
                 </section>
             </div>
 
+            <WalletRechargeModal
+                isOpen={isRechargeModalOpen}
+                onClose={() => setIsRechargeModalOpen(false)}
+                currentBalance={userData?.walletBalance || 0}
+            />
+
             <Footer />
-        </main>
+        </main >
     );
 }

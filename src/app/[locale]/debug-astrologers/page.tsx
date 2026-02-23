@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +31,8 @@ export default function DebugAstrologersPage() {
         try {
             log(`Fixing astrologer ${id}...`);
             const updates: any = {};
-            if (currentData.verified === undefined) updates.verified = false;
+            // Always ensure verified is true so they show up
+            updates.verified = true;
             if (currentData.rating === undefined) updates.rating = 5.0;
             if (currentData.consultations === undefined) updates.consultations = 0;
 
@@ -48,13 +49,41 @@ export default function DebugAstrologersPage() {
         }
     };
 
+    const fixNameForBimbisar = async () => {
+        try {
+            log("Explicitly fixing Acharya Bimbisar name...");
+            await updateDoc(doc(db, "astrologers", "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2"), {
+                displayName: "Acharya Bimbisar",
+                name: "Acharya Bimbisar"
+            });
+            log("Fixed Acharya Bimbisar!");
+            await fetchAllAstrologers();
+        } catch (err: any) {
+            log(`Error fixing name: ${err.message}`);
+        }
+    };
+
     const fixAll = async () => {
         for (const astro of astrologers) {
-            if (astro.verified === true) { // Only fix verified ones to ensure they show up
-                await fixAstrologer(astro.id, astro);
-            }
+            await fixAstrologer(astro.id, astro);
         }
-        log("Finished fixing all verified astrologers.");
+        log("Finished fixing and verifying all astrologers.");
+    };
+
+    const deleteDemos = async () => {
+        try {
+            log("Deleting all demo astrologers...");
+            for (const astro of astrologers) {
+                if (astro.id !== "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2") {
+                    await deleteDoc(doc(db, "astrologers", astro.id));
+                    log(`Deleted demo: ${astro.displayName || astro.name}`);
+                }
+            }
+            log("Finished deleting demo astrologers!");
+            await fetchAllAstrologers();
+        } catch (err: any) {
+            log(`Error deleting: ${err.message}`);
+        }
     };
 
     useEffect(() => {
@@ -66,7 +95,9 @@ export default function DebugAstrologersPage() {
             <h1 className="text-2xl font-bold">Debug Astrologers</h1>
             <div className="flex gap-4">
                 <Button onClick={fetchAllAstrologers}>Refresh</Button>
-                <Button onClick={fixAll} variant="destructive">Fix All Verified (Add Missing Fields)</Button>
+                <Button onClick={fixAll} variant="destructive">Verify & Fix All Astrologers</Button>
+                <Button onClick={deleteDemos} variant="destructive">Delete All Demos (Keep Only c kumar)</Button>
+                <Button onClick={fixNameForBimbisar} className="bg-blue-600 hover:bg-blue-700">Fix Acharya Bimbisar Name</Button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

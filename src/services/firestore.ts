@@ -28,6 +28,58 @@ function sanitize(data: any) {
     return payload;
 }
 
+// --- NEW SCHEMAS FOR PROFILES & WALLETS ---
+
+export interface UserProfile {
+    uid: string;
+    email: string;
+    displayName: string;
+    photoURL?: string;
+    phone?: string;
+    address?: string;
+    walletBalance: number;
+    profileComplete: boolean;
+    createdAt: any;
+    updatedAt: any;
+    // Optional esoteric details
+    dob?: string;
+    tob?: string;
+    pob?: string;
+}
+
+export interface Transaction {
+    id?: string;
+    userId: string;
+    astrologerId?: string;
+    amount: number;
+    type: 'recharge' | 'payment' | 'earning' | 'payout' | 'refund';
+    status: 'pending' | 'completed' | 'failed';
+    paymentMode: 'wallet' | 'razorpay';
+    razorpayOrderId?: string;
+    razorpayPaymentId?: string;
+    bookingId?: string;
+    description: string;
+    createdAt: any;
+}
+
+export interface Booking {
+    id?: string;
+    userId: string;
+    astrologerId: string;
+    astrologerName: string;
+    date: any; // Firestore Timestamp
+    time: string;
+    type: "video" | "audio" | "chat";
+    price: number;
+    paymentMode?: 'wallet' | 'razorpay';
+    status: "pending" | "active" | "completed" | "cancelled";
+    durationSeconds?: number;
+    transcript?: string;
+    createdAt?: any;
+}
+
+// ------------------------------------------
+
 export interface Astrologer {
     id: string;
     name: string;
@@ -65,18 +117,8 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
 
         const astroRef = collection(db, "astrologers");
 
-        // Always filter for verified astrologers only
-        let q = query(astroRef, where("verified", "==", true));
-
-        if (filters?.expertise && filters.expertise.length > 0) {
-            q = query(q, where("expertise", "in", filters.expertise));
-        }
-
-        q = query(q, orderBy("rating", "desc"), limit(limitCount));
-
-        if (lastDoc) {
-            q = query(q, startAfter(lastDoc));
-        }
+        // Fetch all verified. We will sort in-memory to prevent requiring Firestore Composite Indexes.
+        const q = query(astroRef, where("verified", "==", true));
 
         const querySnapshot = await getDocs(q);
         const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -87,7 +129,7 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
             return [];
         };
 
-        const data = querySnapshot.docs.map(doc => {
+        let data = querySnapshot.docs.map(doc => {
             const raw = doc.data();
             return {
                 ...raw,
@@ -101,13 +143,20 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
                 verified: raw.verified || false,
                 online: true,
                 bio: raw.bio || "",
-                // Force overwrite potentially bad data with sanitized versions
                 specializations: ensureArray(raw.specializations),
                 languages: ensureArray(raw.languages).length > 0 ? ensureArray(raw.languages) : ["English"]
             } as Astrologer;
         });
 
-        return { astrologers: data, lastDoc: lastVisible };
+        // In-memory filter by expertise if requested
+        if (filters?.expertise && filters.expertise.length > 0) {
+            data = data.filter(a => filters.expertise.includes(a.expertise));
+        }
+
+        // In-memory sort by rating
+        data.sort((a, b) => b.rating - a.rating);
+
+        return { astrologers: data.slice(0, limitCount), lastDoc: lastVisible };
     } catch (error: any) {
         console.error("Error fetching astrologers:", error);
         // Return empty array if Firestore is offline
@@ -158,18 +207,7 @@ export const listenToConsultation = (id: string, callback: (data: any) => void) 
     });
 };
 
-export interface Booking {
-    id?: string;
-    userId: string;
-    astrologerId: string;
-    astrologerName: string;
-    date: Date;
-    time: string;
-    type: 'video' | 'audio' | 'chat';
-    price: number;
-    status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-    createdAt: string;
-}
+// Old Booking interface removed in favor of the new one at the top of the file
 
 export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt' | 'status'>) => {
     try {
@@ -178,7 +216,7 @@ export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt
         const newBooking: Booking = {
             ...bookingData,
             id: docRef.id,
-            status: 'confirmed', // Optimistic confirmation
+            status: 'active', // Active immediately upon creation for MVP
             createdAt: new Date().toISOString()
         };
         await setDoc(docRef, newBooking);

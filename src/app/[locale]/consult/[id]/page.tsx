@@ -234,6 +234,20 @@ export default function ConsultPage() {
                     duration: (90 * 60) - timeLeft
                 }, { merge: true });
                 console.log("✅ Transcript saved to Firestore");
+
+                // Execute Payout if Astrologer or via generic backend trigger
+                // We let the backend handle duplication checks
+                try {
+                    await fetch("/api/wallet/payout", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ bookingId: id })
+                    });
+                    console.log("✅ Payout initialized");
+                } catch (e) {
+                    console.error("Payout trigger failed", e);
+                }
+
             } catch (err) {
                 console.error("Failed to save transcript to Firestore:", err);
             }
