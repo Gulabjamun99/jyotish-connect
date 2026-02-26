@@ -83,13 +83,15 @@ export const sendAstrologerAlert = async ({
     astrologerName,
     userName,
     date,
-    time
+    time,
+    bookingId
 }: {
     astrologerEmail: string;
     astrologerName: string;
     userName: string;
     date: Date | string;
     time: string;
+    bookingId: string;
 }) => {
     if (!resend) return { success: false };
 
@@ -108,8 +110,10 @@ export const sendAstrologerAlert = async ({
                         <li><strong>Seeker:</strong> ${userName}</li>
                         <li><strong>Date:</strong> ${formattedDate}</li>
                         <li><strong>Time:</strong> ${time}</li>
+                        <li><strong>Room ID:</strong> ${bookingId}</li>
                     </ul>
-                    <p>Please check your Master Console for details.</p>
+                    <p>Please check your Master Console for details or click below to join directly:</p>
+                    <a href="https://jyotishconnect.com/consult/${bookingId}?participant=astrologer" style="background-color: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-top: 10px;">Join Consultation Room</a>
                 </div>
             `
         });

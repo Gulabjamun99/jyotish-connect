@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { dbAdmin } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
+import { doc, collection, runTransaction } from 'firebase/firestore';
 
 export async function POST(req: Request) {
     try {
@@ -10,12 +11,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
         }
 
-        const userRef = dbAdmin.collection('users').doc(userId);
+        const userRef = doc(db, 'users', userId);
         let bookingId = '';
 
-        await dbAdmin.runTransaction(async (t: any) => {
+        await runTransaction(db, async (t) => {
             const userDoc = await t.get(userRef);
-            if (!userDoc.exists) throw new Error("User not found");
+            if (!userDoc.exists()) throw new Error("User not found");
 
             const currentBalance = userDoc.data()?.walletBalance || 0;
             if (currentBalance < amount) {
@@ -28,20 +29,20 @@ export async function POST(req: Request) {
             });
 
             // 2. Create the Booking Document
-            const bookingsRef = dbAdmin.collection('bookings');
-            const newBookingRef = bookingsRef.doc();
+            const bookingsRef = collection(db, 'bookings');
+            const newBookingRef = doc(bookingsRef);
             bookingId = newBookingRef.id;
 
             t.set(newBookingRef, {
                 ...bookingData,
                 id: bookingId,
-                status: 'active', // Active immediately for instant/scheduled
+                status: bookingData.time === "Instant" ? "active" : "upcoming", // Active immediately for instant
                 paymentMode: 'wallet',
                 createdAt: new Date().toISOString()
             });
 
             // 3. Create a Transaction record
-            const txRef = dbAdmin.collection('transactions').doc();
+            const txRef = doc(collection(db, 'transactions'));
             t.set(txRef, {
                 userId,
                 astrologerId,

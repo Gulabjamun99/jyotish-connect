@@ -16,16 +16,27 @@ export default function AstrologerDashboard() {
     const router = useRouter();
     const [bookings, setBookings] = useState<any[]>([]);
     const prevBookingsLength = useRef(0);
+    const seenBookingIds = useRef<Set<string>>(new Set());
 
     useEffect(() => {
         if (user) {
             const unsubscribe = subscribeAstrologerBookings(user.uid, (data) => {
-                const sorted = data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                const sorted = data.sort((a: any, b: any) => {
+                    // Prioritize active bookings
+                    if (a.status === 'active' && b.status !== 'active') return -1;
+                    if (b.status === 'active' && a.status !== 'active') return 1;
+                    // Then sort by date
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                });
                 setBookings(sorted);
 
                 // Play sound and show toast if a NEW active booking arrives
                 const activeBookings = data.filter(b => b.status === "active");
-                if (activeBookings.length > prevBookingsLength.current && prevBookingsLength.current !== 0) {
+
+                // Find any active booking that we haven't alerted about yet
+                const newActiveBookings = activeBookings.filter(b => !seenBookingIds.current.has(b.id));
+
+                if (newActiveBookings.length > 0) {
                     try {
                         const audio = new Audio('/sounds/bell.mp3');
                         audio.play().catch(e => console.log("Audio play prevented by browser", e));
@@ -46,6 +57,9 @@ export default function AstrologerDashboard() {
                             </Button>
                         </div>
                     ), { duration: 15000, position: 'top-center' });
+
+                    // Mark these as seen
+                    newActiveBookings.forEach(b => seenBookingIds.current.add(b.id));
                 }
                 prevBookingsLength.current = activeBookings.length;
             });
@@ -134,7 +148,7 @@ export default function AstrologerDashboard() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-black text-white tracking-tight">Master {user.displayName?.split(' ')[0] || "Astrologer"}</h1>
-                            <p className="text-sm font-medium text-zinc-400">Your spiritual dashboard</p>
+                            <p className="text-sm font-medium text-zinc-400">Your spiritual dashboard • UID: {user.uid}</p>
                         </div>
                     </div>
 
@@ -148,6 +162,12 @@ export default function AstrologerDashboard() {
                                 Go Offline
                             </Button>
                         </div>
+                        <Button
+                            onClick={() => window.open(`/profile/${user.uid}`, '_blank')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl px-6 h-10 shadow-[0_0_20px_rgba(37,99,235,0.2)]"
+                        >
+                            View My Public Profile
+                        </Button>
                     </div>
                 </div>
             </div>

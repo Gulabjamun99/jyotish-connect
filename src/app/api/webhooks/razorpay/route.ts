@@ -97,7 +97,8 @@ export async function POST(req: Request) {
                         astrologerName: bookingNotes.astrologerName,
                         userName: bookingNotes.userName,
                         date: bookingNotes.date || new Date(),
-                        time: bookingNotes.time || 'Instant'
+                        time: bookingNotes.time || 'Instant',
+                        bookingId: bookingId
                     });
                 }
 

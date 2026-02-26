@@ -40,6 +40,9 @@ export default function SearchPage() {
     }, [filters]);
 
     const filteredAstrologers = astrologers.filter(astro => {
+        // Hide confusing mock profile
+        if (astro.id === "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2") return false;
+
         const matchesSearch = astro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             astro.expertise.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -188,7 +191,7 @@ export default function SearchPage() {
                                                         <span className="text-2xl font-black text-primary tracking-tighter">₹{astro.price}<span className="text-[10px] text-foreground/40 font-black uppercase tracking-widest ml-1">/ session</span></span>
                                                         <span className="text-[8px] text-foreground/30 font-bold uppercase tracking-widest mt-0.5">Up to 90 mins</span>
                                                     </div>
-                                                    <Link href={`/astrologer/profile/${astro.id}`}>
+                                                    <Link href={`/profile/${astro.id}`}>
                                                         <Button className="orange-gradient text-white font-black text-[10px] uppercase tracking-[0.2em] h-12 px-8 rounded-2xl shadow-xl shadow-primary/10 hover:scale-110 transition-transform">
                                                             Consult
                                                         </Button>

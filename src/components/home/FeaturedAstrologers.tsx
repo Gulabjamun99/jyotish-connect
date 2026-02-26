@@ -13,8 +13,8 @@ export function FeaturedAstrologers() {
             setLoading(true);
             try {
                 const { astrologers: data } = await getAstrologers(undefined, 4);
-                // Already sorted and limited by query
-                setAstrologers(data);
+                // Filter out the dummy c kumar profile used for testing
+                setAstrologers(data.filter((a: any) => a.id !== "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2"));
             } catch (err) {
                 console.error("Failed to fetch featured astrologers", err);
             } finally {
@@ -136,7 +136,7 @@ export function FeaturedAstrologers() {
                                         <span className="text-lg font-black text-slate-900">₹{astro.price}</span>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase ml-1">/min</span>
                                     </div>
-                                    <Link href={`/astrologer/profile/${astro.id}`}>
+                                    <Link href={`/profile/${astro.id}`}>
                                         <Button size="sm" className="rounded-xl px-5 bg-slate-900 hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all text-white font-bold text-xs uppercase tracking-wider">
                                             Book
                                         </Button>

@@ -120,7 +120,7 @@ export default function ConsultPage() {
                 body: JSON.stringify({
                     consultationId: id,
                     peerId: myPeerId,
-                    role: participantRole === 'astrologer' ? 'astrologer' : 'user'
+                    role: (participantRole as string) === 'astrologer' ? 'astrologer' : 'user'
                 })
             });
 
@@ -134,26 +134,61 @@ export default function ConsultPage() {
                 });
             } else {
                 console.log("👤 User: Polling for Astrologer...");
-                // Poll for Astrologer ID
-                let attempts = 0;
-                const pollInterval = setInterval(async () => {
-                    attempts++;
-                    const res = await fetch(`/api/peer?consultationId=${id}&role=${participantRole}`);
-                    const data = await res.json();
+                console.log("👤 User: Listening for Astrologer's Peer ID...");
 
-                    if (data.peerId) {
-                        clearInterval(pollInterval);
-                        console.log("✅ Found Astrologer Peer ID:", data.peerId);
-                        const rStream = await makeCall(data.peerId, stream);
+                let attempts = 0;
+                let hasConnected = false;
+
+                const connectToPeer = async (targetPeerId: string) => {
+                    if (hasConnected) return;
+                    console.log("✅ Found Remote Peer ID:", targetPeerId);
+                    hasConnected = true;
+                    try {
+                        const rStream = await makeCall(targetPeerId, stream);
                         setRemoteStream(rStream);
                         toast.success("Connected to Acharya!");
+                    } catch (e) {
+                        console.error("Peer connection failed:", e);
+                        hasConnected = false; // Allow retry
                     }
+                };
 
-                    if (attempts > 30) { // 30 seconds timeout
-                        clearInterval(pollInterval);
-                        toast.error("Astrologer waiting...", { duration: 3000 });
+                // 1. Direct active Firestore listener
+                const unsubscribePeer = onSnapshot(doc(db, "consultations", id), async (docSnap) => {
+                    if (hasConnected) return;
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const targetPeerId = (participantRole as string) === 'astrologer' ? data.userPeerId : data.astrologerPeerId;
+                        if (targetPeerId) {
+                            unsubscribePeer();
+                            await connectToPeer(targetPeerId);
+                        }
                     }
-                }, 1000);
+                });
+
+                // 2. HTTP Polling Fallback (in case WebSockets are blocked)
+                const pollInterval = setInterval(async () => {
+                    if (hasConnected) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+                    attempts++;
+                    try {
+                        const res = await fetch(`/api/peer?consultationId=${id}&role=${participantRole}`);
+                        const data = await res.json();
+                        if (data.peerId) {
+                            clearInterval(pollInterval);
+                            unsubscribePeer();
+                            await connectToPeer(data.peerId);
+                        }
+                    } catch (e) { console.warn("Polling failed", e); }
+
+                    if (attempts > 30) {
+                        clearInterval(pollInterval);
+                        unsubscribePeer();
+                        toast.error("Call timeout - no connection established.", { duration: 5000 });
+                    }
+                }, 1500);
             }
 
             // Start Transcription
@@ -191,7 +226,7 @@ export default function ConsultPage() {
 
     // Timer Logic
     useEffect(() => {
-        if (!isJoined) return; // Only start timer after joining
+        if (!isJoined || !isRemoteOnline) return; // Only start timer after BOTH join
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
@@ -321,7 +356,7 @@ export default function ConsultPage() {
             ) : (
                 /* Video/Audio Mode - Lobby First */
                 <div className="flex-grow h-[calc(100vh-64px)] relative">
-                    {!isJoined ? (
+                    {!isJoined || (!remoteStream && !isDemo) ? (
                         <LobbyInterface
                             stream={stream}
                             micOn={micOn}

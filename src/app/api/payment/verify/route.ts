@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { dbAdmin } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
+import { doc, collection, setDoc } from 'firebase/firestore';
 import { sendBookingConfirmation, sendAstrologerAlert } from '@/services/email';
 
 export async function POST(req: Request) {
@@ -26,9 +27,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, message: "Invalid Signature" }, { status: 400 });
         }
 
-        // 2. Secure Booking Creation (Server-Side)
-        // We use Admin SDK to bypass client-side rules and ensure data integrity
-        const bookingRef = dbAdmin.collection('bookings').doc();
+        // 2. Secure Booking Creation (Server-Side using Client SDK due to missing Admin Keys)
+        const bookingsCol = collection(db, 'bookings');
+        const bookingRef = doc(bookingsCol);
         const bookingId = bookingRef.id;
 
         const newBooking = {
@@ -36,13 +37,13 @@ export async function POST(req: Request) {
             id: bookingId,
             paymentId: razorpay_payment_id,
             orderId: razorpay_order_id,
-            status: "confirmed",
+            status: bookingData.time === "Instant" ? "active" : "confirmed",
             paymentStatus: "paid",
             createdAt: new Date().toISOString(),
             verified: true // Server verified flag
         };
 
-        await bookingRef.set(newBooking);
+        await setDoc(bookingRef, newBooking);
 
         // 3. Send Confirmation Emails (Server-Side using Resend Free Tier)
         const userEmail = (bookingData as any).userEmail;
