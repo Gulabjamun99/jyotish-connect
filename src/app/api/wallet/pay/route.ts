@@ -19,14 +19,15 @@ export async function POST(req: Request) {
             if (!userDoc.exists()) throw new Error("User not found");
 
             const currentBalance = userDoc.data()?.walletBalance || 0;
-            if (currentBalance < amount) {
-                throw new Error("Insufficient wallet balance");
-            }
+            // FREE TESTING: Bypass balance checks and deduction
+            // if (currentBalance < amount) {
+            //     throw new Error("Insufficient wallet balance");
+            // }
 
-            // 1. Deduct from wallet
-            t.update(userRef, {
-                walletBalance: currentBalance - amount
-            });
+            // 1. Deduct from wallet (DISABLED FOR TESTING)
+            // t.update(userRef, {
+            //     walletBalance: currentBalance - amount
+            // });
 
             // 2. Create the Booking Document
             const bookingsRef = collection(db, 'bookings');

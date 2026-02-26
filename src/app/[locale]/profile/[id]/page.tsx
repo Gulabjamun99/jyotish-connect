@@ -97,9 +97,9 @@ export default function ProfilePage() {
         };
 
         try {
-            // Option A: Pay via Wallet (Preferred)
-            if (userData.walletBalance >= currentPrice) {
-                toast.loading("Processing via wallet...", { id: 'booking' });
+            // Option A: Pay via Wallet (Preferred) - FORCED TRUE FOR FREE TESTING
+            if (true || userData.walletBalance >= currentPrice) {
+                toast.loading("Processing free test booking...", { id: 'booking' });
                 const res = await fetch("/api/wallet/pay", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
