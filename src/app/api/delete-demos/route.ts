@@ -4,25 +4,15 @@ import { dbAdmin } from '@/lib/firebase-admin';
 export async function GET() {
     try {
         const snapshot = await dbAdmin.collection('astrologers').get();
-        let deletedCount = 0;
-        let keptCount = 0;
-
-        const batch = dbAdmin.batch();
-
+        const astrologers: any[] = [];
         snapshot.forEach(doc => {
-            if (doc.id !== "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2") {
-                batch.delete(doc.ref);
-                deletedCount++;
-            } else {
-                keptCount++;
-            }
+            astrologers.push({ id: doc.id, ...doc.data() });
         });
-
-        await batch.commit();
 
         return NextResponse.json({
             success: true,
-            message: `Deleted ${deletedCount} demo astrologers. Kept ${keptCount} real astrologers.`,
+            count: astrologers.length,
+            astrologers: astrologers.map(a => ({ id: a.id, name: a.displayName || a.name }))
         });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
