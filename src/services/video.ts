@@ -8,42 +8,72 @@ let currentCall: MediaConnection | null = null;
  * @param userId - Unique user ID for this peer
  * @returns Promise resolving to peer ID
  */
-export function initializePeer(userId: string): Promise<string> {
+export function initializePeer(userId: string, retryCount = 0): Promise<string> {
     return new Promise((resolve, reject) => {
-        // If peer exists and has the right ID, reuse it
         if (peer && !peer.destroyed) {
             if (peer.id === userId && peer.open) {
                 console.log('✅ Reusing existing Peer with ID:', peer.id);
                 return resolve(peer.id);
             }
-            // If it's a different ID or disconnected, destroy it first
             peer.destroy();
         }
 
-        console.log(`⏳ Creating new Peer with ID: ${userId}`);
-        // Create new peer with deterministic user ID
-        peer = new Peer(userId, {
-            // Using free public PeerJS server
-            host: '0.peerjs.com',
-            port: 443,
-            path: '/',
-            secure: true,
-            debug: 2
-        });
-        peer!.on('open', (id) => {
-            console.log('✅ Peer initialized with ID:', id);
-            resolve(id);
-        });
+        console.log(`⏳ Creating new Peer with ID: ${userId} (Attempt ${retryCount + 1})`);
+        
+        // Use default server first, then fallback to a different port/config if throttled
+        const useFallback = retryCount > 0;
 
-        peer!.on('error', (err) => {
-            console.error('❌ Peer error:', err);
-            reject(err);
-        });
+        try {
+            peer = new Peer(userId, {
+                host: '0.peerjs.com',
+                port: useFallback ? 9000 : 443, // Fallback port
+                path: '/',
+                secure: !useFallback, // 9000 on peerjs is usually ws:// not wss://
+                debug: 2,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
+            });
 
-        peer!.on('disconnected', () => {
-            console.warn('⚠️ Peer disconnected, attempting reconnect...');
-            peer?.reconnect();
-        });
+            peer.on('open', (id) => {
+                console.log('✅ Peer initialized with ID:', id);
+                resolve(id);
+            });
+
+            peer.on('error', (err) => {
+                console.error(`❌ Peer initialization error (type: ${err.type}):`, err);
+                
+                // If ID is taken, just resolve with it anyway (since we want deterministic IDs)
+                if (err.type === 'unavailable-id') {
+                    console.log('⚠️ ID already in use, assuming it is a page reload ghost and continuing...');
+                    resolve(userId);
+                    return;
+                }
+
+                if (retryCount < 2) {
+                    console.log(`🔄 Retrying peer initialization...`);
+                    peer?.destroy();
+                    setTimeout(() => {
+                        resolve(initializePeer(userId, retryCount + 1));
+                    }, 1000);
+                } else {
+                    reject(err);
+                }
+            });
+
+            peer.on('disconnected', () => {
+                console.warn('⚠️ Peer disconnected, attempting reconnect...');
+                if (peer && !peer.destroyed) {
+                    peer.reconnect();
+                }
+            });
+        } catch (e) {
+            console.error("Critical PeerJS setup crash:", e);
+            reject(e);
+        }
     });
 }
 
