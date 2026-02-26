@@ -111,52 +111,31 @@ export default function ConsultPage() {
         }
 
         try {
-            console.log("🔵 Initializing PeerJS connection...");
-            // Deterministic IDs: roomID_role
-            const myPeerId = `${id}_${participantRole}`;
-            const targetPeerId = `${id}_${participantRole === 'astrologer' ? 'user' : 'astrologer'}`;
-
-            await initializePeer(myPeerId);
-            console.log("✅ My Peer ID initialized deterministically:", myPeerId);
+            console.log("🔵 Initializing Native WebRTC connection via Firestore...");
+            
+            await initializePeer(participantRole); // Stub
 
             if (participantRole === 'astrologer') {
-                // Astrologer always WAITS for the call
-                console.log("📱 Astrologer: Waiting for incoming call...");
-                answerCall(stream, (remoteStream) => {
+                // Astrologer always WAITS for the call (creates Answer)
+                console.log("📱 Astrologer: Waiting for incoming WebRTC offer...");
+                answerCall(id, stream, (remoteStream) => {
                     console.log("✅ Astrologer: Received remote stream from User!");
                     setRemoteStream(remoteStream);
                     toast.success("Devotee Connected!");
                 });
             } else {
-                // User always MAKES the call
-                console.log(`👤 User: Attempting to call Acharya at ${targetPeerId}...`);
+                // User always MAKES the call (creates Offer)
+                console.log(`👤 User: Attempting to create WebRTC offer in room ${id}...`);
                 
-                // Retry mechanism for user calling astrologer
-                let attempts = 0;
-                let connected = false;
-
-                const tryCall = async () => {
-                    if (connected) return;
-                    attempts++;
-                    try {
-                        console.log(`Call attempt ${attempts}...`);
-                        const rStream = await makeCall(targetPeerId, stream);
-                        setRemoteStream(rStream);
-                        connected = true;
-                        toast.success("Connected to Acharya!");
-                        console.log("✅ User: Call successful!");
-                    } catch (e) {
-                        console.warn(`Call attempt ${attempts} failed:`, e);
-                        if (attempts < 15) {
-                            setTimeout(tryCall, 3000); // Retry every 3 seconds
-                        } else {
-                            toast.error("Could not reach Acharya. They might not be in the room yet.");
-                        }
-                    }
-                };
-
-                // Start calling loop
-                setTimeout(tryCall, 2000); // Give astrologer 2 seconds head start just in case they joined identically
+                try {
+                    const rStream = await makeCall(id, stream);
+                    setRemoteStream(rStream);
+                    toast.success("Connected to Acharya!");
+                    console.log("✅ User: WebRTC Call successful!");
+                } catch (e) {
+                    console.error("WebRTC Negotiation failed:", e);
+                    toast.error("Could not reach Acharya. They might not be in the room yet.");
+                }
             }
 
             // Start Transcription Backup

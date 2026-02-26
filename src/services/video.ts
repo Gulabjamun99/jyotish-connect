@@ -1,209 +1,172 @@
-import Peer, { MediaConnection } from 'peerjs';
+import { db } from "@/lib/firebase";
+import { doc, setDoc, updateDoc, collection, addDoc, onSnapshot, getDoc } from "firebase/firestore";
 
-let peer: Peer | null = null;
-let currentCall: MediaConnection | null = null;
+let pc: RTCPeerConnection | null = null;
 
-/**
- * Initialize PeerJS peer connection
- * @param userId - Unique user ID for this peer
- * @returns Promise resolving to peer ID
- */
-export function initializePeer(userId: string, retryCount = 0): Promise<string> {
-    return new Promise((resolve, reject) => {
-        if (peer && !peer.destroyed) {
-            if (peer.id === userId && peer.open) {
-                console.log('✅ Reusing existing Peer with ID:', peer.id);
-                return resolve(peer.id);
-            }
-            peer.destroy();
-        }
+const configuration = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+    ]
+};
 
-        console.log(`⏳ Creating new Peer with ID: ${userId} (Attempt ${retryCount + 1})`);
-        
-        // Use default server first, then fallback to a different port/config if throttled
-        const useFallback = retryCount > 0;
+let unsubRoom: (() => void) | null = null;
+let unsubCallerCandidates: (() => void) | null = null;
+let unsubCalleeCandidates: (() => void) | null = null;
 
+export async function initializePeer(userId: string): Promise<string> {
+    // Stubbed for backwards compatibility, not needed for native WebRTC
+    return userId;
+}
+
+export async function makeCall(
+    roomId: string,
+    localStream: MediaStream
+): Promise<MediaStream> {
+    disconnectPeer(); // Ensure clean slate
+    return new Promise(async (resolve, reject) => {
         try {
-            peer = new Peer(userId, {
-                host: '0.peerjs.com',
-                port: useFallback ? 9000 : 443, // Fallback port
-                path: '/',
-                secure: !useFallback, // 9000 on peerjs is usually ws:// not wss://
-                debug: 2,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
-                    ]
+            console.log('📞 Initiating call as Caller (User)...');
+            pc = new RTCPeerConnection(configuration);
+
+            // Add local tracks
+            localStream.getTracks().forEach(track => {
+                pc?.addTrack(track, localStream);
+            });
+
+            // Listen for remote track
+            pc.ontrack = event => {
+                console.log('✅ Received remote stream track');
+                resolve(event.streams[0]);
+            };
+
+            const roomRef = doc(db, "consultations", roomId);
+            const callerCandidatesCollection = collection(roomRef, 'callerCandidates');
+
+            // Collect and send ICE candidates
+            pc.onicecandidate = event => {
+                if (event.candidate) {
+                    addDoc(callerCandidatesCollection, event.candidate.toJSON());
+                }
+            };
+
+            // Create Offer
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            // Save Offer to Firestore
+            await updateDoc(roomRef, {
+                offer: {
+                    type: offer.type,
+                    sdp: offer.sdp,
                 }
             });
 
-            peer.on('open', (id) => {
-                console.log('✅ Peer initialized with ID:', id);
-                resolve(id);
-            });
-
-            peer.on('error', (err) => {
-                console.error(`❌ Peer initialization error (type: ${err.type}):`, err);
-                
-                // If ID is taken, just resolve with it anyway (since we want deterministic IDs)
-                if (err.type === 'unavailable-id') {
-                    console.log('⚠️ ID already in use, assuming it is a page reload ghost and continuing...');
-                    resolve(userId);
-                    return;
-                }
-
-                if (err.type === 'peer-unavailable') {
-                    console.log('⚠️ Remote peer is not connected yet. Waiting...');
-                    return; // Ignore this so we don't destroy the active connection
-                }
-
-                if (retryCount < 2) {
-                    console.log(`🔄 Retrying peer initialization...`);
-                    peer?.destroy();
-                    setTimeout(() => {
-                        resolve(initializePeer(userId, retryCount + 1));
-                    }, 1000);
-                } else {
-                    reject(err);
+            // Listen for Answer
+            unsubRoom = onSnapshot(roomRef, async snapshot => {
+                const data = snapshot.data();
+                if (!pc?.currentRemoteDescription && data?.answer) {
+                    console.log("✅ Received Answer from Astrologer:", data.answer);
+                    const rtcSessionDescription = new RTCSessionDescription(data.answer);
+                    await pc.setRemoteDescription(rtcSessionDescription);
                 }
             });
 
-            peer.on('disconnected', () => {
-                console.warn('⚠️ Peer disconnected, attempting reconnect...');
-                if (peer && !peer.destroyed) {
-                    peer.reconnect();
-                }
+            // Listen for Callee (Astrologer) ICE Candidates
+            const calleeCandidatesCollection = collection(roomRef, 'calleeCandidates');
+            unsubCalleeCandidates = onSnapshot(calleeCandidatesCollection, snapshot => {
+                snapshot.docChanges().forEach(async change => {
+                    if (change.type === 'added') {
+                        let data = change.doc.data();
+                        await pc?.addIceCandidate(new RTCIceCandidate(data));
+                    }
+                });
             });
+
         } catch (e) {
-            console.error("Critical PeerJS setup crash:", e);
+            console.error('Call initialization failed:', e);
             reject(e);
         }
     });
 }
 
-/**
- * Make outgoing call to remote peer
- * @param remotePeerId - Peer ID to call
- * @param localStream - Local media stream to send
- * @returns Promise resolving to remote media stream
- */
-export async function makeCall(
-    remotePeerId: string,
-    localStream: MediaStream
-): Promise<MediaStream> {
-    if (!peer) {
-        throw new Error('Peer not initialized. Call initializePeer() first.');
-    }
-
-    console.log('📞 Calling peer:', remotePeerId);
-
-    // Make call with local stream
-    const call = peer.call(remotePeerId, localStream);
-    currentCall = call;
-
-    return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            console.warn('Call timeout (5s) - remote peer did not answer');
-            reject(new Error('Call timeout (5s) - remote peer might be offline or connecting'));
-        }, 5000); // 5 second rapid-timeout for better retry loop synergy
-
-        call.on('stream', (remoteStream) => {
-            clearTimeout(timeout);
-            console.log('✅ Received remote stream');
-            resolve(remoteStream);
-        });
-
-        call.on('error', (err) => {
-            clearTimeout(timeout);
-            console.error('❌ Call error:', err);
-            reject(err);
-        });
-
-        call.on('close', () => {
-            console.log('📴 Call closed');
-            currentCall = null;
-        });
-    });
-}
-
-/**
- * Answer incoming calls
- * @param localStream - Local media stream to send
- * @param onRemoteStream - Callback when remote stream received
- */
 export function answerCall(
+    roomId: string,
     localStream: MediaStream,
-    onRemoteStream: (stream: MediaStream) => void,
-    onCallClosed?: () => void
+    onRemoteStream: (stream: MediaStream) => void
 ): void {
-    if (!peer) {
-        throw new Error('Peer not initialized. Call initializePeer() first.');
-    }
+    disconnectPeer(); // Ensure clean slate
+    console.log('📱 Waiting for incoming call as Callee (Astrologer)...');
+    
+    pc = new RTCPeerConnection(configuration);
 
-    console.log('📱 Ready to answer incoming calls...');
+    // Add local tracks
+    localStream.getTracks().forEach(track => {
+        pc?.addTrack(track, localStream);
+    });
 
-    peer.on('call', (call) => {
-        console.log('📞 Incoming call from:', call.peer);
+    // Listen for remote track
+    pc.ontrack = event => {
+        console.log('✅ Received remote stream track');
+        onRemoteStream(event.streams[0]);
+    };
 
-        // Answer with local stream
-        call.answer(localStream);
-        currentCall = call;
+    const roomRef = doc(db, "consultations", roomId);
+    const calleeCandidatesCollection = collection(roomRef, 'calleeCandidates');
 
-        call.on('stream', (remoteStream) => {
-            console.log('✅ Received remote stream from caller');
-            onRemoteStream(remoteStream);
-        });
+    // Collect and send our ICE candidates
+    pc.onicecandidate = event => {
+        if (event.candidate) {
+            addDoc(calleeCandidatesCollection, event.candidate.toJSON());
+        }
+    };
 
-        call.on('close', () => {
-            console.log('📴 Incoming call closed');
-            currentCall = null;
-            onCallClosed?.();
-        });
+    let answerCreated = false;
 
-        call.on('error', (err) => {
-            console.error('❌ Incoming call error:', err);
+    // Listen for Offer
+    unsubRoom = onSnapshot(roomRef, async snapshot => {
+        const data = snapshot.data();
+        if (data?.offer && !answerCreated) {
+            console.log("Got offer, creating answer");
+            answerCreated = true; // Prevent multiple answers
+            const offerDescription = data.offer;
+            await pc?.setRemoteDescription(new RTCSessionDescription(offerDescription));
+
+            const answer = await pc?.createAnswer();
+            if (answer && pc) {
+                await pc.setLocalDescription(answer);
+
+                await updateDoc(roomRef, {
+                    answer: {
+                        type: answer.type,
+                        sdp: answer.sdp,
+                    }
+                });
+            }
+        }
+    });
+
+    // Listen for Caller (User) ICE Candidates
+    const callerCandidatesCollection = collection(roomRef, 'callerCandidates');
+    unsubCallerCandidates = onSnapshot(callerCandidatesCollection, snapshot => {
+        snapshot.docChanges().forEach(async change => {
+            if (change.type === 'added') {
+                let data = change.doc.data();
+                await pc?.addIceCandidate(new RTCIceCandidate(data));
+            }
         });
     });
 }
 
-/**
- * Get current peer ID
- */
-export function getPeerId(): string | null {
-    return peer?.id || null;
-}
-
-/**
- * Check if peer is connected
- */
-export function isPeerConnected(): boolean {
-    return peer?.disconnected === false;
-}
-
-/**
- * Disconnect and cleanup
- */
 export function disconnectPeer(): void {
-    console.log('🔌 Disconnecting peer...');
+    console.log('🔌 Disconnecting WebRTC peer...');
+    
+    if (unsubRoom) { unsubRoom(); unsubRoom = null; }
+    if (unsubCallerCandidates) { unsubCallerCandidates(); unsubCallerCandidates = null; }
+    if (unsubCalleeCandidates) { unsubCalleeCandidates(); unsubCalleeCandidates = null; }
 
-    if (currentCall) {
-        currentCall.close();
-        currentCall = null;
-    }
-
-    if (peer) {
-        peer.destroy();
-        peer = null;
-    }
-}
-
-/**
- * Reconnect peer if disconnected
- */
-export function reconnectPeer(): void {
-    if (peer && peer.disconnected) {
-        console.log('🔄 Reconnecting peer...');
-        peer.reconnect();
+    if (pc) {
+        pc.close();
+        pc = null;
     }
 }
