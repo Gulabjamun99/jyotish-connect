@@ -321,7 +321,7 @@ export default function ConsultPage() {
             ) : (
                 /* Video/Audio Mode - Lobby First */
                 <div className="flex-grow h-[calc(100vh-64px)] relative">
-                    {!isJoined || (!remoteStream && !isDemo) ? (
+                    {!isJoined ? (
                         <LobbyInterface
                             stream={stream}
                             micOn={micOn}
