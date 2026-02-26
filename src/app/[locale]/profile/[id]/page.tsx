@@ -100,22 +100,15 @@ export default function ProfilePage() {
             // Option A: Pay via Wallet (Preferred) - FORCED TRUE FOR FREE TESTING
             if (true || userData.walletBalance >= currentPrice) {
                 toast.loading("Processing free test booking...", { id: 'booking' });
-                const res = await fetch("/api/wallet/pay", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        userId: user.uid,
-                        astrologerId: profile.id,
-                        amount: currentPrice,
-                        bookingData
-                    })
-                });
+                
+                // CLIENT-SIDE DIRECT BOOKING FOR FREE TESTING BYPASS
+                const newBooking = await createBooking({
+                    ...bookingData,
+                    paymentMode: 'wallet'
+                } as any);
 
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error);
-
-                toast.success("Payment via Wallet successful! Connecting...", { id: 'booking' });
-                router.push(`/consult/${data.bookingId}?type=${consultationType}`);
+                toast.success("Free Booking Created! Connecting...", { id: 'booking' });
+                router.push(`/consult/${newBooking.id}?type=${consultationType}`);
                 return;
             }
 
