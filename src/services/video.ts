@@ -53,6 +53,11 @@ export function initializePeer(userId: string, retryCount = 0): Promise<string> 
                     return;
                 }
 
+                if (err.type === 'peer-unavailable') {
+                    console.log('⚠️ Remote peer is not connected yet. Waiting...');
+                    return; // Ignore this so we don't destroy the active connection
+                }
+
                 if (retryCount < 2) {
                     console.log(`🔄 Retrying peer initialization...`);
                     peer?.destroy();
@@ -99,8 +104,9 @@ export async function makeCall(
 
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-            reject(new Error('Call timeout - peer did not answer'));
-        }, 30000); // 30 second timeout
+            console.warn('Call timeout (5s) - remote peer did not answer');
+            reject(new Error('Call timeout (5s) - remote peer might be offline or connecting'));
+        }, 5000); // 5 second rapid-timeout for better retry loop synergy
 
         call.on('stream', (remoteStream) => {
             clearTimeout(timeout);
