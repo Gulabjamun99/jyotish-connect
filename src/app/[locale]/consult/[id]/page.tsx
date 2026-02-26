@@ -105,102 +105,69 @@ export default function ConsultPage() {
             [participantRole === 'astrologer' ? 'astrologerJoined' : 'userJoined']: true
         });
 
-        // Initialize PeerJS
-        if (!stream) return;
+        if (!stream) {
+            toast.error("Camera/Mic not detected. Please allow permissions.");
+            return;
+        }
 
         try {
             console.log("🔵 Initializing PeerJS connection...");
-            const myPeerId = await initializePeer(id + "_" + participantRole); // Unique ID based on role
-            console.log("✅ My Peer ID:", myPeerId);
+            // Deterministic IDs: roomID_role
+            const myPeerId = `${id}_${participantRole}`;
+            const targetPeerId = `${id}_${participantRole === 'astrologer' ? 'user' : 'astrologer'}`;
 
-            // Store Peer ID for discovery
-            await fetch('/api/peer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    consultationId: id,
-                    peerId: myPeerId,
-                    role: (participantRole as string) === 'astrologer' ? 'astrologer' : 'user'
-                })
-            });
+            await initializePeer(myPeerId);
+            console.log("✅ My Peer ID initialized deterministically:", myPeerId);
 
-            // Start Connecting
             if (participantRole === 'astrologer') {
-                console.log("📱 Astrologer: Waiting for call...");
+                // Astrologer always WAITS for the call
+                console.log("📱 Astrologer: Waiting for incoming call...");
                 answerCall(stream, (remoteStream) => {
-                    console.log("✅ Astrologer: Received remote stream!");
+                    console.log("✅ Astrologer: Received remote stream from User!");
                     setRemoteStream(remoteStream);
                     toast.success("Devotee Connected!");
                 });
             } else {
-                console.log("👤 User: Polling for Astrologer...");
-                console.log("👤 User: Listening for Astrologer's Peer ID...");
-
+                // User always MAKES the call
+                console.log(`👤 User: Attempting to call Acharya at ${targetPeerId}...`);
+                
+                // Retry mechanism for user calling astrologer
                 let attempts = 0;
-                let hasConnected = false;
+                let connected = false;
 
-                const connectToPeer = async (targetPeerId: string) => {
-                    if (hasConnected) return;
-                    console.log("✅ Found Remote Peer ID:", targetPeerId);
-                    hasConnected = true;
+                const tryCall = async () => {
+                    if (connected) return;
+                    attempts++;
                     try {
+                        console.log(`Call attempt ${attempts}...`);
                         const rStream = await makeCall(targetPeerId, stream);
                         setRemoteStream(rStream);
+                        connected = true;
                         toast.success("Connected to Acharya!");
+                        console.log("✅ User: Call successful!");
                     } catch (e) {
-                        console.error("Peer connection failed:", e);
-                        hasConnected = false; // Allow retry
+                        console.warn(`Call attempt ${attempts} failed:`, e);
+                        if (attempts < 15) {
+                            setTimeout(tryCall, 3000); // Retry every 3 seconds
+                        } else {
+                            toast.error("Could not reach Acharya. They might not be in the room yet.");
+                        }
                     }
                 };
 
-                // 1. Direct active Firestore listener
-                const unsubscribePeer = onSnapshot(doc(db, "consultations", id), async (docSnap) => {
-                    if (hasConnected) return;
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        const targetPeerId = (participantRole as string) === 'astrologer' ? data.userPeerId : data.astrologerPeerId;
-                        if (targetPeerId) {
-                            unsubscribePeer();
-                            await connectToPeer(targetPeerId);
-                        }
-                    }
-                });
-
-                // 2. HTTP Polling Fallback (in case WebSockets are blocked)
-                const pollInterval = setInterval(async () => {
-                    if (hasConnected) {
-                        clearInterval(pollInterval);
-                        return;
-                    }
-                    attempts++;
-                    try {
-                        const res = await fetch(`/api/peer?consultationId=${id}&role=${participantRole}`);
-                        const data = await res.json();
-                        if (data.peerId) {
-                            clearInterval(pollInterval);
-                            unsubscribePeer();
-                            await connectToPeer(data.peerId);
-                        }
-                    } catch (e) { console.warn("Polling failed", e); }
-
-                    if (attempts > 30) {
-                        clearInterval(pollInterval);
-                        unsubscribePeer();
-                        toast.error("Call timeout - no connection established.", { duration: 5000 });
-                    }
-                }, 1500);
+                // Start calling loop
+                setTimeout(tryCall, 2000); // Give astrologer 2 seconds head start just in case they joined identically
             }
 
-            // Start Transcription
+            // Start Transcription Backup
             if (!recognitionRef.current && 'webkitSpeechRecognition' in window) {
                 const SpeechRecognition = (window as any).webkitSpeechRecognition;
                 const recognition = new SpeechRecognition();
                 recognition.continuous = true;
                 recognition.interimResults = true;
-                recognition.lang = 'en-IN'; // Default to Indian English
+                recognition.lang = 'en-IN';
 
                 recognition.onresult = (event: any) => {
-                    const interimTranscript = '';
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
                         if (event.results[i].isFinal) {
                             const text = event.results[i][0].transcript;
@@ -208,8 +175,6 @@ export default function ConsultPage() {
                             const time = new Date().toLocaleTimeString();
 
                             setTranscript(prev => [...prev, { speaker, text, time }]);
-
-                            // Save to Firestore real-time
                             addTranscriptLine(id, { speaker, text, time });
                         }
                     }
@@ -220,7 +185,7 @@ export default function ConsultPage() {
 
         } catch (err) {
             console.error("Connection failed:", err);
-            toast.error("Connection failed. Retrying...");
+            toast.error("Initialization failed. Please refresh.");
         }
     };
 
