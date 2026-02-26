@@ -13,8 +13,8 @@ export function FeaturedAstrologers() {
             setLoading(true);
             try {
                 const { astrologers: data } = await getAstrologers(undefined, 4);
-                // Filter out the dummy c kumar profile used for testing
-                setAstrologers(data.filter((a: any) => a.id !== "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2"));
+                // Already sorted and limited by query
+                setAstrologers(data);
             } catch (err) {
                 console.error("Failed to fetch featured astrologers", err);
             } finally {

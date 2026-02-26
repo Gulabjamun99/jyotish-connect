@@ -40,9 +40,6 @@ export default function SearchPage() {
     }, [filters]);
 
     const filteredAstrologers = astrologers.filter(astro => {
-        // Hide confusing mock profile
-        if (astro.id === "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2") return false;
-
         const matchesSearch = astro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             astro.expertise.toLowerCase().includes(searchQuery.toLowerCase());
 
