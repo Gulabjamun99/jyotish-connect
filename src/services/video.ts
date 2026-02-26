@@ -9,22 +9,27 @@ let currentCall: MediaConnection | null = null;
  * @returns Promise resolving to peer ID
  */
 export function initializePeer(userId: string): Promise<string> {
-    // Close existing peer if any
-    if (peer) {
-        peer.destroy();
-    }
-
-    // Create new peer with user ID
-    peer = new Peer(userId, {
-        // Using free public PeerJS server
-        host: '0.peerjs.com',
-        port: 443,
-        path: '/',
-        secure: true,
-        debug: 2
-    });
-
     return new Promise((resolve, reject) => {
+        // If peer exists and has the right ID, reuse it
+        if (peer && !peer.destroyed) {
+            if (peer.id === userId && peer.open) {
+                console.log('✅ Reusing existing Peer with ID:', peer.id);
+                return resolve(peer.id);
+            }
+            // If it's a different ID or disconnected, destroy it first
+            peer.destroy();
+        }
+
+        console.log(`⏳ Creating new Peer with ID: ${userId}`);
+        // Create new peer with deterministic user ID
+        peer = new Peer(userId, {
+            // Using free public PeerJS server
+            host: '0.peerjs.com',
+            port: 443,
+            path: '/',
+            secure: true,
+            debug: 2
+        });
         peer!.on('open', (id) => {
             console.log('✅ Peer initialized with ID:', id);
             resolve(id);
