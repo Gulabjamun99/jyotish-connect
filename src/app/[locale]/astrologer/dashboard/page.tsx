@@ -267,7 +267,7 @@ export default function AstrologerDashboard() {
 
                                         <div className="flex w-full md:w-auto gap-3 relative z-10 mt-2 md:mt-0">
                                             <Button
-                                                onClick={() => router.push(`/consult/${booking.id}?type=${booking.type}`)}
+                                                onClick={() => router.push(`/consult/${booking.id}?type=${booking.type}&role=astrologer`)}
                                                 className={`h-12 flex-1 md:flex-none md:px-8 font-bold uppercase tracking-wider text-[10px] rounded-xl transition-all ${index === 0 && booking.status !== 'completed' ? 'bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse' : 'bg-white text-black hover:bg-zinc-200'}`}
                                             >
                                                 Join Room
