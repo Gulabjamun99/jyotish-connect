@@ -44,6 +44,12 @@ export default function ConsultPage() {
     const [isRemoteOnline, setIsRemoteOnline] = useState(false);
     const [remoteName, setRemoteName] = useState(participantRole === 'astrologer' ? "User" : "Acharya");
     const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle');
+    const [debugLog, setDebugLog] = useState<string[]>([]);
+
+    const addDebug = (msg: string) => {
+        console.log(`🔍 ${msg}`);
+        setDebugLog(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()} ${msg}`]);
+    };
 
     const [transcript, setTranscript] = useState<{ speaker: string, text: string, time: string }[]>([]);
     const [messages, setMessages] = useState<any[]>([]); // For chat mode
@@ -100,47 +106,51 @@ export default function ConsultPage() {
     const handleJoinRoom = async () => {
         setIsJoined(true);
         setConnectionStatus('connecting');
+        addDebug(`Role: ${participantRole}, Room: ${id}`);
         toast.success("Joining Heavenly Room...");
 
-        // Mark as joined in Firestore
-        await updateDoc(doc(db, "consultations", id), {
-            [participantRole === 'astrologer' ? 'astrologerJoined' : 'userJoined']: true
-        });
+        // Mark as joined in Firestore (using setDoc merge — never fails on missing doc)
+        try {
+            await setDoc(doc(db, "consultations", id), {
+                [participantRole === 'astrologer' ? 'astrologerJoined' : 'userJoined']: true
+            }, { merge: true });
+            addDebug('✅ Marked joined in Firestore');
+        } catch (e: any) {
+            addDebug(`❌ Firestore join failed: ${e.message}`);
+        }
 
         if (!stream) {
+            addDebug('❌ No media stream — camera/mic denied');
             toast.error("Camera/Mic not detected. Please allow permissions.");
             setConnectionStatus('failed');
             return;
         }
+        addDebug(`✅ Media stream ready (tracks: ${stream.getTracks().length})`);
 
         try {
-            console.log("🔵 Initializing WebRTC connection via Firestore signaling...");
-
-            await initializePeer(participantRole); // Stub
+            await initializePeer(participantRole);
 
             if (participantRole === 'astrologer') {
-                // Astrologer: Signal readiness FIRST, then wait for offer
-                console.log("📱 Astrologer: Signaling ready and waiting for offer...");
+                addDebug('📱 Astrologer: Setting up listener for offer...');
                 answerCall(id, stream, (remoteStream) => {
-                    console.log("✅ Astrologer: Received remote stream from User!");
+                    addDebug('✅ Astrologer: Got remote stream!');
                     setRemoteStream(remoteStream);
                     setConnectionStatus('connected');
                     toast.success("Devotee Connected!");
                 });
+                addDebug('📱 Astrologer: Listener active, waiting for User offer...');
             } else {
-                // User: Wait for Astrologer's readiness, then create offer
-                console.log(`👤 User: Waiting for Acharya readiness, then creating offer in room ${id}...`);
-
+                addDebug('👤 User: Creating offer...');
                 try {
                     const rStream = await makeCall(id, stream);
+                    addDebug('✅ User: Got remote stream!');
                     setRemoteStream(rStream);
                     setConnectionStatus('connected');
                     toast.success("Connected to Acharya!");
-                    console.log("✅ User: WebRTC Call successful!");
                 } catch (e: any) {
-                    console.error("WebRTC Negotiation failed:", e);
+                    addDebug(`❌ User makeCall failed: ${e.message}`);
                     setConnectionStatus('failed');
-                    toast.error(e?.message || "Could not reach Acharya. They might not be in the room yet.");
+                    toast.error(e?.message || "Could not reach Acharya.");
                 }
             }
 
@@ -168,8 +178,8 @@ export default function ConsultPage() {
                 recognitionRef.current = recognition;
             }
 
-        } catch (err) {
-            console.error("Connection failed:", err);
+        } catch (err: any) {
+            addDebug(`❌ Fatal error: ${err?.message}`);
             setConnectionStatus('failed');
             toast.error("Initialization failed. Please refresh.");
         }
@@ -350,12 +360,17 @@ export default function ConsultPage() {
                             {/* Connection Status Overlay */}
                             {connectionStatus === 'connecting' && (
                                 <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                                    <div className="text-center space-y-4 glass p-10 rounded-3xl border border-orange-500/20">
+                                    <div className="text-center space-y-4 glass p-10 rounded-3xl border border-orange-500/20 max-w-lg">
                                         <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                                        <p className="text-white font-bold text-lg">
-                                            Establishing connection...
-                                        </p>
+                                        <p className="text-white font-bold text-lg">Establishing connection...</p>
                                         <p className="text-white/40 text-sm">Connecting to the other participant</p>
+                                        {/* Debug Panel */}
+                                        <div className="mt-4 text-left bg-black/50 rounded-xl p-4 max-h-40 overflow-y-auto">
+                                            <p className="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-2">Connection Log</p>
+                                            {debugLog.map((log, i) => (
+                                                <p key={i} className="text-[11px] text-white/60 font-mono leading-relaxed">{log}</p>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             )}
