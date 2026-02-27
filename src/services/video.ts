@@ -1,21 +1,20 @@
 import { db } from "@/lib/firebase";
-import { doc, setDoc, updateDoc, collection, addDoc, onSnapshot, getDoc } from "firebase/firestore";
+import { doc, updateDoc, onSnapshot, arrayUnion, deleteField } from "firebase/firestore";
 
 let pc: RTCPeerConnection | null = null;
 
 const configuration = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:global.stun.twilio.com:3478' }
     ]
 };
 
 let unsubRoom: (() => void) | null = null;
-let unsubCallerCandidates: (() => void) | null = null;
-let unsubCalleeCandidates: (() => void) | null = null;
 
 export async function initializePeer(userId: string): Promise<string> {
-    // Stubbed for backwards compatibility, not needed for native WebRTC
+    // Stubbed for backwards compatibility
     return userId;
 }
 
@@ -41,12 +40,17 @@ export async function makeCall(
             };
 
             const roomRef = doc(db, "consultations", roomId);
-            const callerCandidatesCollection = collection(roomRef, 'callerCandidates');
 
-            // Collect and send ICE candidates
-            pc.onicecandidate = event => {
+            // Collect and send our ICE candidates to main document array
+            pc.onicecandidate = async event => {
                 if (event.candidate) {
-                    addDoc(callerCandidatesCollection, event.candidate.toJSON());
+                    try {
+                        await updateDoc(roomRef, {
+                            callerCandidates: arrayUnion(event.candidate.toJSON())
+                        });
+                    } catch (e) {
+                        console.error("Failed to save caller candidate", e);
+                    }
                 }
             };
 
@@ -54,33 +58,45 @@ export async function makeCall(
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            // Save Offer to Firestore
+            // Clean the slate in Firestore and save Offer
             await updateDoc(roomRef, {
                 offer: {
                     type: offer.type,
                     sdp: offer.sdp,
-                }
+                },
+                callerCandidates: [],
+                calleeCandidates: [],
+                answer: deleteField()
             });
 
-            // Listen for Answer
+            const addedCandidates = new Set<string>();
+
+            // Listen for Answer and Callee Candidates
             unsubRoom = onSnapshot(roomRef, async snapshot => {
                 const data = snapshot.data();
-                if (!pc?.currentRemoteDescription && data?.answer) {
-                    console.log("✅ Received Answer from Astrologer:", data.answer);
+                if (!data) return;
+
+                // Handle Answer
+                if (!pc?.currentRemoteDescription && data.answer) {
+                    console.log("✅ Received Answer from Astrologer");
                     const rtcSessionDescription = new RTCSessionDescription(data.answer);
                     await pc.setRemoteDescription(rtcSessionDescription);
                 }
-            });
 
-            // Listen for Callee (Astrologer) ICE Candidates
-            const calleeCandidatesCollection = collection(roomRef, 'calleeCandidates');
-            unsubCalleeCandidates = onSnapshot(calleeCandidatesCollection, snapshot => {
-                snapshot.docChanges().forEach(async change => {
-                    if (change.type === 'added') {
-                        let data = change.doc.data();
-                        await pc?.addIceCandidate(new RTCIceCandidate(data));
+                // Handle ICE Candidates from Astrologer
+                if (data.calleeCandidates && Array.isArray(data.calleeCandidates)) {
+                    for (const candidate of data.calleeCandidates) {
+                        const sig = JSON.stringify(candidate);
+                        if (!addedCandidates.has(sig)) {
+                            addedCandidates.add(sig);
+                            try {
+                                await pc?.addIceCandidate(new RTCIceCandidate(candidate));
+                            } catch (e) {
+                                console.error("Error adding callee ICE candidate", e);
+                            }
+                        }
                     }
-                });
+                }
             });
 
         } catch (e) {
@@ -97,7 +113,7 @@ export function answerCall(
 ): void {
     disconnectPeer(); // Ensure clean slate
     console.log('📱 Waiting for incoming call as Callee (Astrologer)...');
-    
+
     pc = new RTCPeerConnection(configuration);
 
     // Add local tracks
@@ -112,21 +128,30 @@ export function answerCall(
     };
 
     const roomRef = doc(db, "consultations", roomId);
-    const calleeCandidatesCollection = collection(roomRef, 'calleeCandidates');
 
     // Collect and send our ICE candidates
-    pc.onicecandidate = event => {
+    pc.onicecandidate = async event => {
         if (event.candidate) {
-            addDoc(calleeCandidatesCollection, event.candidate.toJSON());
+            try {
+                await updateDoc(roomRef, {
+                    calleeCandidates: arrayUnion(event.candidate.toJSON())
+                });
+            } catch (e) {
+                console.error("Failed to save callee candidate", e);
+            }
         }
     };
 
     let answerCreated = false;
+    const addedCandidates = new Set<string>();
 
-    // Listen for Offer
+    // Listen for Offer and Caller Candidates
     unsubRoom = onSnapshot(roomRef, async snapshot => {
         const data = snapshot.data();
-        if (data?.offer && !answerCreated) {
+        if (!data) return;
+
+        // Process Offer if present
+        if (data.offer && !answerCreated) {
             console.log("Got offer, creating answer");
             answerCreated = true; // Prevent multiple answers
             const offerDescription = data.offer;
@@ -144,26 +169,31 @@ export function answerCall(
                 });
             }
         }
-    });
 
-    // Listen for Caller (User) ICE Candidates
-    const callerCandidatesCollection = collection(roomRef, 'callerCandidates');
-    unsubCallerCandidates = onSnapshot(callerCandidatesCollection, snapshot => {
-        snapshot.docChanges().forEach(async change => {
-            if (change.type === 'added') {
-                let data = change.doc.data();
-                await pc?.addIceCandidate(new RTCIceCandidate(data));
+        // Process Caller ICE Candidates
+        if (data.callerCandidates && Array.isArray(data.callerCandidates)) {
+            for (const candidate of data.callerCandidates) {
+                const sig = JSON.stringify(candidate);
+                if (!addedCandidates.has(sig)) {
+                    addedCandidates.add(sig);
+                    try {
+                        await pc?.addIceCandidate(new RTCIceCandidate(candidate));
+                    } catch (e) {
+                        console.error("Error adding caller ICE candidate", e);
+                    }
+                }
             }
-        });
+        }
     });
 }
 
 export function disconnectPeer(): void {
     console.log('🔌 Disconnecting WebRTC peer...');
-    
-    if (unsubRoom) { unsubRoom(); unsubRoom = null; }
-    if (unsubCallerCandidates) { unsubCallerCandidates(); unsubCallerCandidates = null; }
-    if (unsubCalleeCandidates) { unsubCalleeCandidates(); unsubCalleeCandidates = null; }
+
+    if (unsubRoom) {
+        unsubRoom();
+        unsubRoom = null;
+    }
 
     if (pc) {
         pc.close();
