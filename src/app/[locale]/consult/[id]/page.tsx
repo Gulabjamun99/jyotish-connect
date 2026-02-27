@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { PhoneOff } from "lucide-react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { initializePeer, makeCall, answerCall, disconnectPeer, getPeerId } from "@/services/video";
+import { initializePeer, makeCall, answerCall, disconnectPeer } from "@/services/video";
 import { toast } from "react-hot-toast";
 import { startConsultation, addTranscriptLine, listenToConsultation } from "@/services/firestore";
 import { useAuth } from "@/context/AuthContext";
@@ -43,6 +43,7 @@ export default function ConsultPage() {
     // Presence States
     const [isRemoteOnline, setIsRemoteOnline] = useState(false);
     const [remoteName, setRemoteName] = useState(participantRole === 'astrologer' ? "User" : "Acharya");
+    const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle');
 
     const [transcript, setTranscript] = useState<{ speaker: string, text: string, time: string }[]>([]);
     const [messages, setMessages] = useState<any[]>([]); // For chat mode
@@ -98,6 +99,7 @@ export default function ConsultPage() {
     // 2. Join Room Logic (Called when "Join Now" clicked)
     const handleJoinRoom = async () => {
         setIsJoined(true);
+        setConnectionStatus('connecting');
         toast.success("Joining Heavenly Room...");
 
         // Mark as joined in Firestore
@@ -107,34 +109,38 @@ export default function ConsultPage() {
 
         if (!stream) {
             toast.error("Camera/Mic not detected. Please allow permissions.");
+            setConnectionStatus('failed');
             return;
         }
 
         try {
-            console.log("🔵 Initializing Native WebRTC connection via Firestore...");
-            
+            console.log("🔵 Initializing WebRTC connection via Firestore signaling...");
+
             await initializePeer(participantRole); // Stub
 
             if (participantRole === 'astrologer') {
-                // Astrologer always WAITS for the call (creates Answer)
-                console.log("📱 Astrologer: Waiting for incoming WebRTC offer...");
+                // Astrologer: Signal readiness FIRST, then wait for offer
+                console.log("📱 Astrologer: Signaling ready and waiting for offer...");
                 answerCall(id, stream, (remoteStream) => {
                     console.log("✅ Astrologer: Received remote stream from User!");
                     setRemoteStream(remoteStream);
+                    setConnectionStatus('connected');
                     toast.success("Devotee Connected!");
                 });
             } else {
-                // User always MAKES the call (creates Offer)
-                console.log(`👤 User: Attempting to create WebRTC offer in room ${id}...`);
-                
+                // User: Wait for Astrologer's readiness, then create offer
+                console.log(`👤 User: Waiting for Acharya readiness, then creating offer in room ${id}...`);
+
                 try {
                     const rStream = await makeCall(id, stream);
                     setRemoteStream(rStream);
+                    setConnectionStatus('connected');
                     toast.success("Connected to Acharya!");
                     console.log("✅ User: WebRTC Call successful!");
-                } catch (e) {
+                } catch (e: any) {
                     console.error("WebRTC Negotiation failed:", e);
-                    toast.error("Could not reach Acharya. They might not be in the room yet.");
+                    setConnectionStatus('failed');
+                    toast.error(e?.message || "Could not reach Acharya. They might not be in the room yet.");
                 }
             }
 
@@ -164,7 +170,33 @@ export default function ConsultPage() {
 
         } catch (err) {
             console.error("Connection failed:", err);
+            setConnectionStatus('failed');
             toast.error("Initialization failed. Please refresh.");
+        }
+    };
+
+    // Retry connection handler
+    const handleRetryConnection = async () => {
+        setConnectionStatus('connecting');
+        disconnectPeer();
+        if (stream) {
+            try {
+                if (participantRole === 'astrologer') {
+                    answerCall(id, stream, (remoteStream) => {
+                        setRemoteStream(remoteStream);
+                        setConnectionStatus('connected');
+                        toast.success("Devotee Connected!");
+                    });
+                } else {
+                    const rStream = await makeCall(id, stream);
+                    setRemoteStream(rStream);
+                    setConnectionStatus('connected');
+                    toast.success("Connected to Acharya!");
+                }
+            } catch (e: any) {
+                setConnectionStatus('failed');
+                toast.error(e?.message || "Retry failed. Please refresh the page.");
+            }
         }
     };
 
@@ -314,26 +346,57 @@ export default function ConsultPage() {
                             userName={user?.displayName || (participantRole === 'astrologer' ? 'Acharya' : 'User')}
                         />
                     ) : (
-                        <VideoInterface
-                            stream={stream}
-                            remoteStream={remoteStream}
-                            micOn={micOn}
-                            videoOn={videoOn}
-                            onToggleMic={toggleMic}
-                            onToggleVideo={toggleVideo}
-                            onDisconnect={handleDisconnect}
-                            userName={user?.displayName || "You"}
-                            astrologerName={remoteName}
-                            timeLeft={timeLeft}
-                            transcript={transcript}
-                            isDemo={isDemo}
-                            onRetryCamera={retryCamera}
-                            labels={{
-                                local: `${user?.displayName || 'You'} (${participantRole})`,
-                                remote: remoteName
-                            }}
-                            consultationId={id}
-                        />
+                        <>
+                            {/* Connection Status Overlay */}
+                            {connectionStatus === 'connecting' && (
+                                <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                                    <div className="text-center space-y-4 glass p-10 rounded-3xl border border-orange-500/20">
+                                        <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                                        <p className="text-white font-bold text-lg">
+                                            {participantRole === 'astrologer'
+                                                ? "Waiting for User to connect..."
+                                                : "Waiting for Acharya to be ready..."}
+                                        </p>
+                                        <p className="text-white/40 text-sm">This may take a few moments</p>
+                                    </div>
+                                </div>
+                            )}
+                            {connectionStatus === 'failed' && (
+                                <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                                    <div className="text-center space-y-4 glass p-10 rounded-3xl border border-red-500/20">
+                                        <div className="text-5xl">⚠️</div>
+                                        <p className="text-white font-bold text-lg">Connection Failed</p>
+                                        <p className="text-white/40 text-sm">Could not establish a peer-to-peer connection.</p>
+                                        <Button
+                                            onClick={handleRetryConnection}
+                                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl px-8 py-3"
+                                        >
+                                            🔄 Retry Connection
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                            <VideoInterface
+                                stream={stream}
+                                remoteStream={remoteStream}
+                                micOn={micOn}
+                                videoOn={videoOn}
+                                onToggleMic={toggleMic}
+                                onToggleVideo={toggleVideo}
+                                onDisconnect={handleDisconnect}
+                                userName={user?.displayName || "You"}
+                                astrologerName={remoteName}
+                                timeLeft={timeLeft}
+                                transcript={transcript}
+                                isDemo={isDemo}
+                                onRetryCamera={retryCamera}
+                                labels={{
+                                    local: `${user?.displayName || 'You'} (${participantRole})`,
+                                    remote: remoteName
+                                }}
+                                consultationId={id}
+                            />
+                        </>
                     )}
                 </div>
             )}
