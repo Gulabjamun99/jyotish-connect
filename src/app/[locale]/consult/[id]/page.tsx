@@ -353,11 +353,9 @@ export default function ConsultPage() {
                                     <div className="text-center space-y-4 glass p-10 rounded-3xl border border-orange-500/20">
                                         <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
                                         <p className="text-white font-bold text-lg">
-                                            {participantRole === 'astrologer'
-                                                ? "Waiting for User to connect..."
-                                                : "Waiting for Acharya to be ready..."}
+                                            Establishing connection...
                                         </p>
-                                        <p className="text-white/40 text-sm">This may take a few moments</p>
+                                        <p className="text-white/40 text-sm">Connecting to the other participant</p>
                                     </div>
                                 </div>
                             )}

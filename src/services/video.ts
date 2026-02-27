@@ -1,21 +1,18 @@
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, onSnapshot, arrayUnion, deleteField, getDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, onSnapshot, arrayUnion, deleteField } from "firebase/firestore";
 
 let pc: RTCPeerConnection | null = null;
 let unsubRoom: (() => void) | null = null;
 
 /**
  * ICE Server Configuration
- * Includes STUN + free TURN servers for NAT traversal on Indian mobile networks (Jio/Airtel).
+ * STUN + free TURN servers for NAT traversal on Indian mobile networks.
  */
 const configuration: RTCConfiguration = {
     iceServers: [
-        // Google STUN
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        // Twilio STUN
         { urls: 'stun:global.stun.twilio.com:3478' },
-        // Free TURN relay from Metered (relay for symmetric NAT)
         {
             urls: "turn:a.relay.metered.ca:80",
             username: "e8dd65f92aea25c159e32478",
@@ -40,27 +37,24 @@ const configuration: RTCConfiguration = {
     iceCandidatePoolSize: 10,
 };
 
-// Connection timeout in ms
 const CONNECTION_TIMEOUT = 60_000;
 
-/**
- * Stub for backwards compatibility.
- */
+/** Stub for backwards compat */
 export async function initializePeer(userId: string): Promise<string> {
     return userId;
 }
 
 /**
  * USER (Caller) side:
- * 1. Waits for Astrologer to signal readyToReceive = true in Firestore
- * 2. Creates SDP Offer → writes to Firestore
- * 3. Listens for SDP Answer + ICE candidates from Astrologer
+ * Creates SDP Offer immediately → saves to Firestore → listens for Answer.
+ * No readiness check needed — Firestore persists the offer, and when the
+ * Astrologer's onSnapshot fires (even later), it will see it.
  */
 export async function makeCall(
     roomId: string,
     localStream: MediaStream
 ): Promise<MediaStream> {
-    disconnectPeer(); // Ensure clean slate
+    disconnectPeer();
 
     return new Promise(async (resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -70,14 +64,7 @@ export async function makeCall(
         }, CONNECTION_TIMEOUT);
 
         try {
-            console.log('📞 [Caller] Waiting for Astrologer to be ready...');
-            const roomRef = doc(db, "consultations", roomId);
-
-            // STEP 1: Wait for Astrologer to be ready before creating offer
-            await waitForReadiness(roomRef);
-            console.log('✅ [Caller] Astrologer is ready. Creating offer...');
-
-            // STEP 2: Setup RTCPeerConnection
+            console.log('📞 [Caller] Creating WebRTC offer...');
             pc = new RTCPeerConnection(configuration);
 
             // Add local tracks
@@ -85,29 +72,31 @@ export async function makeCall(
                 pc?.addTrack(track, localStream);
             });
 
-            // Listen for remote track
+            // Resolve when we get the remote stream
             pc.ontrack = event => {
-                console.log('✅ [Caller] Received remote stream track!');
+                console.log('✅ [Caller] Received remote stream!');
                 clearTimeout(timeout);
                 resolve(event.streams[0]);
             };
 
-            // Connection state debugging
+            // Debug logs
             pc.oniceconnectionstatechange = () => {
-                console.log(`🧊 [Caller] ICE state: ${pc?.iceConnectionState}`);
-                if (pc?.iceConnectionState === 'failed') {
-                    console.error('❌ [Caller] ICE connection failed. May need TURN relay.');
+                console.log(`🧊 [Caller] ICE: ${pc?.iceConnectionState}`);
+                if (pc?.iceConnectionState === 'failed' || pc?.iceConnectionState === 'disconnected') {
+                    console.error('❌ [Caller] ICE failed/disconnected');
                 }
             };
             pc.onconnectionstatechange = () => {
-                console.log(`🔗 [Caller] Connection state: ${pc?.connectionState}`);
+                console.log(`🔗 [Caller] Connection: ${pc?.connectionState}`);
                 if (pc?.connectionState === 'failed') {
                     clearTimeout(timeout);
                     reject(new Error("WebRTC connection failed."));
                 }
             };
 
-            // STEP 3: Collect ICE candidates and store in Firestore
+            const roomRef = doc(db, "consultations", roomId);
+
+            // Send ICE candidates to Firestore
             pc.onicecandidate = async event => {
                 if (event.candidate) {
                     try {
@@ -115,46 +104,50 @@ export async function makeCall(
                             callerCandidates: arrayUnion(event.candidate.toJSON())
                         });
                     } catch (e) {
-                        console.error("[Caller] Failed to save ICE candidate", e);
+                        console.error("[Caller] ICE candidate save failed", e);
                     }
                 }
             };
 
-            // STEP 4: Create SDP Offer
+            // Create SDP Offer
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            // Clean the slate & save Offer
-            await updateDoc(roomRef, {
-                offer: {
-                    type: offer.type,
-                    sdp: offer.sdp,
-                },
+            // Save offer to Firestore (clear stale signaling data)
+            console.log('📤 [Caller] Saving offer to Firestore...');
+            await setDoc(roomRef, {
+                offer: { type: offer.type, sdp: offer.sdp },
                 callerCandidates: [],
                 calleeCandidates: [],
-                answer: deleteField()
-            });
-            console.log('📤 [Caller] Offer saved to Firestore.');
+            }, { merge: true });
 
-            // STEP 5: Listen for Answer + Callee ICE Candidates
+            // Remove any stale answer
+            try {
+                await updateDoc(roomRef, { answer: deleteField() });
+            } catch (e) {
+                // Ignore if answer field doesn't exist
+            }
+
+            console.log('✅ [Caller] Offer saved. Listening for answer...');
+
+            // Listen for Answer + Callee ICE Candidates
             const addedCandidates = new Set<string>();
 
-            unsubRoom = onSnapshot(roomRef, async snapshot => {
+            unsubRoom = onSnapshot(roomRef, async (snapshot: any) => {
                 const data = snapshot.data();
                 if (!data || !pc) return;
 
                 // Handle Answer
                 if (!pc.currentRemoteDescription && data.answer) {
-                    console.log("✅ [Caller] Received Answer from Astrologer");
+                    console.log("📥 [Caller] Got Answer from Astrologer!");
                     try {
-                        const rtcSessionDescription = new RTCSessionDescription(data.answer);
-                        await pc.setRemoteDescription(rtcSessionDescription);
+                        await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
                     } catch (e) {
-                        console.error("[Caller] Failed to set remote description", e);
+                        console.error("[Caller] setRemoteDescription failed", e);
                     }
                 }
 
-                // Handle ICE Candidates from Astrologer
+                // Handle Callee ICE Candidates
                 if (data.calleeCandidates && Array.isArray(data.calleeCandidates)) {
                     for (const candidate of data.calleeCandidates) {
                         const sig = JSON.stringify(candidate);
@@ -163,7 +156,7 @@ export async function makeCall(
                             try {
                                 await pc?.addIceCandidate(new RTCIceCandidate(candidate));
                             } catch (e) {
-                                console.error("[Caller] Error adding callee ICE candidate", e);
+                                console.error("[Caller] addIceCandidate failed", e);
                             }
                         }
                     }
@@ -172,7 +165,7 @@ export async function makeCall(
 
         } catch (e) {
             clearTimeout(timeout);
-            console.error('[Caller] Call initialization failed:', e);
+            console.error('[Caller] Init failed:', e);
             reject(e);
         }
     });
@@ -180,18 +173,17 @@ export async function makeCall(
 
 /**
  * ASTROLOGER (Callee) side:
- * 1. Signals readyToReceive = true in Firestore
- * 2. Listens for SDP Offer from User
- * 3. Creates SDP Answer → writes to Firestore
- * 4. Exchanges ICE candidates
+ * Subscribes to Firestore immediately, waiting for the SDP Offer.
+ * When it arrives, creates Answer and sends it back.
+ * Timing doesn't matter — onSnapshot fires with current doc state on subscribe.
  */
 export function answerCall(
     roomId: string,
     localStream: MediaStream,
     onRemoteStream: (stream: MediaStream) => void
 ): void {
-    disconnectPeer(); // Ensure clean slate
-    console.log('📱 [Callee] Setting up as Astrologer...');
+    disconnectPeer();
+    console.log('📱 [Callee] Setting up and listening for offer...');
 
     pc = new RTCPeerConnection(configuration);
 
@@ -200,23 +192,23 @@ export function answerCall(
         pc?.addTrack(track, localStream);
     });
 
-    // Listen for remote track
+    // Resolve when we get the remote stream
     pc.ontrack = event => {
-        console.log('✅ [Callee] Received remote stream track!');
+        console.log('✅ [Callee] Received remote stream!');
         onRemoteStream(event.streams[0]);
     };
 
-    // Connection state debugging
+    // Debug logs
     pc.oniceconnectionstatechange = () => {
-        console.log(`🧊 [Callee] ICE state: ${pc?.iceConnectionState}`);
+        console.log(`🧊 [Callee] ICE: ${pc?.iceConnectionState}`);
     };
     pc.onconnectionstatechange = () => {
-        console.log(`🔗 [Callee] Connection state: ${pc?.connectionState}`);
+        console.log(`🔗 [Callee] Connection: ${pc?.connectionState}`);
     };
 
     const roomRef = doc(db, "consultations", roomId);
 
-    // Collect ICE candidates
+    // Send ICE candidates to Firestore
     pc.onicecandidate = async event => {
         if (event.candidate) {
             try {
@@ -224,7 +216,7 @@ export function answerCall(
                     calleeCandidates: arrayUnion(event.candidate.toJSON())
                 });
             } catch (e) {
-                console.error("[Callee] Failed to save ICE candidate", e);
+                console.error("[Callee] ICE candidate save failed", e);
             }
         }
     };
@@ -232,105 +224,60 @@ export function answerCall(
     let answerCreated = false;
     const addedCandidates = new Set<string>();
 
-    // STEP 1: Signal readiness FIRST, then listen for Offer
-    console.log('📤 [Callee] Signaling readyToReceive...');
-    updateDoc(roomRef, {
-        readyToReceive: true,
-        // Clear stale signaling data from previous attempts
-        offer: deleteField(),
-        answer: deleteField(),
-        callerCandidates: [],
-        calleeCandidates: [],
-    }).then(() => {
-        console.log('✅ [Callee] Ready signal sent. Listening for offer...');
+    // Subscribe immediately — onSnapshot fires with current doc state first
+    unsubRoom = onSnapshot(roomRef, async (snapshot: any) => {
+        const data = snapshot.data();
+        if (!data || !pc) return;
 
-        // STEP 2: Listen for Offer + Caller Candidates
-        unsubRoom = onSnapshot(roomRef, async snapshot => {
-            const data = snapshot.data();
-            if (!data || !pc) return;
+        // Process Offer when it appears
+        if (data.offer && !answerCreated) {
+            console.log("📥 [Callee] Got offer! Creating answer...");
+            answerCreated = true;
 
-            // Process Offer if present
-            if (data.offer && !answerCreated) {
-                console.log("📥 [Callee] Got offer, creating answer...");
-                answerCreated = true; // Prevent multiple answers
+            try {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
 
-                try {
-                    const offerDescription = data.offer;
-                    await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+                const answer = await pc.createAnswer();
+                if (answer && pc) {
+                    await pc.setLocalDescription(answer);
 
-                    const answer = await pc.createAnswer();
-                    if (answer && pc) {
-                        await pc.setLocalDescription(answer);
-
-                        await updateDoc(roomRef, {
-                            answer: {
-                                type: answer.type,
-                                sdp: answer.sdp,
-                            }
-                        });
-                        console.log("📤 [Callee] Answer saved to Firestore.");
-                    }
-                } catch (e) {
-                    console.error("[Callee] Error processing offer:", e);
-                    answerCreated = false; // Allow retry
+                    console.log("📤 [Callee] Saving answer to Firestore...");
+                    await updateDoc(roomRef, {
+                        answer: { type: answer.type, sdp: answer.sdp }
+                    });
+                    console.log("✅ [Callee] Answer saved!");
                 }
+            } catch (e) {
+                console.error("[Callee] Error processing offer:", e);
+                answerCreated = false; // Allow retry on next snapshot
             }
+        }
 
-            // Process Caller ICE Candidates
-            if (data.callerCandidates && Array.isArray(data.callerCandidates)) {
-                for (const candidate of data.callerCandidates) {
-                    const sig = JSON.stringify(candidate);
-                    if (!addedCandidates.has(sig)) {
-                        addedCandidates.add(sig);
-                        try {
-                            await pc?.addIceCandidate(new RTCIceCandidate(candidate));
-                        } catch (e) {
-                            console.error("[Callee] Error adding caller ICE candidate", e);
-                        }
+        // Process Caller ICE Candidates
+        if (data.callerCandidates && Array.isArray(data.callerCandidates)) {
+            for (const candidate of data.callerCandidates) {
+                const sig = JSON.stringify(candidate);
+                if (!addedCandidates.has(sig)) {
+                    addedCandidates.add(sig);
+                    try {
+                        await pc?.addIceCandidate(new RTCIceCandidate(candidate));
+                    } catch (e) {
+                        console.error("[Callee] addIceCandidate failed", e);
                     }
                 }
             }
-        });
-    }).catch(e => {
-        console.error("[Callee] Failed to signal readiness:", e);
+        }
     });
 }
 
 /**
- * Waits for the Astrologer's `readyToReceive` flag in Firestore.
- * Polls with onSnapshot and resolves when ready.
- * Times out after CONNECTION_TIMEOUT.
- */
-function waitForReadiness(roomRef: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            if (unsub) unsub();
-            reject(new Error("Timed out waiting for Acharya to be ready."));
-        }, CONNECTION_TIMEOUT);
-
-        const unsub = onSnapshot(roomRef, (snapshot: any) => {
-            const data = snapshot.data();
-            if (data?.readyToReceive === true) {
-                console.log("✅ [Caller] Detected readyToReceive signal.");
-                clearTimeout(timeout);
-                unsub();
-                resolve();
-            }
-        });
-    });
-}
-
-/**
- * Disconnect and clean up the WebRTC peer connection.
+ * Disconnect and clean up.
  */
 export function disconnectPeer(): void {
-    console.log('🔌 Disconnecting WebRTC peer...');
-
     if (unsubRoom) {
         unsubRoom();
         unsubRoom = null;
     }
-
     if (pc) {
         pc.close();
         pc = null;
