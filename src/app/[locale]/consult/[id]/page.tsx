@@ -119,20 +119,42 @@ export default function ConsultPage() {
             addDebug(`❌ Firestore join failed: ${e.message}`);
         }
 
-        if (!stream) {
-            addDebug('❌ No media stream — camera/mic denied');
-            toast.error("Camera/Mic not detected. Please allow permissions.");
-            setConnectionStatus('failed');
-            return;
+        // If stream is null, retry getting media access
+        let activeStream = stream;
+        if (!activeStream) {
+            addDebug('⚠️ No stream yet, retrying camera/mic...');
+            try {
+                activeStream = await navigator.mediaDevices.getUserMedia({
+                    video: consultationType === "video",
+                    audio: true
+                });
+                setStream(activeStream);
+                addDebug(`✅ Media retry succeeded (tracks: ${activeStream.getTracks().length})`);
+            } catch (mediaErr: any) {
+                addDebug(`⚠️ Media retry failed: ${mediaErr.message}`);
+                // Try audio-only fallback
+                try {
+                    activeStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    setStream(activeStream);
+                    setVideoOn(false);
+                    addDebug('✅ Audio-only fallback succeeded');
+                    toast('Camera denied — joining with audio only', { icon: '🎙️' });
+                } catch (audioErr: any) {
+                    addDebug(`❌ All media failed: ${audioErr.message}`);
+                    toast.error("Cannot access camera or microphone. Please check browser permissions.");
+                    setConnectionStatus('failed');
+                    return;
+                }
+            }
         }
-        addDebug(`✅ Media stream ready (tracks: ${stream.getTracks().length})`);
+        addDebug(`✅ Media stream ready (tracks: ${activeStream.getTracks().length})`);
 
         try {
             await initializePeer(participantRole);
 
             if (participantRole === 'astrologer') {
                 addDebug('📱 Astrologer: Setting up listener for offer...');
-                answerCall(id, stream, (remoteStream) => {
+                answerCall(id, activeStream, (remoteStream) => {
                     addDebug('✅ Astrologer: Got remote stream!');
                     setRemoteStream(remoteStream);
                     setConnectionStatus('connected');
@@ -142,7 +164,7 @@ export default function ConsultPage() {
             } else {
                 addDebug('👤 User: Creating offer...');
                 try {
-                    const rStream = await makeCall(id, stream);
+                    const rStream = await makeCall(id, activeStream);
                     addDebug('✅ User: Got remote stream!');
                     setRemoteStream(rStream);
                     setConnectionStatus('connected');
