@@ -80,7 +80,9 @@ export default function ConsultPage() {
             // Mark myself as present in lobby
             await setDoc(presenceRef, {
                 [participantRole === 'astrologer' ? 'astrologerPresent' : 'userPresent']: true,
-                [participantRole === 'astrologer' ? 'astrologerName' : 'userName']: user?.displayName || (participantRole === 'astrologer' ? 'Acharya' : 'User')
+                [participantRole === 'astrologer' ? 'astrologerName' : 'userName']: user?.displayName || (participantRole === 'astrologer' ? 'Acharya' : 'User'),
+                [participantRole === 'astrologer' ? 'astrologerEmail' : 'userEmail']: user?.email || '',
+                type: consultationType
             }, { merge: true });
 
             // Listen for other participant
@@ -277,6 +279,24 @@ export default function ConsultPage() {
                     duration: (90 * 60) - timeLeft
                 }, { merge: true });
                 console.log("✅ Transcript saved to Firestore");
+
+                // Auto-email transcript to both participants (Otter.ai style)
+                try {
+                    const emailRes = await fetch("/api/email/send-transcript", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ consultationId: id })
+                    });
+                    const emailData = await emailRes.json();
+                    if (emailData.success) {
+                        console.log("📧 Transcript emailed to both participants");
+                        toast.success("📧 Transcript emailed!");
+                    } else {
+                        console.warn("Email send returned:", emailData);
+                    }
+                } catch (emailErr) {
+                    console.error("Failed to email transcript:", emailErr);
+                }
 
                 // Execute Payout if Astrologer or via generic backend trigger
                 // We let the backend handle duplication checks

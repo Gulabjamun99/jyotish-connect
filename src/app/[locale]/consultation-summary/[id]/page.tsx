@@ -16,6 +16,19 @@ export default function ConsultationSummaryPage() {
     const [loading, setLoading] = useState(true);
     const [rating, setRating] = useState(0);
     const [finalTranscript, setFinalTranscript] = useState<{ speaker: string, text: string, time: string }[]>([]);
+    const [sessionInfo, setSessionInfo] = useState<{
+        astrologerName: string;
+        userName: string;
+        date: string;
+        duration: string;
+        type: string;
+    }>({
+        astrologerName: 'Acharya',
+        userName: 'User',
+        date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+        duration: '—',
+        type: 'video'
+    });
 
     useEffect(() => {
         const fetchSummary = async () => {
@@ -30,6 +43,19 @@ export default function ConsultationSummaryPage() {
                     if (data.transcript) {
                         setFinalTranscript(data.transcript);
                     }
+                    // Populate session info from Firestore data
+                    const duration = data.duration || 0;
+                    const mins = Math.floor(duration / 60);
+                    const secs = duration % 60;
+                    setSessionInfo({
+                        astrologerName: data.astrologerName || 'Acharya',
+                        userName: data.userName || 'User',
+                        date: data.endedAt
+                            ? new Date(data.endedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
+                            : new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        duration: duration > 0 ? `${mins}m ${secs}s` : '—',
+                        type: data.type || 'video'
+                    });
                 } else {
                     // Fallback to local storage if firestore doc doesn't exist (legacy/test)
                     const saved = localStorage.getItem(`transcript_${id === 'demo-session' ? 'demo' : id}`);
@@ -92,9 +118,17 @@ export default function ConsultationSummaryPage() {
                             </div>
                             <h1 className="text-6xl font-black text-gradient tracking-tighter leading-none">Cosmic Summary</h1>
                             <p className="text-sm text-foreground/40 font-medium italic flex items-center gap-3">
-                                <span className="font-black text-primary uppercase tracking-widest not-italic">Acharya Ravi Singh</span>
+                                <span className="font-black text-primary uppercase tracking-widest not-italic">{sessionInfo.astrologerName}</span>
                                 <span className="w-1 h-1 bg-primary/20 rounded-full" />
-                                <span>Jan 17, 2026</span>
+                                <span>{sessionInfo.date}</span>
+                                <span className="w-1 h-1 bg-primary/20 rounded-full" />
+                                <span className="capitalize">{sessionInfo.type}</span>
+                                {sessionInfo.duration !== '—' && (
+                                    <>
+                                        <span className="w-1 h-1 bg-primary/20 rounded-full" />
+                                        <span>{sessionInfo.duration}</span>
+                                    </>
+                                )}
                             </p>
                         </div>
                         <div className="flex gap-4 w-full md:w-auto">
@@ -137,18 +171,18 @@ export default function ConsultationSummaryPage() {
                                             </div>
                                         ) : (
                                             finalTranscript.map((line, i) => (
-                                                <div key={i} className={`group flex gap-8 ${line.speaker === "Astrologer" || line.speaker === "Acharya Ravi Singh" ? "" : "flex-row-reverse"}`}>
-                                                    <div className={`w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-2xl border-2 transition-transform group-hover:scale-110 ${line.speaker === "Astrologer" || line.speaker === "Acharya Ravi Singh"
+                                                <div key={i} className={`group flex gap-8 ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName ? "" : "flex-row-reverse"}`}>
+                                                    <div className={`w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-2xl border-2 transition-transform group-hover:scale-110 ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName
                                                         ? "bg-gradient-to-br from-primary to-blue-600 border-white/20 text-white"
                                                         : "bg-white border-primary/20 text-primary"}`}>
                                                         {line.speaker[0]}
                                                     </div>
-                                                    <div className={`max-w-[75%] space-y-3 ${line.speaker === "Astrologer" || line.speaker === "Acharya Ravi Singh" ? "" : "text-right"}`}>
+                                                    <div className={`max-w-[75%] space-y-3 ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName ? "" : "text-right"}`}>
                                                         <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transition-opacity">
                                                             <span className="text-[10px] font-black uppercase tracking-widest leading-none text-foreground">{line.speaker}</span>
                                                             <span className="text-[10px] font-bold text-foreground/40">{line.time}</span>
                                                         </div>
-                                                        <div className={`p-8 rounded-[2.5rem] leading-relaxed text-[16px] shadow-2xl transition-all group-hover:scale-[1.01] ${line.speaker === "Astrologer" || line.speaker === "Acharya Ravi Singh"
+                                                        <div className={`p-8 rounded-[2.5rem] leading-relaxed text-[16px] shadow-2xl transition-all group-hover:scale-[1.01] ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName
                                                             ? "bg-primary/5 text-foreground/80 rounded-tl-none border border-primary/10"
                                                             : "bg-primary text-white font-medium rounded-tr-none shadow-primary/20"}`}>
                                                             {line.text}
