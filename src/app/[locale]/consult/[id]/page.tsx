@@ -56,6 +56,7 @@ export default function ConsultPage() {
     const [timeLeft, setTimeLeft] = useState(90 * 60); // 90 minutes in seconds
 
     const recognitionRef = useRef<any>(null);
+    const recognitionStoppedRef = useRef(false); // flag to prevent restart after disconnect
 
     // 1. Initial Setup: Get Media for Lobby & Listen to Presence
     useEffect(() => {
@@ -179,25 +180,49 @@ export default function ConsultPage() {
             }
 
             // Start Transcription Backup
+            // Start continuous speech recognition with auto-restart
             if (!recognitionRef.current && 'webkitSpeechRecognition' in window) {
+                recognitionStoppedRef.current = false;
                 const SpeechRecognition = (window as any).webkitSpeechRecognition;
                 const recognition = new SpeechRecognition();
                 recognition.continuous = true;
                 recognition.interimResults = true;
-                recognition.lang = 'en-IN';
+                recognition.lang = 'hi-IN'; // Hindi + English mixed
+                recognition.maxAlternatives = 1;
 
                 recognition.onresult = (event: any) => {
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
                         if (event.results[i].isFinal) {
-                            const text = event.results[i][0].transcript;
+                            const text = event.results[i][0].transcript.trim();
+                            if (!text) continue;
                             const speaker = participantRole === 'astrologer' ? 'Astrologer' : 'User';
-                            const time = new Date().toLocaleTimeString();
+                            const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
                             setTranscript(prev => [...prev, { speaker, text, time }]);
                             addTranscriptLine(id, { speaker, text, time });
                         }
                     }
                 };
+
+                // Auto-restart when Chrome silently stops (idle timeout, network blip, etc.)
+                recognition.onend = () => {
+                    if (!recognitionStoppedRef.current) {
+                        console.log('🔄 Speech recognition ended, restarting...');
+                        try { recognition.start(); } catch (e) { /* already running */ }
+                    }
+                };
+
+                recognition.onerror = (event: any) => {
+                    console.warn('Speech recognition error:', event.error);
+                    // Don't restart on 'aborted' (user-initiated) or 'not-allowed' (permission)
+                    if (event.error === 'aborted' || event.error === 'not-allowed') return;
+                    if (!recognitionStoppedRef.current) {
+                        setTimeout(() => {
+                            try { recognition.start(); } catch (e) { /* already running */ }
+                        }, 1000);
+                    }
+                };
+
                 recognition.start();
                 recognitionRef.current = recognition;
             }
@@ -254,7 +279,9 @@ export default function ConsultPage() {
     const handleDisconnect = async () => {
         if (room) room.disconnect();
         if (stream) stream.getTracks().forEach(t => t.stop());
-        if (recognitionRef.current) recognitionRef.current.stop();
+        // Stop speech recognition permanently
+        recognitionStoppedRef.current = true;
+        if (recognitionRef.current) { try { recognitionRef.current.stop(); } catch (e) { } }
 
         // Remove from presence
         try {
@@ -431,26 +458,45 @@ export default function ConsultPage() {
                                     </div>
                                 </div>
                             )}
-                            <VideoInterface
-                                stream={stream}
-                                remoteStream={remoteStream}
-                                micOn={micOn}
-                                videoOn={videoOn}
-                                onToggleMic={toggleMic}
-                                onToggleVideo={toggleVideo}
-                                onDisconnect={handleDisconnect}
-                                userName={user?.displayName || "You"}
-                                astrologerName={remoteName}
-                                timeLeft={timeLeft}
-                                transcript={transcript}
-                                isDemo={isDemo}
-                                onRetryCamera={retryCamera}
-                                labels={{
-                                    local: `${user?.displayName || 'You'} (${participantRole})`,
-                                    remote: remoteName
-                                }}
-                                consultationId={id}
-                            />
+                            {/* Render Audio or Video Interface based on consultation type */}
+                            {consultationType === 'audio' ? (
+                                <>
+                                    {/* Hidden audio element to play remote stream */}
+                                    {remoteStream && (
+                                        <audio autoPlay ref={(el) => { if (el && remoteStream) el.srcObject = remoteStream; }} />
+                                    )}
+                                    <AudioInterface
+                                        stream={stream}
+                                        micOn={micOn}
+                                        onToggleMic={toggleMic}
+                                        onDisconnect={handleDisconnect}
+                                        userName={user?.displayName || "You"}
+                                        astrologerName={remoteName}
+                                        timeLeft={timeLeft}
+                                    />
+                                </>
+                            ) : (
+                                <VideoInterface
+                                    stream={stream}
+                                    remoteStream={remoteStream}
+                                    micOn={micOn}
+                                    videoOn={videoOn}
+                                    onToggleMic={toggleMic}
+                                    onToggleVideo={toggleVideo}
+                                    onDisconnect={handleDisconnect}
+                                    userName={user?.displayName || "You"}
+                                    astrologerName={remoteName}
+                                    timeLeft={timeLeft}
+                                    transcript={transcript}
+                                    isDemo={isDemo}
+                                    onRetryCamera={retryCamera}
+                                    labels={{
+                                        local: `${user?.displayName || 'You'} (${participantRole})`,
+                                        remote: remoteName
+                                    }}
+                                    consultationId={id}
+                                />
+                            )}
                         </>
                     )}
                 </div>
