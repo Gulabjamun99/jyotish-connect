@@ -123,6 +123,8 @@ END:VCALENDAR`;
             // 1. Deduct Wallet & Create Booking in Firestore via API
             const bookingData = {
                 userId: user.uid,
+                userName: user.displayName || "Seeker",
+                userEmail: user.email || "",
                 astrologerId,
                 astrologerName,
                 date: selectedDate,

@@ -65,6 +65,8 @@ export interface Transaction {
 export interface Booking {
     id?: string;
     userId: string;
+    userName?: string;
+    userEmail?: string;
     astrologerId: string;
     astrologerName: string;
     date: any; // Firestore Timestamp

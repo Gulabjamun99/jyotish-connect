@@ -227,57 +227,98 @@ export default function AstrologerDashboard() {
                                     </Button>
                                 </div>
                             ) : (
-                                bookings.map((booking: any, index: number) => (
-                                    <div key={booking.id} className={`glass bg-zinc-900 border p-5 md:p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 transition-[border-color] relative overflow-hidden ${index === 0 && booking.status !== 'completed' ? 'border-orange-500/30 shadow-[0_0_30px_rgba(249,115,22,0.05)]' : 'border-white/5 hover:border-zinc-700'}`}>
+                                bookings.map((booking: any, index: number) => {
+                                    const isActive = booking.status === 'active';
+                                    const isCompleted = booking.status === 'completed';
+                                    const bookingDate = new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date);
+                                    const createdAt = booking.createdAt ? new Date(booking.createdAt) : bookingDate;
+                                    const typeIcon = booking.type === 'video' ? '🎥' : booking.type === 'audio' ? '🎙️' : '💬';
+                                    const typeLabel = booking.type === 'video' ? 'Video' : booking.type === 'audio' ? 'Audio' : 'Chat';
 
-                                        {index === 0 && booking.status !== 'completed' && (
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full" />
-                                        )}
+                                    return (
+                                        <div key={booking.id} className={`glass bg-zinc-900 border p-5 md:p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 transition-[border-color] relative overflow-hidden ${isActive && index === 0 ? 'border-orange-500/30 shadow-[0_0_30px_rgba(249,115,22,0.05)]' : isCompleted ? 'border-zinc-800/50 opacity-60' : 'border-white/5 hover:border-zinc-700'}`}>
 
-                                        <div className="flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-8 w-full md:w-auto relative z-10">
-                                            {/* Date/Time Block */}
-                                            <div className="flex items-center gap-4 min-w-[120px]">
-                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${index === 0 && booking.status !== 'completed' ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700/50'}`}>
-                                                    {new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date).getDate()}
-                                                </div>
-                                                <div>
-                                                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-0.5">
-                                                        {new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date).toLocaleString(undefined, { month: 'short' })}
+                                            {isActive && index === 0 && (
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full" />
+                                            )}
+
+                                            <div className="flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-8 w-full md:w-auto relative z-10">
+                                                {/* Date/Time Block */}
+                                                <div className="flex items-center gap-4 min-w-[120px]">
+                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${isActive && index === 0 ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700/50'}`}>
+                                                        {bookingDate.getDate()}
                                                     </div>
-                                                    <div className={`text-lg font-black ${index === 0 && booking.status !== 'completed' ? 'text-white' : 'text-zinc-300'}`}>
-                                                        {booking.time}
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-0.5">
+                                                            {bookingDate.toLocaleString(undefined, { month: 'short' })}
+                                                        </div>
+                                                        <div className={`text-lg font-black ${isActive && index === 0 ? 'text-white' : 'text-zinc-300'}`}>
+                                                            {booking.time}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {/* Divider hidden on mobile */}
-                                            <div className="hidden md:block w-px h-10 bg-zinc-800"></div>
+                                                {/* Divider hidden on mobile */}
+                                                <div className="hidden md:block w-px h-10 bg-zinc-800"></div>
 
-                                            {/* User Details */}
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-3">
-                                                    <h3 className="text-xl font-bold text-white tracking-tight">{booking.userName || "Seeker Profile"}</h3>
-                                                    {index === 0 && booking.status !== 'completed' && (
-                                                        <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-bold uppercase tracking-widest rounded">Up Next</span>
+                                                {/* User Details */}
+                                                <div className="space-y-1.5 flex-1 min-w-0">
+                                                    <div className="flex items-center gap-3 flex-wrap">
+                                                        <h3 className="text-xl font-bold text-white tracking-tight truncate">
+                                                            {booking.userName || "Unknown Seeker"}
+                                                        </h3>
+                                                        {/* Status Badge */}
+                                                        {isActive && index === 0 && (
+                                                            <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] font-bold uppercase tracking-widest rounded animate-pulse">Up Next</span>
+                                                        )}
+                                                        {isActive && index > 0 && (
+                                                            <span className="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-widest rounded">Waiting</span>
+                                                        )}
+                                                        {isCompleted && (
+                                                            <span className="px-2 py-0.5 bg-zinc-700/50 text-zinc-400 text-[9px] font-bold uppercase tracking-widest rounded">Completed</span>
+                                                        )}
+                                                        {booking.status === 'pending' && (
+                                                            <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-bold uppercase tracking-widest rounded">Scheduled</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-sm text-zinc-400">
+                                                        <span className="flex items-center gap-1.5 font-medium capitalize">
+                                                            <span>{typeIcon}</span> {typeLabel}
+                                                        </span>
+                                                        <span className="w-1 h-1 bg-zinc-600 rounded-full"></span>
+                                                        <span className="text-zinc-500 text-xs">
+                                                            Booked {createdAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} at {createdAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                    {booking.userEmail && (
+                                                        <p className="text-[11px] text-zinc-600 truncate">{booking.userEmail}</p>
                                                     )}
                                                 </div>
-                                                <p className="text-sm font-medium text-zinc-400 capitalize">{booking.type} Consultation • 30 Mins</p>
+                                            </div>
+
+                                            <div className="flex w-full md:w-auto gap-3 relative z-10 mt-2 md:mt-0">
+                                                {!isCompleted ? (
+                                                    <Button
+                                                        onClick={() => router.push(`/consult/${booking.id}?type=${booking.type}&role=astrologer`)}
+                                                        className={`h-12 flex-1 md:flex-none md:px-8 font-bold uppercase tracking-wider text-[10px] rounded-xl transition-all ${isActive && index === 0 ? 'bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse' : 'bg-white text-black hover:bg-zinc-200'}`}
+                                                    >
+                                                        Join Room
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        onClick={() => router.push(`/consultation-summary/${booking.id}`)}
+                                                        className="h-12 flex-1 md:flex-none md:px-8 font-bold uppercase tracking-wider text-[10px] rounded-xl bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                                                    >
+                                                        View Summary
+                                                    </Button>
+                                                )}
+                                                <Button variant="outline" className="h-12 w-12 p-0 rounded-xl border-zinc-800 hover:bg-zinc-800 text-zinc-300 flex-shrink-0 flex justify-center items-center">
+                                                    <Calendar className="w-5 h-5" />
+                                                </Button>
                                             </div>
                                         </div>
-
-                                        <div className="flex w-full md:w-auto gap-3 relative z-10 mt-2 md:mt-0">
-                                            <Button
-                                                onClick={() => router.push(`/consult/${booking.id}?type=${booking.type}&role=astrologer`)}
-                                                className={`h-12 flex-1 md:flex-none md:px-8 font-bold uppercase tracking-wider text-[10px] rounded-xl transition-all ${index === 0 && booking.status !== 'completed' ? 'bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse' : 'bg-white text-black hover:bg-zinc-200'}`}
-                                            >
-                                                Join Room
-                                            </Button>
-                                            <Button variant="outline" className="h-12 w-12 p-0 rounded-xl border-zinc-800 hover:bg-zinc-800 text-zinc-300 flex-shrink-0 flex justify-center items-center">
-                                                <Calendar className="w-5 h-5" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>

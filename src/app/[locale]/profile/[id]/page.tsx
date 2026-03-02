@@ -88,10 +88,12 @@ export default function ProfilePage() {
         const currentPrice = getCurrentPrice();
         const bookingData = {
             userId: user.uid,
+            userName: user.displayName || userData?.displayName || "Seeker",
+            userEmail: user.email || "",
             astrologerId: profile.id,
             astrologerName: profile.name,
             date: new Date(),
-            time: "Instant",
+            time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
             type: consultationType,
             price: currentPrice
         };
@@ -100,7 +102,7 @@ export default function ProfilePage() {
             // Option A: Pay via Wallet (Preferred) - FORCED TRUE FOR FREE TESTING
             if (true || userData.walletBalance >= currentPrice) {
                 toast.loading("Processing free test booking...", { id: 'booking' });
-                
+
                 // CLIENT-SIDE DIRECT BOOKING FOR FREE TESTING BYPASS
                 const newBooking = await createBooking({
                     ...bookingData,

@@ -60,6 +60,8 @@ export function SchedulingModal({ isOpen, onClose, astrologerId, astrologerName,
         try {
             await createBooking({
                 userId: user.uid,
+                userName: user.displayName || "Seeker",
+                userEmail: user.email || "",
                 astrologerId,
                 astrologerName,
                 date: date,
