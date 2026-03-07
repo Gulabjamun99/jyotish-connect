@@ -66,6 +66,11 @@ export class AstrologyService {
             let longitude = pos[0];
             if (p.isKetu) longitude = (longitude + 180) % 360;
 
+            // Ensure longitude is a valid number
+            if (typeof longitude !== 'number' || isNaN(longitude)) {
+                longitude = 0;
+            }
+
             const signId = Math.floor(longitude / 30) + 1;
             const deg = longitude % 30;
 
@@ -74,22 +79,82 @@ export class AstrologyService {
                 longitude,
                 signId,
                 degree: deg,
-                speed: pos[3],
-                isRetrograde: pos[3] < 0
+                speed: pos[3] || 0,
+                isRetrograde: (pos[3] || 0) < 0
             };
         });
 
-        // House calculation - Sripathi System (AstroSage standard)
-        const houses = this.swe.houses(jd, lat, lng, 'B'); // 'B' for Sripathi
-        const ascendant = houses.ascendant;
+        // --- Ascendant Calculation ---
+        // Try swisseph houses() first
+        let ascendant: number | undefined;
+        let housesCusps: number[] = [];
+        try {
+            const houses = this.swe.houses(jd, lat, lng, 'B');
+            if (houses && typeof houses.ascendant === 'number' && !isNaN(houses.ascendant)) {
+                ascendant = houses.ascendant;
+                housesCusps = houses.house || [];
+                console.log('[SwissEph] houses() succeeded, ascendant:', ascendant);
+            }
+        } catch (e) {
+            console.warn('[SwissEph] houses() failed:', e);
+        }
 
+        // Fallback: Calculate ascendant mathematically using Local Sidereal Time
+        if (ascendant === undefined || isNaN(ascendant)) {
+            console.log('[SwissEph] Using mathematical ascendant calculation fallback');
 
+            // Calculate Local Sidereal Time (LST)
+            // Step 1: Days since J2000.0
+            const J2000 = 2451545.0;
+            const d0 = jd - J2000;
+
+            // Step 2: Greenwich Mean Sidereal Time (GMST) in degrees
+            let gmst = 280.46061837 + 360.98564736629 * d0;
+            gmst = ((gmst % 360) + 360) % 360;
+
+            // Step 3: Local Sidereal Time (add longitude)
+            let lst = gmst + lng;
+            lst = ((lst % 360) + 360) % 360;
+
+            // Step 4: RAMC (Right Ascension of Medium Coeli) = LST
+            const ramcRad = (lst * Math.PI) / 180;
+            const latRad = (lat * Math.PI) / 180;
+
+            // Step 5: Obliquity of ecliptic (~23.4393°)
+            const epsilon = 23.4393;
+            const epsRad = (epsilon * Math.PI) / 180;
+
+            // Step 6: Ascendant formula
+            // ASC = atan2(-cos(RAMC), sin(RAMC)*cos(e) + tan(lat)*sin(e))
+            const ascRad = Math.atan2(
+                -Math.cos(ramcRad),
+                Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad)
+            );
+            let ascDeg = (ascRad * 180) / Math.PI;
+            ascDeg = ((ascDeg % 360) + 360) % 360;
+
+            // Apply Lahiri ayanamsa to get sidereal ascendant
+            ascendant = ((ascDeg - ayanamsa) % 360 + 360) % 360;
+
+            console.log('[SwissEph] Calculated sidereal ascendant:', ascendant.toFixed(2), '° (sign:', Math.floor(ascendant / 30) + 1, ')');
+        }
+
+        // Add Ascendant as a pseudo-planet in the results
+        const ascSignId = Math.floor(ascendant / 30) + 1;
+        results.push({
+            name: "Asc",
+            longitude: ascendant,
+            signId: ascSignId,
+            degree: ascendant % 30,
+            speed: 0,
+            isRetrograde: false
+        });
 
         return {
             jd,
             ayanamsa,
             planets: results,
-            houses: houses.house || [],
+            houses: housesCusps,
             ascendant
         };
     }
