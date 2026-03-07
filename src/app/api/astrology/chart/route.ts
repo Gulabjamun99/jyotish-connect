@@ -52,8 +52,14 @@ export async function POST(req: Request) {
             },
             panchang: {
                 tithi: panchang.tithi,
+                tithiId: panchang.tithiId,
                 karana: panchang.karana,
-                yoga: panchang.yoga
+                karanaId: panchang.karanaId,
+                yoga: panchang.yoga,
+                yogaId: panchang.yogaId,
+                paksha: panchang.paksha,
+                sunrise: panchang.sunrise,
+                sunset: panchang.sunset
             },
             charts: divCharts,
             planets: planets.map(p => ({

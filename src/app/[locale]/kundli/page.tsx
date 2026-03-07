@@ -219,9 +219,9 @@ export default function KundliPage() {
             startY: y,
             head: [[locale === 'hi' ? 'विशेषता' : 'Attribute', locale === 'hi' ? 'विवरण' : 'Value']],
             body: [
-                [locale === 'hi' ? 'तिथि' : 'Tithi', `${trans.panchang.tithi[p.tithi - 1]} (${p.paksha})`],
-                [locale === 'hi' ? 'योग' : 'Yoga', trans.panchang.yoga[p.yoga - 1]],
-                [locale === 'hi' ? 'करण' : 'Karana', trans.panchang.karan[p.karana - 1]],
+                [locale === 'hi' ? 'तिथि' : 'Tithi', `${trans.panchang.tithi[p.tithiId]} (${p.paksha})`],
+                [locale === 'hi' ? 'योग' : 'Yoga', trans.panchang.yoga[p.yogaId]],
+                [locale === 'hi' ? 'करण' : 'Karana', trans.panchang.karan[p.karanaId]],
                 [locale === 'hi' ? 'नक्षत्र' : 'Nakshatra', chart.nakshatra],
                 [locale === 'hi' ? 'सूर्य राशि' : 'Sun Sign', translateSign(chart.sunSign, locale)],
                 [locale === 'hi' ? 'चंद्र राशि' : 'Moon Sign', translateSign(chart.moonSign, locale)],

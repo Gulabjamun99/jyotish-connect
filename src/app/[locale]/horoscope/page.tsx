@@ -76,29 +76,19 @@ export default function HoroscopePage() {
             // Safe Tithi Mapping
             let tithiLabel = "";
             if (trans.panchang && trans.panchang.tithi) {
-                if (panchang.tithi === 15) tithiLabel = trans.panchang.tithi[14]; // Purnima
-                else if (panchang.tithi === 30) tithiLabel = trans.panchang.tithi[15]; // Amavasya
-                else {
-                    const idx = (panchang.tithi - 1) % 15;
-                    tithiLabel = trans.panchang.tithi[idx] || "";
-                }
+                tithiLabel = trans.panchang.tithi[panchang.tithiId] || "";
             }
 
             // Safe Yoga Mapping
             let yogaLabel = "";
             if (trans.panchang && trans.panchang.yoga) {
-                yogaLabel = trans.panchang.yoga[panchang.yoga - 1] || "";
+                yogaLabel = trans.panchang.yoga[panchang.yogaId] || "";
             }
 
             // Safe Karana Mapping
             let karanLabel = "";
             if (trans.panchang && trans.panchang.karan) {
-                const k = panchang.karana; // 1-60
-                let kIdx = 0;
-                if (k === 1) kIdx = 10; // Kintughna
-                else if (k >= 58) kIdx = 7 + (k - 58); // 58->7(Shakuni), 59->8(Chat), 60->9(Naga)
-                else kIdx = (k - 2) % 7; // Bava...Vishti
-                karanLabel = trans.panchang.karan[kIdx] || "";
+                karanLabel = trans.panchang.karan[panchang.karanaId] || "";
             }
 
             return {

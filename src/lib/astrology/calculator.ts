@@ -60,11 +60,36 @@ export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     };
 
+    const tithiNum = tithi > 30 ? 30 : tithi;
+    const yogaNum = yoga > 27 ? 27 : yoga;
+    const karanaNum = karana > 60 ? 60 : karana;
+
+    // Tithi mapping: 1-15 and 16-30 both map to 0-14 (indices 0 to 14), index 15 = Amavasya/Purnima 
+    let tithiId = (tithiNum - 1) % 15;
+    if (tithiNum === 15 || tithiNum === 30) {
+        tithiId = tithiNum === 15 ? 14 : 15; // 14 for Purnima (index 14), 15 for Amavasya (index 15)
+    }
+
+    // Karana Mapping (11 unique karanas spread over 60 halves)
+    // Movable: repeats 8 times (7x8 = 56). Fixed: 4 times.
+    let karanaId = 0;
+    if (karanaNum === 1) karanaId = 10; // Kintughna
+    else if (karanaNum === 58) karanaId = 7; // Shakuni
+    else if (karanaNum === 59) karanaId = 8; // Chatushpada
+    else if (karanaNum === 60) karanaId = 9; // Naga
+    else {
+        // Between 2 and 57 (inclusive), map index offset - 2, modulo 7 for movable karanas
+        karanaId = (karanaNum - 2) % 7;
+    }
+
     return {
-        tithi: tithi > 30 ? 30 : tithi,
+        tithi: tithiNum,
+        tithiId,
         paksha,
-        yoga: yoga > 27 ? 27 : yoga,
-        karana: karana > 60 ? 60 : karana,
+        yoga: yogaNum,
+        yogaId: (yogaNum - 1),
+        karana: karanaNum,
+        karanaId,
         vara,
         sunrise: formatTime(sunriseIST),
         sunset: formatTime(sunsetIST)

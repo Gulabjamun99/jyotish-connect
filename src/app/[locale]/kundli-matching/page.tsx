@@ -156,9 +156,9 @@ export default function KundliMatchingPage() {
             startY: 75,
             head: [[locale === 'hi' ? 'विवरण' : 'Attribute', locale === 'hi' ? 'वर (Boy)' : 'Boy', locale === 'hi' ? 'वधु (Girl)' : 'Girl']],
             body: [
-                [locale === 'hi' ? 'तिथि' : 'Tithi', trans.panchang.tithi[result.boyPanchang.tithi - 1], trans.panchang.tithi[result.girlPanchang.tithi - 1]],
-                [locale === 'hi' ? 'योग' : 'Yoga', trans.panchang.yoga[result.boyPanchang.yoga - 1], trans.panchang.yoga[result.girlPanchang.yoga - 1]],
-                [locale === 'hi' ? 'करण' : 'Karan', trans.panchang.karan[result.boyPanchang.karana - 1], trans.panchang.karan[result.girlPanchang.karana - 1]],
+                [locale === 'hi' ? 'तिथि' : 'Tithi', trans.panchang.tithi[result.boyPanchang.tithiId], trans.panchang.tithi[result.girlPanchang.tithiId]],
+                [locale === 'hi' ? 'योग' : 'Yoga', trans.panchang.yoga[result.boyPanchang.yogaId], trans.panchang.yoga[result.girlPanchang.yogaId]],
+                [locale === 'hi' ? 'करण' : 'Karan', trans.panchang.karan[result.boyPanchang.karanaId], trans.panchang.karan[result.girlPanchang.karanaId]],
                 [locale === 'hi' ? 'वार' : 'Vara', trans.panchang.vara[result.boyPanchang.vara], trans.panchang.vara[result.girlPanchang.vara]]
             ],
             theme: 'grid',
@@ -487,9 +487,9 @@ export default function KundliMatchingPage() {
                                                 <tbody className="divide-y divide-slate-100">
                                                     {[
                                                         { label: t("label_nakshatra"), boy: getTrans(locale).nakshatras[result.boyPanchang.nakshatraId - 1] || "-", girl: getTrans(locale).nakshatras[result.girlPanchang.nakshatraId - 1] || "-" },
-                                                        { label: t("label_tithi"), boy: getTrans(locale).panchang.tithi[result.boyPanchang.tithi - 1], girl: getTrans(locale).panchang.tithi[result.girlPanchang.tithi - 1] },
-                                                        { label: t("label_yoga"), boy: getTrans(locale).panchang.yoga[result.boyPanchang.yoga - 1], girl: getTrans(locale).panchang.yoga[result.girlPanchang.yoga - 1] },
-                                                        { label: t("label_karan"), boy: getTrans(locale).panchang.karan[result.boyPanchang.karana - 1], girl: getTrans(locale).panchang.karan[result.girlPanchang.karana - 1] },
+                                                        { label: t("label_tithi"), boy: getTrans(locale).panchang.tithi[result.boyPanchang.tithiId], girl: getTrans(locale).panchang.tithi[result.girlPanchang.tithiId] },
+                                                        { label: t("label_yoga"), boy: getTrans(locale).panchang.yoga[result.boyPanchang.yogaId], girl: getTrans(locale).panchang.yoga[result.girlPanchang.yogaId] },
+                                                        { label: t("label_karan"), boy: getTrans(locale).panchang.karan[result.boyPanchang.karanaId], girl: getTrans(locale).panchang.karan[result.girlPanchang.karanaId] },
                                                         { label: t("label_vara"), boy: getTrans(locale).panchang.vara[result.boyPanchang.vara], girl: getTrans(locale).panchang.vara[result.girlPanchang.vara] }
                                                     ].map((row, idx) => (
                                                         <tr key={idx}>

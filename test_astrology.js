@@ -36,7 +36,9 @@ const req = http.request(options, res => {
             console.log('Moon Sign:', parsed.planets.find(p => p.name === 'Moon')?.sign);
             console.log('\nPlanets:');
             parsed.planets.forEach(p => {
-                console.log(`${p.name}: ${p.sign} ${p.longitude.toFixed(2)} (house ${p.house})`);
+                const nakSize = 360 / 27;
+                const pada = Math.floor((p.longitude % nakSize) / (nakSize / 4)) + 1;
+                console.log(`${p.name.padEnd(8)}: ${p.sign.padEnd(12)} ${p.degree.toFixed(2).padStart(5)}° (house ${String(p.house).padStart(2)}) | ${p.nakshatra} Pada ${pada} | R:${p.isRetrograde}`);
             });
             console.log('\nPanchang:');
             console.log(JSON.stringify(parsed.panchang, null, 2));
