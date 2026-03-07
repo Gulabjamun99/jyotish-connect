@@ -55,9 +55,21 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
     };
 
     const getPlanetShort = (planetName: string) => {
-        if (planetName === "Asc") return locale === 'hi' ? "ल" : "As";
+        if (planetName === "Asc") {
+            return locale === 'en' ? "As" : translatePlanet("Asc", locale);
+        }
+
         const translated = translatePlanet(planetName, locale);
-        return translated.substring(0, 2);
+
+        // English safely uses 2-letter abbreviation
+        if (locale === 'en') {
+            return translated.substring(0, 2);
+        }
+
+        // Indic languages have complex ligatures and combining characters.
+        // Substringing them breaks the characters (leaves floating vowels).
+        // Luckily, most planetary names in these languages are visually short enough.
+        return translated;
     };
 
     const housePolygons = [
