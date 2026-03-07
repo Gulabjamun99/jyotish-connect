@@ -136,6 +136,8 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     const service = await AstrologyService.getInstance();
     const data = await service.calculatePlanets(date, lat, lng);
 
+    const ascSignId = Math.floor(data.ascendant / 30) + 1;
+
     const planetsWithVaisheshika = data.planets.map(p => {
         const signId = Math.floor(p.longitude / 30) + 1;
         const nakshatraId = Math.floor(p.longitude / (360 / 27)) + 1;
@@ -148,7 +150,7 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
             sign: signs[signId - 1],
             nakshatraId,
             nakshatra: nakshatras[nakshatraId - 1],
-            house: ((signId - Math.floor(data.ascendant / 30) + 12) % 12) + 1,
+            house: ((signId - ascSignId + 12) % 12) + 1,
             divisions: calculateAllDivisions(p.longitude)
         };
     });
@@ -166,7 +168,6 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     const sun = planetsWithVaisheshika.find(p => p.name === "Sun");
     const saturn = planetsWithVaisheshika.find(p => p.name === "Saturn");
 
-    const ascSignId = Math.floor(data.ascendant / 30) + 1;
     const marsHouse = mars ? mars.house : 0;
     const isManglik = marsHouse > 0 && manglikHouses.includes(marsHouse);
 

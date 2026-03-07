@@ -125,10 +125,10 @@ export class AstrologyService {
             const epsRad = (epsilon * Math.PI) / 180;
 
             // Step 6: Ascendant formula
-            // ASC = atan2(-cos(RAMC), sin(RAMC)*cos(e) + tan(lat)*sin(e))
+            // ASC = atan2(cos(RAMC), -(sin(RAMC)*cos(e) + tan(lat)*sin(e)))
             const ascRad = Math.atan2(
-                -Math.cos(ramcRad),
-                Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad)
+                Math.cos(ramcRad),
+                -(Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad))
             );
             let ascDeg = (ascRad * 180) / Math.PI;
             ascDeg = ((ascDeg % 360) + 360) % 360;

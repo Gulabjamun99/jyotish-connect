@@ -20,44 +20,117 @@ export function generateLifePredictions(chart: any, lang: string) {
     const data = INTERPRETATIONS[lang as keyof typeof INTERPRETATIONS] || INTERPRETATIONS.en;
 
     const getPlanet = (name: string) => chart.planets.find((p: any) => p.name === name);
-    const sun = getPlanet("Sun");
-    const moon = getPlanet("Moon");
-    const asc = chart.houseSign?.[0] || "Aries";
 
-    const getText = (planetName: string, house: number, category: string) => {
+    // Get placement text for a given planet + house
+    const getText = (planetName: string, house: number) => {
         const pData = (data as any).placements[planetName];
         if (pData && pData[house]) {
             return pData[house];
         }
-
+        // Fallback with house meaning
         const hData = (data as any).houses[house];
+        const pDesc = (data as any).planets[planetName] || planetName;
         const template = (data as any).defaults?.planet_placed || "{planet} is placed in the {house}th House of {sign}.";
         return template
-            .replace("{planet}", (data as any).planets[planetName] || planetName)
+            .replace("{planet}", pDesc)
             .replace("{house}", house.toString())
             .replace("{sign}", hData);
     };
 
+    // Get retrograde note
+    const getRetroNote = (planet: any, lang: string) => {
+        if (!planet?.isRetro) return "";
+        const notes: any = {
+            en: ` (Retrograde — effects are internalized and may manifest with delay but greater depth.)`,
+            hi: ` (वक्री — प्रभाव आंतरिक होते हैं और देर से लेकिन गहराई से प्रकट हो सकते हैं।)`,
+        };
+        return notes[lang] || notes.en;
+    };
+
+    // Build prediction line: planet description + placement + retro note
+    const buildLine = (planetName: string) => {
+        const planet = getPlanet(planetName);
+        const house = planet?.house || 1;
+        const placement = getText(planetName, house);
+        const retro = getRetroNote(planet, lang);
+        return placement + retro;
+    };
+
+    // --- Category builders using relevant planets per Vedic significance ---
+
+    // CAREER: Sun (authority), Saturn (karma/discipline), Mars (energy), 10th house occupant
+    const sun = getPlanet("Sun");
+    const saturn = getPlanet("Saturn");
+    const mars = getPlanet("Mars");
+    const mercury = getPlanet("Mercury");
+    const jupiter = getPlanet("Jupiter");
+    const venus = getPlanet("Venus");
+    const moon = getPlanet("Moon");
+    const rahu = getPlanet("Rahu");
+    const ketu = getPlanet("Ketu");
+
+    const career = [
+        buildLine("Sun"),
+        buildLine("Saturn"),
+        // If Mars is in career houses (10,6,3)
+        ...(mars && [10, 6, 3].includes(mars.house) ? [buildLine("Mars")] : []),
+        // If Rahu is in 10th house
+        ...(rahu && rahu.house === 10 ? [buildLine("Rahu")] : []),
+    ].join("\n\n");
+
+    // HEALTH: Sun (vitality), Mars (energy/accidents), Saturn (chronic), 6th house
+    const health = [
+        buildLine("Sun"),
+        buildLine("Mars"),
+        ...(saturn && [6, 8, 1].includes(saturn.house) ? [buildLine("Saturn")] : []),
+        ...(ketu && [6, 8, 1].includes(ketu.house) ? [buildLine("Ketu")] : []),
+    ].join("\n\n");
+
+    // MARRIAGE: Venus (love/luxury), Mars (passion/manglik), Jupiter (blessing), 7th house
+    const marriage = [
+        buildLine("Venus"),
+        buildLine("Mars"),
+        ...(jupiter && [7, 1, 2].includes(jupiter.house) ? [buildLine("Jupiter")] : []),
+        ...(rahu && rahu.house === 7 ? [buildLine("Rahu")] : []),
+    ].join("\n\n");
+
+    // WEALTH: Jupiter (fortune), Venus (luxury), Mercury (business), 2nd/11th house
+    const wealth = [
+        buildLine("Jupiter"),
+        buildLine("Venus"),
+        ...(mercury && [2, 11, 10].includes(mercury.house) ? [buildLine("Mercury")] : []),
+        buildLine("Moon"),
+    ].join("\n\n");
+
+    // EDUCATION: Mercury (intellect), Jupiter (wisdom), 4th/5th/9th house
+    const education = [
+        buildLine("Mercury"),
+        buildLine("Jupiter"),
+        ...(ketu && [5, 9, 12].includes(ketu.house) ? [buildLine("Ketu")] : []),
+    ].join("\n\n");
+
+    // SPIRITUALITY: Ketu (moksha), Jupiter (guru), 9th/12th house
+    const spirituality = [
+        buildLine("Ketu"),
+        ...(jupiter && [9, 12, 5].includes(jupiter.house) ? [buildLine("Jupiter")] : []),
+        ...(saturn && [12, 9].includes(saturn.house) ? [buildLine("Saturn")] : []),
+    ].join("\n\n");
+
+    // FOREIGN/TRAVEL: Rahu (foreign), 12th house, 9th house
+    const foreign = [
+        buildLine("Rahu"),
+        ...(ketu && [12, 9].includes(ketu.house) ? [buildLine("Ketu")] : []),
+        ...(moon && [12, 9].includes(moon.house) ? [buildLine("Moon")] : []),
+    ].join("\n\n");
+
     return {
-        Career: `
-            ${getText("Sun", sun?.house || 10, "Career")}
-            ${getText("Saturn", getPlanet("Saturn")?.house || 10, "Career")}
-        `,
-        Health: `
-            ${getText("Sun", sun?.house || 1, "Health")}
-        `,
-        Marriage: `
-            ${getText("Venus", getPlanet("Venus")?.house || 7, "Marriage")}
-            ${getText("Mars", getPlanet("Mars")?.house || 7, "Marriage")}
-        `,
-        Wealth: `
-            ${getText("Jupiter", getPlanet("Jupiter")?.house || 2, "Wealth")}
-            ${getText("Moon", moon?.house || 2, "Wealth")}
-        `,
-        Education: `
-            ${getText("Mercury", getPlanet("Mercury")?.house || 4, "Education")}
-            ${getText("Jupiter", getPlanet("Jupiter")?.house || 5, "Education")}
-        `
+        Career: career,
+        Health: health,
+        Marriage: marriage,
+        Wealth: wealth,
+        Education: education,
+        Spirituality: spirituality,
+        Foreign: foreign,
     };
 }
 

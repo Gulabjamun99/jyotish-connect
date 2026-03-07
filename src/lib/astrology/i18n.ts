@@ -80,7 +80,9 @@ export const ASTRO_TRANSLATIONS = {
                 Health: "Health & Vitality",
                 Marriage: "Marriage & Relationships",
                 Wealth: "Wealth & Finance",
-                Education: "Education & Knowledge"
+                Education: "Education & Knowledge",
+                Spirituality: "Spirituality & Dharma",
+                Foreign: "Foreign & Travel"
             },
             doshas: {
                 Manglik: "Manglik Dosha",
@@ -210,7 +212,9 @@ export const ASTRO_TRANSLATIONS = {
                 Health: "स्वास्थ्य और जीवन शक्ति",
                 Marriage: "विवाह और संबंध",
                 Wealth: "धन और वित्त",
-                Education: "शिक्षा और ज्ञान"
+                Education: "शिक्षा और ज्ञान",
+                Spirituality: "आध्यात्मिकता और धर्म",
+                Foreign: "विदेश और यात्रा"
             },
             doshas: {
                 Manglik: "मांगलिक दोष",
@@ -301,7 +305,9 @@ export const ASTRO_TRANSLATIONS = {
                 Health: "आरोग्य आणि जीवनशक्ती",
                 Marriage: "विवाह आणि संबंध",
                 Wealth: "संपत्ती आणि वित्त",
-                Education: "शिक्षण आणि ज्ञान"
+                Education: "शिक्षण आणि ज्ञान",
+                Spirituality: "अध्यात्म आणि धर्म",
+                Foreign: "परदेश आणि प्रवास"
             },
             doshas: {
                 Manglik: "मांगलिक दोष",
@@ -392,7 +398,9 @@ export const ASTRO_TRANSLATIONS = {
                 Health: "ಆರೋಗ್ಯ ಮತ್ತು ಚೈತನ್ಯ",
                 Marriage: "ವಿವಾಹ ಮತ್ತು ಸಂಬಂಧ",
                 Wealth: "ಸಂಪತ್ತು ಮತ್ತು ಹಣಕಾಸು",
-                Education: "ಶಿಕ್ಷಣ ಮತ್ತು ಜ್ಞಾನ"
+                Education: "ಶಿಕ್ಷಣ ಮತ್ತು ಜ್ಞಾನ",
+                Spirituality: "ಆಧ್ಯಾತ್ಮಿಕತೆ ಮತ್ತು ಧರ್ಮ",
+                Foreign: "ವಿದೇಶ ಮತ್ತು ಪ್ರಯಾಣ"
             },
             doshas: {
                 Manglik: "ಮಾಂಗಳಿಕ ದೋಷ",
