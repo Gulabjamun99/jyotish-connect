@@ -65,20 +65,31 @@ export default function KundliPage() {
 
             const trans = getTrans(locale);
 
+            const ascPlanet = fullData.planets.find((p: any) => p.name === "Asc");
+            const moonPlanet = fullData.planets.find((p: any) => p.name === "Moon");
+            const sunPlanet = fullData.planets.find((p: any) => p.name === "Sun");
+
             const newChart = {
                 ...fullData,
                 dateStr: birthDate.toLocaleDateString(locale === 'hi' ? 'hi-IN' : 'en-US'),
-                ascendant: fullData.planets.find((p: any) => p.name === "Asc")?.sign || "Aries",
-                moonSign: fullData.planets.find((p: any) => p.name === "Moon")?.sign || "Aries",
-                sunSign: fullData.planets.find((p: any) => p.name === "Sun")?.sign || "Pisces",
-                nakshatra: fullData.planets.find((p: any) => p.name === "Moon")?.nakshatraId
-                    ? trans.nakshatras[fullData.planets.find((p: any) => p.name === "Moon").nakshatraId - 1]
+                ascendantSign: ascPlanet?.sign || "Aries",
+                ascendantLongitude: fullData.ascendant || (ascPlanet?.longitude ?? 0),
+                moonSign: moonPlanet?.sign || "Aries",
+                moonLongitude: moonPlanet?.longitude ?? 0,
+                sunSign: sunPlanet?.sign || "Pisces",
+                nakshatra: moonPlanet?.nakshatraId
+                    ? trans.nakshatras[moonPlanet.nakshatraId - 1]
                     : "Unknown",
                 predictions: null
             };
 
             // Generate Dynamic Life Predictions
-            const lifePredictions = generateLifePredictions(newChart, locale);
+            const lifePredictions = generateLifePredictions({
+                ...newChart,
+                ascendant: newChart.ascendantSign,
+                moonSign: newChart.moonSign,
+                sunSign: newChart.sunSign
+            }, locale);
             (newChart as any).predictions = lifePredictions;
 
             setChart(newChart);
@@ -286,7 +297,7 @@ export default function KundliPage() {
         const stones = [
             [`Sun (${locale === 'hi' ? 'सूर्य' : 'Sun'})`, (kd as any).gemstones?.Sun || "Ruby"],
             [`Moon (${locale === 'hi' ? 'चंद्र' : 'Moon'})`, (kd as any).gemstones?.Moon || "Pearl"],
-            [`Lagnesh (${translateSign(chart.ascendant, locale)})`, "Consult Astrologer"] // Dynamic logic needed for Lagnesh stone
+            [`Lagnesh (${translateSign(chart.ascendantSign, locale)})`, "Consult Astrologer"] // Dynamic logic needed for Lagnesh stone
         ];
 
         autoTable(doc, {
@@ -421,7 +432,7 @@ export default function KundliPage() {
                                     <div className="flex gap-4">
                                         <div className="bg-orange-50 dark:bg-slate-800 p-4 rounded-2xl text-center min-w-[100px]">
                                             <div className="text-xs text-slate-500 uppercase font-bold">Lagna</div>
-                                            <div className="text-xl font-black text-orange-600">{translateSign(chart.ascendant, locale)}</div>
+                                            <div className="text-xl font-black text-orange-600">{translateSign(chart.ascendantSign, locale)}</div>
                                         </div>
                                         <div className="bg-blue-50 dark:bg-slate-800 p-4 rounded-2xl text-center min-w-[100px]">
                                             <div className="text-xs text-slate-500 uppercase font-bold">Rasi</div>
@@ -469,9 +480,9 @@ export default function KundliPage() {
                                                 <h3 className="text-xl font-bold mt-2">Lagna / Birth Chart</h3>
                                             </div>
                                             <LagnaChart
-                                                chart={chart.charts.D1}
+                                                chart={chart.charts?.D1 || {}}
                                                 planets={chart.planets}
-                                                ascendant={chart.ascendant}
+                                                ascendant={chart.ascendantLongitude}
                                                 title="Lagna"
                                                 subTitle="D1 Chart"
                                             />
@@ -482,9 +493,9 @@ export default function KundliPage() {
                                                 <h3 className="text-xl font-bold mt-2">Navamsa Chart</h3>
                                             </div>
                                             <LagnaChart
-                                                chart={chart.charts.D9}
+                                                chart={chart.charts?.D9 || {}}
                                                 planets={chart.planets}
-                                                ascendant={chart.ascendant}
+                                                ascendant={chart.ascendantLongitude}
                                                 title="Navamsa"
                                                 subTitle="D9 Chart"
                                             />
@@ -495,9 +506,9 @@ export default function KundliPage() {
                                                 <h3 className="text-xl font-bold mt-2">Chandra Lagna</h3>
                                             </div>
                                             <LagnaChart
-                                                chart={chart.charts.Moon}
+                                                chart={chart.charts?.Moon || {}}
                                                 planets={chart.planets}
-                                                ascendant={chart.moonSign}
+                                                ascendant={chart.moonLongitude}
                                                 title="Chandra"
                                                 subTitle="Moon Chart"
                                             />
@@ -508,9 +519,9 @@ export default function KundliPage() {
                                                 <h3 className="text-xl font-bold mt-2">Dashamsha</h3>
                                             </div>
                                             <LagnaChart
-                                                chart={chart.charts.D10}
+                                                chart={chart.charts?.D10 || {}}
                                                 planets={chart.planets}
-                                                ascendant={chart.ascendant}
+                                                ascendant={chart.ascendantLongitude}
                                                 title="Dasamsa"
                                                 subTitle="D10 Chart"
                                             />
