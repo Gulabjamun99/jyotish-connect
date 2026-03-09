@@ -708,21 +708,33 @@ export default function KundliPage() {
                                             </div>
                                         </div>
 
-                                        {/* Life Analysis */}
-                                        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-                                            <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
-                                                <Briefcase className="w-6 h-6 text-orange-500" />
-                                                {locale === 'hi' ? "जीवन विश्लेषण" : "Life Analysis"}
-                                            </h3>
-                                            <div className="grid grid-cols-1 gap-8">
+                                        {/* Life Analysis - AI Powered */}
+                                        <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
+
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-slate-100 pb-6 relative z-10">
+                                                <h3 className="text-3xl font-black text-slate-900 flex items-center gap-3">
+                                                    <Sparkles className="w-8 h-8 text-orange-500 fill-orange-500/20" />
+                                                    {locale === 'hi' ? "विस्तृत जीवन विश्लेषण" : "Detailed Life Analysis"}
+                                                </h3>
+                                                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 rounded-full text-white text-xs font-black uppercase tracking-widest shadow-md flex items-center gap-2">
+                                                    <Zap className="w-3 h-3 fill-white" /> AI Powered Reading
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-12 relative z-10">
                                                 {chart.predictions && Object.entries(chart.predictions).map(([area, text]: [string, any]) => (
-                                                    <div key={area} className="group">
-                                                        <h4 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-orange-600 transition-colors">
-                                                            {kundliData.labels?.life_predictions[area as keyof typeof kundliData.labels.life_predictions] || area}
-                                                        </h4>
-                                                        <p className="text-slate-600 leading-relaxed border-l-2 border-slate-100 dark:border-slate-700 pl-4 group-hover:border-orange-200 transition-all whitespace-pre-line">
+                                                    <div key={area} className="group bg-slate-50 hover:bg-orange-50/30 p-8 rounded-3xl border border-slate-100 hover:border-orange-200 transition-all duration-500">
+                                                        <div className="flex items-center gap-4 mb-6">
+                                                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                                                <Briefcase className="w-6 h-6" />
+                                                            </div>
+                                                            <h4 className="text-2xl font-black text-slate-800 group-hover:text-orange-600 transition-colors">
+                                                                {kundliData.labels?.life_predictions[area as keyof typeof kundliData.labels.life_predictions] || area}
+                                                            </h4>
+                                                        </div>
+                                                        <div className="text-slate-600 leading-[1.8] text-lg font-medium whitespace-pre-line space-y-4">
                                                             {text}
-                                                        </p>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>

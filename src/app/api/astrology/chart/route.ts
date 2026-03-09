@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { getFullAstrologyData } from "@/lib/astrology/calculator";
-import { generateLifePredictions } from "@/lib/astrology/prediction-engine";
+import { generateAIPredictions } from "@/lib/astrology/prediction-engine";
 import { getTrans } from "@/lib/astrology/i18n";
+
+export const maxDuration = 60; // Allow enough time for LLM generation
 
 export async function POST(req: Request) {
     try {
@@ -77,7 +79,7 @@ export async function POST(req: Request) {
                 pitra: (doshas as any).Pitra
             },
             dashas: currentDasha,
-            predictions: generateLifePredictions({
+            predictions: await generateAIPredictions({
                 ...astrologyData,
                 ascendant: ascendant?.sign || "Aries",
                 moonSign: moon?.sign || "Aries",

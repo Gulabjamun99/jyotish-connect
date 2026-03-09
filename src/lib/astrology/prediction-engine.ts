@@ -14,7 +14,78 @@ interface ChartData {
     ascendant: string;
 }
 
+import { GoogleGenAI } from "@google/genai";
+
 // --- Kundli Prediction Engine ---
+
+export async function generateAIPredictions(chart: any, lang: string) {
+    if (!process.env.GEMINI_API_KEY) {
+        return generateLifePredictions(chart, lang);
+    }
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+        let planetsText = "";
+        if (chart.planets && Array.isArray(chart.planets)) {
+            planetsText = chart.planets.map((p: any) => `${p.name} in ${p.house} House (${p.sign})`).join(', ');
+        }
+
+        const locales: Record<string, string> = { en: "English", hi: "Hindi", mr: "Marathi", bn: "Bengali", gu: "Gujarati", ta: "Tamil", te: "Telugu", kn: "Kannada" };
+        const langName = locales[lang] || "English";
+
+        const prompt = `You are an expert ancient Vedic Astrologer. Analyze the following birth chart data and provide highly detailed, personalized, and inspiring astrological predictions for the native strictly in ${langName}.
+        
+Chart Data:
+- Ascendant (Lagna): ${chart.ascendant || 'Unknown'}
+- Moon Sign: ${chart.moonSign || 'Unknown'}
+- Sun Sign: ${chart.sunSign || 'Unknown'}
+- Planetary Placements: ${planetsText}
+
+Requirements:
+1. Provide a 3-4 sentence detailed reading for each of the 7 specified categories: Career, Health, Marriage, Wealth, Education, Spirituality, and Foreign.
+2. Base your readings firmly on the specific planetary placements provided. Mention the planet and house logically (e.g., 'Since your Mars is situated in the 10th house...').
+3. Produce a premium reading equivalent to a detailed 50-page AstroSage PDF report section.
+4. You MUST respond ONLY with a valid JSON object featuring exactly these keys, no markdown wrapping, no code blocks:
+{
+  "Career": "...",
+  "Health": "...",
+  "Marriage": "...",
+  "Wealth": "...",
+  "Education": "...",
+  "Spirituality": "...",
+  "Foreign": "..."
+}`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                temperature: 0.7,
+                responseMimeType: "application/json"
+            }
+        });
+
+        if (response.text) {
+            const result = JSON.parse(response.text);
+            const fallback = generateLifePredictions(chart, lang);
+            return {
+                Career: result.Career || fallback.Career,
+                Health: result.Health || fallback.Health,
+                Marriage: result.Marriage || fallback.Marriage,
+                Wealth: result.Wealth || fallback.Wealth,
+                Education: result.Education || fallback.Education,
+                Spirituality: result.Spirituality || fallback.Spirituality,
+                Foreign: result.Foreign || fallback.Foreign,
+            };
+        }
+    } catch (error) {
+        console.error("Gemini AI Prediction Error:", error);
+    }
+
+    // Fallback to static
+    return generateLifePredictions(chart, lang);
+}
 
 export function generateLifePredictions(chart: any, lang: string) {
     const data = INTERPRETATIONS[lang as keyof typeof INTERPRETATIONS] || INTERPRETATIONS.en;
