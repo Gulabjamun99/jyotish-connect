@@ -59,7 +59,7 @@ export function FeaturedAstrologers() {
     );
 
     return (
-        <section className="py-20 bg-secondary/30 relative overflow-hidden">
+        <section className="py-12 bg-secondary/30 relative overflow-hidden">
             {/* Background Decor */}
             <div className="absolute top-0 left-0 w-full h-full opacity-50 pointer-events-none">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float" />
@@ -67,19 +67,19 @@ export function FeaturedAstrologers() {
             </div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-                    <div className="space-y-4">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
+                    <div className="space-y-3">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 border border-primary/10 backdrop-blur text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                             <Star className="w-3 h-3" /> Top Rated
                         </div>
-                        <h2 className="text-4xl font-black text-slate-900 tracking-tight">Featured Guides</h2>
-                        <p className="text-muted-foreground font-medium max-w-lg">
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Featured Guides</h2>
+                        <p className="text-muted-foreground text-sm md:text-base font-medium max-w-lg">
                             Connect with master Vedic astrologers, Tarot readers, and Numerologists handpicked for their accuracy and compassion.
                         </p>
                     </div>
                     <Link href="/search">
-                        <Button variant="outline" className="h-12 px-6 rounded-xl border-primary/20 hover:bg-primary/5 hover:border-primary/40 font-bold uppercase tracking-widest text-xs gap-2 group">
-                            View All Experts
+                        <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-primary/20 hover:bg-primary/5 hover:border-primary/40 font-bold uppercase tracking-widest text-xs gap-2 group">
+                            View All
                             <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </Button>
                     </Link>
@@ -87,8 +87,8 @@ export function FeaturedAstrologers() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {astrologers.map((astro) => (
-                        <div key={astro.id} className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-white shadow-xl shadow-primary/5 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group hover:-translate-y-1 overflow-hidden flex flex-col">
-                            <div className="relative w-full aspect-[4/5] bg-secondary overflow-hidden">
+                        <div key={astro.id} className="bg-white/70 backdrop-blur-xl rounded-[1.5rem] border border-white shadow-xl shadow-primary/5 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group hover:-translate-y-1 overflow-hidden flex flex-col">
+                            <div className="relative w-full aspect-square bg-secondary overflow-hidden">
                                 <img
                                     src={astro.image}
                                     alt={astro.name}
@@ -96,48 +96,58 @@ export function FeaturedAstrologers() {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/0 to-transparent opacity-60" />
 
+                                {/* Live Signal Badge */}
+                                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 shadow-lg border border-green-100">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    </span>
+                                    <span className="text-[9px] font-black uppercase tracking-wider text-green-600">Live</span>
+                                </div>
+
+                                {/* Verified Badge */}
                                 {astro.verified && (
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
-                                        <CheckCircle className="w-3.5 h-3.5 fill-blue-500 text-white" />
-                                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-800">Verified</span>
+                                    <div className="absolute top-3 right-3 bg-blue-500/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-lg shadow-blue-500/20">
+                                        <CheckCircle className="w-3 h-3 fill-white text-blue-500" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider text-white">Verified</span>
                                     </div>
                                 )}
 
-                                <div className="absolute bottom-4 left-4 right-4 text-white">
-                                    <h3 className="font-bold text-xl leading-tight mb-1">{astro.name}</h3>
-                                    <p className="text-xs font-medium text-white/80 line-clamp-1">{astro.expertise}</p>
+                                <div className="absolute bottom-3 left-3 right-3 text-white">
+                                    <h3 className="font-bold text-lg leading-tight mb-0.5">{astro.name}</h3>
+                                    <p className="text-[10px] font-medium text-white/80 line-clamp-1">{astro.expertise}</p>
                                 </div>
                             </div>
 
-                            <div className="p-5 flex flex-col flex-grow gap-4">
+                            <div className="p-4 flex flex-col flex-grow gap-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
-                                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                                        <span className="text-xs font-bold text-amber-700">{astro.rating}</span>
+                                    <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+                                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                        <span className="text-[10px] font-bold text-amber-700">{astro.rating}</span>
                                     </div>
-                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{astro.reviews} Reviews</span>
+                                    <span className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">{astro.reviews} Reviews</span>
                                 </div>
 
                                 <div className="flex flex-wrap gap-1.5">
                                     {astro.languages.slice(0, 3).map(lang => (
-                                        <span key={lang} className="text-[9px] uppercase font-bold px-2 py-1 rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
+                                        <span key={lang} className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200">
                                             {lang}
                                         </span>
                                     ))}
                                     {astro.languages.length > 3 && (
-                                        <span className="text-[9px] uppercase font-bold px-2 py-1 rounded-lg bg-slate-50 text-slate-400 border border-slate-100">
+                                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-slate-50 text-slate-400 border border-slate-100">
                                             +{astro.languages.length - 3}
                                         </span>
                                     )}
                                 </div>
 
-                                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                                <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
                                     <div>
-                                        <span className="text-lg font-black text-slate-900">₹{astro.price}</span>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-1">/min</span>
+                                        <span className="text-base font-black text-slate-900">₹{astro.price}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">/min</span>
                                     </div>
                                     <Link href={`/profile/${astro.id}`}>
-                                        <Button size="sm" className="rounded-xl px-5 bg-slate-900 hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all text-white font-bold text-xs uppercase tracking-wider">
+                                        <Button size="sm" className="h-8 rounded-lg px-4 bg-slate-900 hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all text-white font-bold text-[10px] uppercase tracking-wider">
                                             Book
                                         </Button>
                                     </Link>

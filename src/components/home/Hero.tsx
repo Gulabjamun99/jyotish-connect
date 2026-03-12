@@ -4,9 +4,9 @@ import { Sparkles, Video, ShieldCheck, Languages } from "lucide-react";
 
 export function Hero() {
     return (
-        <section className="relative py-20 overflow-hidden bg-transparent">
+        <section className="relative py-12 md:py-16 overflow-hidden bg-transparent">
             {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center max-w-3xl mx-auto space-y-8">
@@ -15,14 +15,14 @@ export function Hero() {
                         Empowering your life through Vedic Wisdom
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
                         Consult India's Best{" "}
                         <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent italic">
                             Verified Astrologers
                         </span>
                     </h1>
 
-                    <p className="text-xl text-muted-foreground leading-relaxed">
+                    <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                         Get instant guidance on career, love, finance, and health with personalized consultations
                         via real-time video calls. 100% private and secure.
                     </p>
@@ -40,7 +40,7 @@ export function Hero() {
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12 border-t mt-16">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t mt-10">
                         <div className="flex flex-col items-center gap-2">
                             <div className="p-3 bg-primary/5 rounded-xl text-primary">
                                 <Video className="w-6 h-6" />
