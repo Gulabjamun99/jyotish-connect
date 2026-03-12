@@ -59,7 +59,7 @@ export function FeaturedAstrologers() {
     );
 
     return (
-        <section className="py-12 bg-secondary/30 relative overflow-hidden">
+        <section className="py-8 bg-secondary/30 relative overflow-hidden">
             {/* Background Decor */}
             <div className="absolute top-0 left-0 w-full h-full opacity-50 pointer-events-none">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float" />
@@ -67,87 +67,82 @@ export function FeaturedAstrologers() {
             </div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
-                    <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 border border-primary/10 backdrop-blur text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                            <Star className="w-3 h-3" /> Top Rated
+                <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+                    <div className="space-y-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/50 border border-primary/10 backdrop-blur text-[9px] font-black uppercase tracking-widest text-primary">
+                            <Star className="w-2.5 h-2.5" /> Top Rated
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Featured Guides</h2>
-                        <p className="text-muted-foreground text-sm md:text-base font-medium max-w-lg">
-                            Connect with master Vedic astrologers, Tarot readers, and Numerologists handpicked for their accuracy and compassion.
+                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Featured Guides</h2>
+                        <p className="text-muted-foreground text-xs md:text-sm font-medium max-w-lg">
+                            Master astrologers handpicked for accuracy.
                         </p>
                     </div>
                     <Link href="/search">
-                        <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl border-primary/20 hover:bg-primary/5 hover:border-primary/40 font-bold uppercase tracking-widest text-xs gap-2 group">
+                        <Button variant="outline" size="sm" className="h-9 px-4 rounded-lg border-primary/10 hover:bg-primary/5 font-bold uppercase tracking-widest text-[10px] gap-2 group">
                             View All
                             <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </Button>
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {astrologers.map((astro) => (
-                        <div key={astro.id} className="bg-white/70 backdrop-blur-xl rounded-[1.5rem] border border-white shadow-xl shadow-primary/5 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group hover:-translate-y-1 overflow-hidden flex flex-col">
+                        <div key={astro.id} className="bg-white/70 backdrop-blur-xl rounded-[1rem] border border-white shadow-lg shadow-primary/5 hover:shadow-xl transition-all duration-300 group hover:-translate-y-0.5 overflow-hidden flex flex-col">
                             <div className="relative w-full aspect-square bg-secondary overflow-hidden">
                                 <img
                                     src={astro.image}
                                     alt={astro.name}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/0 to-transparent opacity-60" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/0 to-transparent opacity-70" />
 
                                 {/* Live Signal Badge */}
-                                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 shadow-lg border border-green-100">
-                                    <span className="relative flex h-2 w-2">
+                                <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-md px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-green-100">
+                                    <span className="relative flex h-1.5 w-1.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
                                     </span>
-                                    <span className="text-[9px] font-black uppercase tracking-wider text-green-600">Live</span>
+                                    <span className="text-[8px] font-black uppercase tracking-wider text-green-600">Live</span>
                                 </div>
 
                                 {/* Verified Badge */}
                                 {astro.verified && (
-                                    <div className="absolute top-3 right-3 bg-blue-500/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-lg shadow-blue-500/20">
-                                        <CheckCircle className="w-3 h-3 fill-white text-blue-500" />
-                                        <span className="text-[9px] font-black uppercase tracking-wider text-white">Verified</span>
+                                    <div className="absolute top-2 right-2 bg-blue-500/90 backdrop-blur-md px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
+                                        <CheckCircle className="w-2.5 h-2.5 fill-white text-blue-500" />
+                                        <span className="text-[8px] font-black uppercase tracking-wider text-white">Verified</span>
                                     </div>
                                 )}
 
-                                <div className="absolute bottom-3 left-3 right-3 text-white">
-                                    <h3 className="font-bold text-lg leading-tight mb-0.5">{astro.name}</h3>
-                                    <p className="text-[10px] font-medium text-white/80 line-clamp-1">{astro.expertise}</p>
+                                <div className="absolute bottom-2 left-2 right-2 text-white">
+                                    <h3 className="font-bold text-sm md:text-base leading-tight mb-0.5">{astro.name}</h3>
+                                    <p className="text-[8px] md:text-[9px] font-medium text-white/80 line-clamp-1">{astro.expertise}</p>
                                 </div>
                             </div>
 
-                            <div className="p-4 flex flex-col flex-grow gap-3">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
-                                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                        <span className="text-[10px] font-bold text-amber-700">{astro.rating}</span>
+                            <div className="p-2.5 md:p-3 flex flex-col flex-grow gap-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1">
+                                        <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                                        <span className="text-[9px] font-bold text-amber-700">{astro.rating}</span>
                                     </div>
-                                    <span className="text-[9px] font-medium text-slate-400 uppercase tracking-wide">{astro.reviews} Reviews</span>
+                                    <span className="text-[8px] font-medium text-slate-400 uppercase tracking-tight">{astro.reviews} Revs</span>
                                 </div>
 
-                                <div className="flex flex-wrap gap-1.5">
-                                    {astro.languages.slice(0, 3).map(lang => (
-                                        <span key={lang} className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200">
+                                <div className="flex flex-wrap gap-1">
+                                    {astro.languages.slice(0, 2).map(lang => (
+                                        <span key={lang} className="text-[8px] uppercase font-bold px-1 py-0.5 rounded-sm bg-slate-100/50 text-slate-500 border border-slate-200/50">
                                             {lang}
                                         </span>
                                     ))}
-                                    {astro.languages.length > 3 && (
-                                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-slate-50 text-slate-400 border border-slate-100">
-                                            +{astro.languages.length - 3}
-                                        </span>
-                                    )}
                                 </div>
 
-                                <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+                                <div className="mt-auto pt-2 border-t border-slate-100/50 flex items-center justify-between">
                                     <div>
-                                        <span className="text-base font-black text-slate-900">₹{astro.price}</span>
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">/min</span>
+                                        <span className="text-sm font-black text-slate-900">₹{astro.price}</span>
+                                        <span className="text-[8px] font-bold text-slate-400 uppercase ml-0.5">/m</span>
                                     </div>
                                     <Link href={`/profile/${astro.id}`}>
-                                        <Button size="sm" className="h-8 rounded-lg px-4 bg-slate-900 hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all text-white font-bold text-[10px] uppercase tracking-wider">
+                                        <Button size="sm" className="h-7 rounded-md px-3 bg-slate-900 hover:bg-primary transition-all text-white font-bold text-[9px] uppercase tracking-wider">
                                             Book
                                         </Button>
                                     </Link>

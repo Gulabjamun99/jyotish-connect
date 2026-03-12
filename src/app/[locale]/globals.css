@@ -101,6 +101,7 @@
 .text-gradient {
   background: linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -131,7 +132,16 @@ body::before {
 }
 
 .container {
-  max-width: 1400px !important;
+  max-width: 1200px !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
 }
 
 button {

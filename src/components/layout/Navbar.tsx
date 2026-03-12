@@ -76,13 +76,13 @@ export function Navbar() {
 
     return (
         <nav className="sticky top-0 z-50 w-full glass border-none border-b border-primary/10 backdrop-blur-2xl">
-            <div className="container mx-auto flex h-20 items-center justify-between px-6">
+            <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
                 <div className="flex items-center gap-2">
-                    <Link href="/" className="flex items-center space-x-2 group">
-                        <div className="w-10 h-10 bg-primary rounded-xl rotate-12 group-hover:rotate-0 transition-transform duration-500 shadow-lg shadow-primary/20 flex items-center justify-center font-black text-white text-xl">
+                    <Link href="/" className="flex items-center space-x-1.5 group">
+                        <div className="w-8 h-8 md:w-9 md:h-9 bg-primary rounded-lg rotate-12 group-hover:rotate-0 transition-transform duration-500 shadow-lg shadow-primary/20 flex items-center justify-center font-black text-white text-lg">
                             J
                         </div>
-                        <span className="text-2xl font-black text-gradient tracking-tighter">
+                        <span className="text-xl md:text-2xl font-black text-gradient tracking-tighter">
                             JyotishConnect
                         </span>
                     </Link>
@@ -132,18 +132,18 @@ export function Navbar() {
                         </Button>
 
                         {user ? (
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 <Link href={role === "astrologer" ? "/astrologer/dashboard" : "/user/dashboard"}>
-                                    <Button className="h-10 px-6 rounded-xl orange-gradient font-black text-[10px] uppercase tracking-widest text-white shadow-lg shadow-primary/20">
+                                    <Button className="h-9 px-4 rounded-lg orange-gradient font-black text-[9px] uppercase tracking-widest text-white shadow-md shadow-primary/10">
                                         {tNav("dashboard")}
                                     </Button>
                                 </Link>
-                                <Button variant="ghost" size="icon" className="w-10 h-10 rounded-xl glass border-primary/10 hover:bg-primary/5" onClick={handleLogout}>
-                                    <LogOut className="w-4 h-4 text-red-400" />
+                                <Button variant="ghost" size="icon" className="w-9 h-9 rounded-lg glass border-primary/10 hover:bg-primary/5" onClick={handleLogout}>
+                                    <LogOut className="w-3.5 h-3.5 text-red-400" />
                                 </Button>
                             </div>
                         ) : (
-                            <Button onClick={handleLogin} className="h-10 px-8 rounded-xl orange-gradient font-black text-xs uppercase tracking-widest text-white shadow-lg shadow-primary/20">
+                            <Button onClick={handleLogin} className="h-9 px-6 rounded-lg orange-gradient font-black text-[10px] uppercase tracking-widest text-white shadow-md shadow-primary/10">
                                 {tNav("login")}
                             </Button>
                         )}

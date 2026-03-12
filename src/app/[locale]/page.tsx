@@ -56,31 +56,31 @@ export default function Home() {
       </div>
 
       {/* Free Services Section */}
-      <section className="py-16 md:py-20 container mx-auto px-4 relative">
-        <header className="text-center mb-12 space-y-3 animate-slide-up">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gradient">{t("tools_title")}</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto text-base md:text-lg opacity-80">
+      <section className="py-10 md:py-14 container mx-auto px-4 relative">
+        <header className="text-center mb-8 space-y-2 animate-slide-up">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-gradient">{t("tools_title")}</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base opacity-90">
             {t("tools_subtitle")}
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {[
             { title: t("horoscope_title"), desc: t("horoscope_desc"), icon: "♈", href: "/horoscope", color: "from-primary/20" },
             { title: t("matching_title"), desc: t("matching_desc"), icon: "💑", href: "/kundli-matching", color: "from-accent/20" },
             { title: t("panchang_title"), desc: t("panchang_desc"), icon: "📜", href: "/kundli", color: "from-sky-500/20" },
           ].map((service, i) => (
             <Link key={i} href={service.href} className="group h-full">
-              <div className="relative p-8 rounded-[2.5rem] glass hover:border-primary/30 transition-all duration-500 h-full flex flex-col items-start overflow-hidden">
-                <div className={`absolute -top-16 -left-16 w-32 h-32 bg-gradient-to-br ${service.color} blur-[60px] group-hover:blur-[40px] transition-all opacity-50`} />
+              <div className="relative p-5 md:p-6 rounded-[2rem] glass hover:border-primary/30 transition-all duration-500 h-full flex flex-col items-start overflow-hidden border border-slate-100/50">
+                <div className={`absolute -top-12 -left-12 w-24 h-24 bg-gradient-to-br ${service.color} blur-[50px] group-hover:blur-[30px] transition-all opacity-40`} />
 
-                <div className="text-4xl mb-6 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 bg-primary/5 w-16 h-16 rounded-2xl flex items-center justify-center border border-primary/5 shadow-inner">
+                <div className="text-2xl md:text-3xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 bg-primary/5 w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center border border-primary/5 shadow-inner">
                   {service.icon}
                 </div>
-                <h3 className="text-xl font-black mb-3 tracking-tight group-hover:text-primary transition-colors">{service.title}</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed text-sm opacity-80 group-hover:opacity-100 transition-opacity">{service.desc}</p>
-                <div className="mt-auto flex items-center gap-2 text-primary/60 group-hover:text-primary font-bold text-xs uppercase tracking-[0.2em] transition-all group-hover:gap-3">
-                  Ascend Now <span>→</span>
+                <h3 className="text-lg font-black mb-2 tracking-tight group-hover:text-primary transition-colors">{service.title}</h3>
+                <p className="text-muted-foreground mb-4 leading-relaxed text-xs opacity-90 group-hover:opacity-100 transition-opacity line-clamp-2">{service.desc}</p>
+                <div className="mt-auto flex items-center gap-2 text-primary/60 group-hover:text-primary font-bold text-[10px] uppercase tracking-[0.1em] transition-all group-hover:gap-3">
+                  Check Now <span>→</span>
                 </div>
               </div>
             </Link>
