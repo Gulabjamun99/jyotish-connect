@@ -315,22 +315,39 @@ export default function KundliPage() {
 
         if (chart.predictions) {
             Object.entries(chart.predictions).forEach(([area, text]) => {
-                if (y > 250) {
+                const label = (kundliData.labels?.life_predictions as any)?.[area] || area;
+
+                // Check if we need a new page for the header + some text
+                if (y > 260) {
                     doc.addPage();
                     addPageBorder();
-                    y = 30;
+                    y = 20;
                 }
-                // @ts-ignore - Dynamic area key access
-                const label = kundliData.labels?.life_predictions?.[area] || area;
+
                 doc.setFontSize(12);
                 doc.setTextColor(234, 88, 12);
+                doc.setFont("helvetica", "bold");
                 doc.text(label, 20, y);
-                y += 6;
+                y += 8;
+
                 doc.setFontSize(10);
                 doc.setTextColor(60);
+                doc.setFont("helvetica", "normal");
+
                 const lines = doc.splitTextToSize(text as string, 170);
-                doc.text(lines, 20, y);
-                y += (lines.length * 5) + 10;
+
+                // Draw lines one by one and handle page breaks
+                lines.forEach((line: string) => {
+                    if (y > 280) {
+                        doc.addPage();
+                        addPageBorder();
+                        y = 20;
+                    }
+                    doc.text(line, 20, y);
+                    y += 6;
+                });
+
+                y += 10; // Extra gap between sections
             });
         }
 

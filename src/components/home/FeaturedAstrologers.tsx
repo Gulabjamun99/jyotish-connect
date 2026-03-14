@@ -12,9 +12,10 @@ export function FeaturedAstrologers() {
         const fetchAstro = async () => {
             setLoading(true);
             try {
-                const { astrologers: data } = await getAstrologers(undefined, 4);
-                // Already sorted and limited by query
-                setAstrologers(data);
+                const { astrologers: data } = await getAstrologers(undefined, 10); // Fetch more so we can filter
+                // Filter out those without real photos and limit to 4/5 for the homepage
+                const withPhotos = data.filter(a => a.image && !a.image.includes("placeholder-avatar.png"));
+                setAstrologers(withPhotos.slice(0, 5));
             } catch (err) {
                 console.error("Failed to fetch featured astrologers", err);
             } finally {
@@ -85,56 +86,65 @@ export function FeaturedAstrologers() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
                     {astrologers.map((astro) => (
-                        <div key={astro.id} className="bg-white/80 backdrop-blur-md rounded-xl border border-white shadow-sm hover:shadow-lg transition-all duration-300 group hover:-translate-y-1 overflow-hidden flex flex-col">
-                            <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
+                        <div key={astro.id} className="group relative bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1.5 overflow-hidden flex flex-col h-full">
+                            {/* Improved Image Container */}
+                            <div className="relative aspect-[4/5] overflow-hidden">
                                 <img
                                     src={astro.image}
                                     alt={astro.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
                                 />
-                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-900/90 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
 
-                                {/* Signal Status Badge */}
-                                <div className="absolute top-1.5 left-1.5 bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white/20">
-                                    <span className="relative flex h-1.5 w-1.5">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
-                                    </span>
-                                    <span className="text-[7px] font-black uppercase tracking-tighter text-white">Live</span>
+                                {/* Status Badges */}
+                                <div className="absolute top-2 left-2 z-20 flex flex-col gap-1.5">
+                                    <div className="bg-emerald-500/90 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-lg border border-white/20">
+                                        <span className="relative flex h-1.5 w-1.5">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                                        </span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-white">Live</span>
+                                    </div>
+                                    {astro.verified && (
+                                        <div className="bg-blue-500/90 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg border border-white/20">
+                                            <CheckCircle className="w-2 h-2 text-white" />
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-white">Verified</span>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {/* Minimal Verified Badge */}
-                                {astro.verified && (
-                                    <div className="absolute top-1.5 right-1.5 bg-blue-500/90 backdrop-blur-sm p-0.5 rounded-full shadow-sm">
-                                        <CheckCircle className="w-2.5 h-2.5 text-white" />
+                                {/* Text Overlay on Image */}
+                                <div className="absolute bottom-3 left-3 right-3 z-10">
+                                    <h3 className="font-black text-white text-xs md:text-sm tracking-tight mb-0.5 group-hover:text-primary transition-colors">{astro.name}</h3>
+                                    <div className="flex items-center gap-1 text-white/70 text-[8px] font-medium uppercase tracking-wider">
+                                        <span className="w-1 h-1 bg-primary rounded-full" />
+                                        {astro.expertise}
                                     </div>
-                                )}
-
-                                <div className="absolute bottom-1.5 left-1.5 right-1.5 text-white">
-                                    <h3 className="font-bold text-[11px] md:text-xs leading-none mb-0.5 truncate">{astro.name}</h3>
-                                    <p className="text-[7px] font-bold text-white/70 uppercase tracking-tighter truncate opacity-80">{astro.expertise}</p>
                                 </div>
                             </div>
 
-                            <div className="p-2 md:p-2.5 flex flex-col flex-grow gap-1.5">
-                                <div className="flex items-center justify-between text-[8px] font-black">
-                                    <div className="flex items-center gap-0.5 text-amber-600">
-                                        <Star className="w-2 h-2 fill-amber-500 text-amber-500" />
-                                        <span>{astro.rating}</span>
+                            {/* Bottom Info Section */}
+                            <div className="p-3 flex flex-col gap-2.5 bg-white">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-50 rounded-md">
+                                        <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                                        <span className="text-[10px] font-black text-amber-700">{astro.rating}</span>
                                     </div>
-                                    <span className="text-slate-400 opacity-60 uppercase">{astro.reviews}r</span>
+                                    <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">{astro.reviews} Reviews</span>
                                 </div>
 
-                                <div className="mt-auto pt-1.5 border-t border-slate-100/50 flex items-center justify-between">
+                                <div className="flex items-center justify-between mt-1">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-800 leading-none">₹{astro.price}</span>
-                                        <span className="text-[6px] font-bold text-slate-400 uppercase leading-none mt-0.5">/min</span>
+                                        <div className="flex items-baseline gap-0.5">
+                                            <span className="text-[14px] font-black text-slate-900 tracking-tighter">₹{astro.price}</span>
+                                            <span className="text-[8px] font-bold text-slate-400 uppercase">/min</span>
+                                        </div>
                                     </div>
                                     <Link href={`/profile/${astro.id}`}>
-                                        <Button size="sm" className="h-6 rounded-md px-2.5 bg-slate-900 border-none hover:bg-primary transition-all text-white font-black text-[8px] uppercase tracking-tighter">
-                                            Book
+                                        <Button size="sm" className="h-8 md:h-9 rounded-xl px-4 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                            Consult
                                         </Button>
                                     </Link>
                                 </div>

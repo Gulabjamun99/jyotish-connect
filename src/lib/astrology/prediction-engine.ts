@@ -241,8 +241,13 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     };
 
     // Helper: Determine aspect/nature
-    const getNature = (house: number) => {
-        if ([6, 8, 12].includes(house)) return "negative";
+    const getNature = (house: number, planet?: string) => {
+        if ([8, 12].includes(house)) return "negative";
+        if (house === 6) {
+            // Malefics are good in 6th house (Victory)
+            if (["Sun", "Mars", "Saturn", "Rahu", "Ketu"].includes(planet || "")) return "positive";
+            return "negative";
+        }
         if ([1, 5, 9, 11].includes(house)) return "positive";
         return "neutral";
     };
@@ -258,7 +263,9 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     };
 
     // 1. Career (Sun + Saturn + 10th/2nd/6th House transits)
-    const careerPred = (getTransit("Sun", housing.Sun) + " " + getTransit("Saturn", housing.Saturn)).trim();
+    const sunTxt = getTransit("Sun", housing.Sun);
+    const saturnTxt = getTransit("Saturn", housing.Saturn);
+    const careerPred = (sunTxt + " " + saturnTxt).trim();
 
     // 2. Love (Venus + 5th/7th House transits)
     const lovePred = getTransit("Venus", housing.Venus);
@@ -266,17 +273,65 @@ export function generateDailyHoroscope(userSign: string, currentPlanets: any[], 
     // 3. Health (Mars + 6th House + Sun)
     const healthPred = getTransit("Mars", housing.Mars);
 
-    // 4. Positive (Luck/Gains/Good News) - Jupiter or any planet in 1/5/9/11
-    let positiveHighlight = "";
-    if (getNature(housing.Jupiter) === "positive") positiveHighlight += (getTransit("Jupiter", housing.Jupiter) || (data as any).defaults?.positive || "Jupiter brings luck. ");
-    if (getNature(housing.Moon) === "positive") positiveHighlight += getTransit("Moon", housing.Moon);
-    if (!positiveHighlight) positiveHighlight = getTransit("Sun", housing.Sun);
+    // --- High Level Highlights (Positive & Negative) ---
+    // Rule: Avoid repeating text already used in Career/Love/Health if possible.
+    // Rule: Positive MUST be positive, Negative MUST be a caution.
 
-    // 5. Negative (Caution/Challenges) - Saturn/Rahu or planets in 6/8/12
+    const usedTexts = new Set<string>();
+    if (sunTxt) usedTexts.add(sunTxt);
+    if (saturnTxt) usedTexts.add(saturnTxt);
+    if (lovePred) usedTexts.add(lovePred);
+    if (healthPred) usedTexts.add(healthPred);
+
+    // 4. Positive (Luck/Gains/Good News)
+    let positiveHighlight = "";
+    // Priority: Jupiter in positive house, then Moon in positive house, then Mercury/Venus in positive house.
+    const posCandidates = [
+        { name: "Jupiter", house: housing.Jupiter },
+        { name: "Moon", house: housing.Moon },
+        { name: "Venus", house: housing.Venus },
+        { name: "Mercury", house: housing.Mercury },
+        { name: "Sun", house: housing.Sun }
+    ];
+
+    for (const cand of posCandidates) {
+        if (getNature(cand.house, cand.name) === "positive") {
+            const txt = getTransit(cand.name, cand.house);
+            if (txt && !usedTexts.has(txt)) {
+                positiveHighlight = txt;
+                usedTexts.add(txt);
+                break;
+            }
+        }
+    }
+
+    if (!positiveHighlight) {
+        positiveHighlight = (data as any).defaults?.positive || "The cosmic energy favors your initiatives today. Stay optimistic.";
+    }
+
+    // 5. Negative (Caution/Challenges)
     let negativeHighlight = "";
-    if (getNature(housing.Saturn) === "negative") negativeHighlight += (getTransit("Saturn", housing.Saturn) || (data as any).defaults?.negative || "Saturn indicates delays. ");
-    if (getNature(housing.Mars) === "negative") negativeHighlight += getTransit("Mars", housing.Mars);
-    if (!negativeHighlight) negativeHighlight = (data as any).defaults?.caution || "Avoid unnecessary risks today. Meditate for peace.";
+    // Priority: Saturn in negative house, then Mars, then Rahu (if we had it), then Sun in negative house.
+    const negCandidates = [
+        { name: "Saturn", house: housing.Saturn },
+        { name: "Mars", house: housing.Mars },
+        { name: "Sun", house: housing.Sun }
+    ];
+
+    for (const cand of negCandidates) {
+        if (getNature(cand.house, cand.name) === "negative") {
+            const txt = getTransit(cand.name, cand.house);
+            if (txt && !usedTexts.has(txt)) {
+                negativeHighlight = txt;
+                usedTexts.add(txt);
+                break;
+            }
+        }
+    }
+
+    if (!negativeHighlight) {
+        negativeHighlight = (data as any).defaults?.caution || "Avoid impulsive decisions today. Patience will yield better results.";
+    }
 
 
     // Day-based seed for Luck Factors
@@ -476,34 +531,44 @@ export function analyzeManglikCancellation(boy: any, girl: any, lang: string) {
 
 // Internal Logic Helpers
 function analyzeNavamsaBond(boy: any, girl: any, lang: string) {
+    const score = boy.milan?.ashtakoot?.maitri?.score || 0;
+    const isStrong = score >= 4;
+
     const msgs: any = {
-        en: "Navamsa (D9) indicates a spiritual union with focus on shared growth. Venus-Mars synergy is balanced.",
-        hi: "नवांश (D9) साझा विकास पर ध्यान देने के साथ एक आध्यात्मिक मिलन का संकेत देता है। शुक्र-मंगल तालमेल संतुलित है।",
-        mr: "नवांश (D9) अध्यात्मिक मीलनाचा संकेत देते ज्यात सामायिक प्रगतीवर भर आहे. शुक्र-मंगळ समन्वय संतुलित आहे.",
-        te: "నవాంశ (D9) ఉమ్మడి వృద్ధిపై దృష్టి సారించిన ఆధ్యాత్మిక కలయికను సూచిస్తుంది. శుక్ర-కుజుల సమన్వయం సమతుల్యంగా ఉంది.",
-        kn: "ನವಾಂಶ (D9) ಹಂಚಿಕೆಯ ಬೆಳವಣಿಗೆಯ ಮೇಲೆ ಗಮನಹರಿಸುವ ಆಧ್ಯಾತ್ಮಿಕ ಒಕ್ಕೂಟವನ್ನು ಸೂಚಿಸುತ್ತದೆ. ಶುಕ್ರ-ಮಂಗಳ ಸಿನರ್ಜಿ ಸಮತೋಲಿತವಾಗಿದೆ."
+        en: `Navamsa (D9) indicates a ${isStrong ? 'prosperous' : 'balanced'} spiritual union. Venus-Mars synergy supports ${isStrong ? 'deep emotional growth' : 'mutual understanding'}.`,
+        hi: `नवांश (D9) एक ${isStrong ? 'समृद्ध' : 'संतुलित'} आध्यात्मिक मिलन का संकेत देता है। शुक्र-मंगल तालमेल ${isStrong ? 'गहरे भावनात्मक विकास' : 'पारस्परिक समझ'} का समर्थन करता है।`,
+        mr: `नवांश (D9) एक ${isStrong ? 'समृद्ध' : 'संतुलित'} आध्यात्मिक मिलनाचा संकेत देते। शुक्र-मंगळ समन्वय ${isStrong ? 'खोल भावनिक वाढ' : 'परस्पर समज'} वाढवतो।`,
+        te: `నవాంశ (D9) ఒక ${isStrong ? 'సంపన్నమైన' : 'సమతుల్యమైన'} ఆధ్యాత్మిక కలయికను సూచిస్తుంది.`,
+        kn: `ನವಾಂಶ (D9) ಒಂದು ${isStrong ? 'ಸಮೃದ್ಧ' : 'ಸಮತೋಲಿತ'} ಆಧ್ಯಾತ್ಮಿಕ ಒಕ್ಕೂಟವನ್ನು ಸೂಚಿಸುತ್ತದೆ.`
     };
     return msgs[lang] || msgs.en;
 }
 
 function calculateLikelyMarriagePeriod(boy: any, girl: any, lang: string) {
+    const score = boy.milan?.total || girl.milan?.total || 18;
+    const year = new Date().getFullYear();
+    const startYear = score > 25 ? year : year + 1;
+    const endYear = startYear + 1;
+
     const msgs: any = {
-        en: "Strong indicators for marriage observed between Oct 2025 and June 2026 based on transit alignment.",
-        hi: "गोचर संरेखण के आधार पर अक्टूबर 2025 और जून 2026 के बीच विवाह के मजबूत संकेत देखे गए हैं।",
-        mr: "गोचर स्थितीनुसार ऑक्टोबर २०२५ ते जून २०२६ दरम्यान विवाहाचे प्रबळ योग दिसून येतात.",
-        te: "గోచార గ్రహాల అమరిక ఆధారంగా అక్టోబర్ 2025 మరియు జూన్ 2026 మధ్య వివాహానికి బలమైన సూచనలు ఉన్నాయి.",
-        kn: "ಗೋಚಾರ ಗ್ರಹಗಳ ಜೋಡಣೆಯ ಆಧಾರದ ಮೇಲೆ ಅಕ್ಟೋಬರ್ 2025 ಮತ್ತು ಜೂನ್ 2026 ರ ನಡುವೆ ವಿವಾಹಕ್ಕೆ ಬಲವಾದ ಸೂಚನೆಗಳು ಕಂಡುಬಂದಿವೆ."
+        en: `Strong indicators for marriage observed between ${startYear} and ${endYear} based on current transit alignments.`,
+        hi: `वर्तमान गोचर संरेखण के आधार पर ${startYear} और ${endYear} के बीच विवाह के मजबूत संकेत देखे गए हैं।`,
+        mr: `गोचर स्थितीनुसार ${startYear} ते ${endYear} दरम्यान विवाहाचे प्रबळ योग दिसून येतात।`,
+        te: `${startYear} మరియు ${endYear} మధ్య వివాహానికి బలమైన సూచనలు ఉన్నాయి।`,
+        kn: `${startYear} ಮತ್ತು ${endYear} ನಡುವೆ ವಿವಾಹಕ್ಕೆ ಬಲವಾದ ಸೂಚನೆಗಳು ಕಂಡುಬಂದಿವೆ।`
     };
     return msgs[lang] || msgs.en;
 }
 
 function generateLifeForecastSummary(score: number, lang: string) {
+    const isHigh = score > 25;
+    const year = new Date().getFullYear();
     const msgs: any = {
-        en: `First 5 years show ${score > 25 ? 'peak harmony' : 'adjustments'}. Prosperity likely to increase through mutual efforts from year 7 onwards.`,
-        hi: `पहले 5 वर्ष ${score > 25 ? 'चरम सामंजस्य' : 'समायोजन'} दिखाते हैं। 7वें वर्ष के बाद से आपसी प्रयासों के माध्यम से समृद्धि बढ़ने की संभावना है।`,
-        mr: `पहिली ५ वर्षे ${score > 25 ? 'अत्यंत सुसंवादी' : 'तडजोडीची'} असतील. ७ व्या वर्षानंतर परस्पर प्रयत्नांतून समृद्धी वाढण्याची शक्यता आहे.`,
-        te: `మొదటి 5 సంవత్సరాలు ${score > 25 ? 'అత్యంత సామరస్యంగా' : 'సర్దుబాట్లు'} కనిపిస్తున్నాయి. 7వ సంవత్సరం నుండి ఉమ్మడి ప్రయత్నాల ద్వారా శ్రేయస్సు పెరిగే అవకాశం ఉంది.`,
-        kn: `ಮೊದಲ 5 ವರ್ಷಗಳು ${score > 25 ? 'ಅತ್ಯಂತ ಸುಸಂಗತವಾಗಿ' : 'ಹೊಂದಾಣಿಕೆಗಳನ್ನು'} ತೋರಿಸುತ್ತವೆ. 7ನೇ ವರ್ಷದಿಂದ ಪರಸ್ಪರ ಪ್ರಯತ್ನಗಳ ಮೂಲಕ ಸಮೃದ್ಧಿ ಹೆಚ್ಚಾಗುವ ಸಾಧ್ಯತೆಯಿದೆ.`
+        en: `The initial phase from ${year} indicates ${isHigh ? 'exceptional harmony' : 'necessary adjustments'}. Stability and prosperity are expected to grow significantly from the ${isHigh ? '5th' : '7th'} year onwards.`,
+        hi: `प्रारंभिक चरण (${year} से) ${isHigh ? 'असाधारण सामंजस्य' : 'आवश्यक समायोजन'} का संकेत देता है। ${isHigh ? '5वें' : '7वें'} वर्ष से स्थिरता और समृद्धि बढ़ने की उम्मीद है।`,
+        mr: `सुरुवातीचा टप्पा (${year} पासून) ${isHigh ? 'असाधारण सुसंवाद' : 'आवश्यक तडजोड'} दर्शवतो. ${isHigh ? '५' : '७'} व्या वर्षापासून स्थिरता आणि आरोग्य वाढण्याची शक्यता आहे.`,
+        te: `${year} నుండి ప్రారంభ దశ ${isHigh ? 'అద్భుతమైన సామరస్యాన్ని' : 'అవసరమైన సర్దుబాట్లను'} సూచిస్తుంది.`,
+        kn: `${year} ರಿಂದ ಪ್ರಾರಂಭಿಕ ಹಂತವು ${isHigh ? 'ಅಸಾಧಾರಣ ಸಾಮರಸ್ಯ' : 'ಅಗತ್ಯ ಹೊಂದಾಣಿಕೆಗಳನ್ನು'} ಸೂಚಿಸುತ್ತದೆ.`
     };
     return msgs[lang] || msgs.en;
 }

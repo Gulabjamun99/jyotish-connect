@@ -64,24 +64,21 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 max-w-4xl mx-auto">
           {[
             { title: t("horoscope_title"), desc: t("horoscope_desc"), icon: "♈", href: "/horoscope", color: "from-primary/20" },
             { title: t("matching_title"), desc: t("matching_desc"), icon: "💑", href: "/kundli-matching", color: "from-accent/20" },
             { title: t("panchang_title"), desc: t("panchang_desc"), icon: "📜", href: "/kundli", color: "from-sky-500/20" },
           ].map((service, i) => (
             <Link key={i} href={service.href} className="group h-full">
-              <div className="relative p-4 md:p-5 rounded-2xl glass hover:border-primary/40 transition-all duration-300 h-full flex flex-col items-center text-center overflow-hidden border border-slate-100/50 hover:-translate-y-1">
-                <div className={`absolute -top-10 -left-10 w-20 h-20 bg-gradient-to-br ${service.color} blur-[40px] group-hover:blur-[25px] transition-all opacity-30`} />
+              <div className="relative p-3 md:p-4 rounded-xl glass hover:border-primary/40 transition-all duration-300 h-full flex flex-col items-center text-center overflow-hidden border border-slate-100/50 hover:-translate-y-0.5 shadow-sm">
+                <div className={`absolute -top-10 -left-10 w-16 h-16 bg-gradient-to-br ${service.color} blur-[30px] opacity-30`} />
 
-                <div className="text-xl md:text-2xl mb-3 group-hover:scale-110 transition-transform duration-500 bg-primary/5 w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center border border-primary/5 shadow-inner">
+                <div className="text-lg md:text-xl mb-2 group-hover:scale-110 transition-transform duration-500 bg-primary/5 w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center border border-primary/5">
                   {service.icon}
                 </div>
-                <h3 className="text-sm font-black mb-1 group-hover:text-primary transition-colors">{service.title}</h3>
-                <p className="text-muted-foreground leading-tight text-[9px] line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">{service.desc}</p>
-                <div className="mt-3 flex items-center gap-1.5 text-primary/80 font-black text-[8px] uppercase tracking-widest scale-90 group-hover:scale-100 transition-all">
-                  Try Now <span>→</span>
-                </div>
+                <h3 className="text-[12px] md:text-sm font-black mb-0.5 group-hover:text-primary transition-colors leading-tight">{service.title}</h3>
+                <p className="text-muted-foreground leading-tight text-[8px] md:text-[10px] line-clamp-1 opacity-60">{service.desc}</p>
               </div>
             </Link>
           ))}

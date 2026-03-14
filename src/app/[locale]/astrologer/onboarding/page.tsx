@@ -69,6 +69,10 @@ export default function AstrologerOnboardingPage() {
                 toast.error("Please fill in all mandatory personal details.");
                 return false;
             }
+            if (!photoFile && !photoPreview) {
+                toast.error("A professional profile photo is mandatory to build trust.");
+                return false;
+            }
         } else if (step === 2) {
             const exp = Number(formData.experience);
             if (formData.experience === "" || isNaN(exp) || exp < 0 || exp > 50) {
@@ -180,7 +184,7 @@ export default function AstrologerOnboardingPage() {
     return (
         <main className="min-h-screen flex flex-col bg-zinc-950 text-white selection:bg-orange-500/30">
             <Navbar />
-            
+
             {/* Ambient Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
                 <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-orange-500/10 blur-[150px] rounded-full mix-blend-screen" />
@@ -189,7 +193,7 @@ export default function AstrologerOnboardingPage() {
 
             <div className="flex-grow py-20">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    
+
                     {/* Header */}
                     <div className="text-center mb-16 space-y-4 animate-slide-up">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 rounded-full border border-orange-500/20 text-orange-400">
@@ -215,11 +219,10 @@ export default function AstrologerOnboardingPage() {
                                 const isCurrent = i + 1 === step;
                                 return (
                                     <div key={i} className="flex flex-col items-center gap-3">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 relative z-10 ${
-                                            isCompleted ? "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]" :
-                                            isCurrent ? "bg-zinc-800 border-2 border-orange-500 text-orange-500" :
-                                            "bg-zinc-900 border border-zinc-800 text-zinc-500"
-                                        }`}>
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 relative z-10 ${isCompleted ? "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]" :
+                                                isCurrent ? "bg-zinc-800 border-2 border-orange-500 text-orange-500" :
+                                                    "bg-zinc-900 border border-zinc-800 text-zinc-500"
+                                            }`}>
                                             {isCompleted ? <CheckCircle className="w-6 h-6" /> : <s.icon className="w-6 h-6" />}
                                         </div>
                                         <span className={`text-[10px] uppercase font-bold tracking-widest ${isCurrent || isCompleted ? 'text-white' : 'text-zinc-500'}`}>{s.label}</span>
@@ -231,7 +234,7 @@ export default function AstrologerOnboardingPage() {
 
                     {/* Dynamic Form Container */}
                     <div className="glass bg-zinc-900/50 border border-zinc-800/50 p-8 md:p-12 rounded-[2.5rem] shadow-2xl backdrop-blur-xl animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                        
+
                         {/* STEP 1: IDENTITY */}
                         {step === 1 && (
                             <div className="space-y-8 animate-fade-in">
@@ -239,7 +242,7 @@ export default function AstrologerOnboardingPage() {
                                     <h2 className="text-2xl font-black">Personal Identity</h2>
                                     <p className="text-zinc-400 text-sm">This information represents you on the platform.</p>
                                 </div>
-                                
+
                                 <div className="flex flex-col md:flex-row gap-8 items-start">
                                     {/* Photo Upload Area */}
                                     <div className="flex flex-col items-center gap-4">
@@ -325,11 +328,10 @@ export default function AstrologerOnboardingPage() {
                                             <button
                                                 key={spec}
                                                 onClick={() => handleCheckboxChange("specializations", spec)}
-                                                className={`h-12 rounded-xl text-xs font-bold transition-all border ${
-                                                    formData.specializations.includes(spec) 
-                                                    ? 'bg-orange-500/10 border-orange-500/50 text-orange-400' 
-                                                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
-                                                }`}
+                                                className={`h-12 rounded-xl text-xs font-bold transition-all border ${formData.specializations.includes(spec)
+                                                        ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
+                                                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                                                    }`}
                                             >
                                                 {spec}
                                             </button>
@@ -347,11 +349,10 @@ export default function AstrologerOnboardingPage() {
                                             <button
                                                 key={lang}
                                                 onClick={() => handleCheckboxChange("languages", lang)}
-                                                className={`h-10 rounded-xl text-xs font-bold transition-all border ${
-                                                    formData.languages.includes(lang) 
-                                                    ? 'bg-orange-500/10 border-orange-500/50 text-orange-400' 
-                                                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
-                                                }`}
+                                                className={`h-10 rounded-xl text-xs font-bold transition-all border ${formData.languages.includes(lang)
+                                                        ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
+                                                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                                                    }`}
                                             >
                                                 {lang}
                                             </button>
@@ -445,7 +446,7 @@ export default function AstrologerOnboardingPage() {
                                 >
                                     {loading ? (
                                         <span className="flex items-center gap-2">
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                             Invoking...
                                         </span>
                                     ) : (

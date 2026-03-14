@@ -161,7 +161,7 @@ export const INTERPRETATIONS = {
                 1: "Health needs care. Ego clashes possible.",
                 2: "Financial watch needed. Watch your speech.",
                 3: "High courage and success in initiatives.",
-                4: "Domestic stress possible. Avoid property deals.",
+                4: "Focus on home and family stability. Avoid property deals.",
                 5: "Good for learning. Worries about children.",
                 6: "Victory over enemies. Health improves.",
                 7: "Travel is indicated. Friction with partner.",
@@ -226,6 +226,34 @@ export const INTERPRETATIONS = {
                 10: "Career communications crucial. Presentations and networking bring recognition.",
                 11: "Friend circles expand. Group discussions and social media engagement fruitful.",
                 12: "Introspection aids clarity. Quiet study or spiritual reading recommended."
+            },
+            Jupiter: {
+                1: "Wisdom and grace follow you today. High energy for new beginnings.",
+                2: "Financial expansion is indicated. Family support increases.",
+                3: "Short travels bring significant learning or networking opportunities.",
+                4: "Peace and comfort at home. Ideal for family gatherings.",
+                5: "Creativity and luck in investments. Good news regarding children.",
+                6: "Health stabilizes and enemies retreat. Daily work becomes meaningful.",
+                7: "Partnerships flourish. Harmony in marriage persists.",
+                8: "Deep intuitive insights. Gains through joint assets or research.",
+                9: "Fortune favors your spiritual and philosophical quests. Travel is lucky.",
+                10: "Career growth and social status rise. Honor through hard work.",
+                11: "Major gains from social circles. Desires start manifesting.",
+                12: "Spiritual protection and expenses on good deeds. Peaceful solitude."
+            },
+            Saturn: {
+                1: "Patience is your strength today. Accept responsibilities calmly.",
+                2: "Consolidate your savings. Avoid loose talk in family matters.",
+                3: "Methodical efforts lead to success. Brotherly advice is helpful.",
+                4: "Focus on household repairs or long-term family stability.",
+                5: "Concentration in studies improves. Be practical in romance.",
+                6: "Discipline helps overcome health issues and workplace hurdles.",
+                7: "Commitment in relationships is tested. Stay loyal and patient.",
+                8: "Longevity and slow transformations. Avoid risky physical activities.",
+                9: "Respect tradition and authority. Pilgrimage or study of history favored.",
+                10: "Karmic rewards in career. Public service or technical work succeeds.",
+                11: "Slow but steady gains. Old friends provide meaningful support.",
+                12: "Expenditure on healthcare or law. Need for isolation and rest."
             }
         },
         lucky: {
@@ -398,7 +426,7 @@ export const INTERPRETATIONS = {
                 1: "स्वास्थ्य को देखभाल की जरूरत है। अहंकार का टकराव संभव है।",
                 2: "वित्तीय निगरानी की आवश्यकता है। अपनी वाणी पर ध्यान दें।",
                 3: "उच्च साहस और कार्यों में सफलता।",
-                4: "घरेलू तनाव संभव है। संपत्ति के सौदों से बचें।",
+                4: "घर और परिवार की स्थिरता पर ध्यान दें। संपत्ति के सौदों से बचें।",
                 5: "सीखने के लिए अच्छा है। बच्चों को लेकर चिंता।",
                 6: "शत्रुओं पर विजय। स्वास्थ्य में सुधार।",
                 7: "यात्रा के संकेत हैं। जीवनसाथी के साथ तनाद।",
@@ -463,6 +491,34 @@ export const INTERPRETATIONS = {
                 10: "करियर संचार महत्वपूर्ण। प्रस्तुतियां और नेटवर्किंग मान्यता लाते हैं।",
                 11: "मित्र मंडल विस्तारित होते हैं। समूह चर्चा और सोशल मीडिया जुड़ाव फलदायी।",
                 12: "आत्मनिरीक्षण स्पष्टता में सहायता करता है। शांत अध्ययन या आध्यात्मिक पठन अनुशंसित।"
+            },
+            Jupiter: {
+                1: "आज ज्ञान और कृपा आपके साथ है। नई शुरुआत के लिए उच्च ऊर्जा।",
+                2: "वित्तीय विस्तार के संकेत हैं। परिवार का सहयोग बढ़ता है।",
+                3: "छोटी यात्राएं सीखने या नेटवर्किंग के महत्वपूर्ण अवसर लाती हैं।",
+                4: "घर पर शांति और आराम। पारिवारिक मेल-मिलाप के लिए आदर्श।",
+                5: "रचनात्मकता और निवेश में भाग्य। बच्चों के संबंध में अच्छी खबर।",
+                6: "स्वास्थ्य स्थिर होता है और शत्रु पीछे हटते हैं। दैनिक कार्य सार्थक होते हैं।",
+                7: "साझेदारी फलती-फूलती है। विवाह में सामंजस्य बना रहता है।",
+                8: "गहरी सहज अंतर्दृष्टि। संयुक्त संपत्ति या शोध के माध्यम से लाभ।",
+                9: "भाग्य आपकी आध्यात्मिक और दार्शनिक खोजों का पक्ष लेता है। यात्रा भाग्यशाली है।",
+                10: "करियर में वृद्धि और सामाजिक स्थिति बढ़ती है। कड़ी मेहनत से सम्मान।",
+                11: "सामाजिक हलकों से बड़े लाभ। इच्छाएं प्रकट होने लगती हैं।",
+                12: "आध्यात्मिक सुरक्षा और अच्छे कार्यों पर खर्च। शांतिपूर्ण एकांत।"
+            },
+            Saturn: {
+                1: "आज धैर्य आपकी ताकत है। जिम्मेदारियों को शांति से स्वीकार करें।",
+                2: "अपनी बचत को मजबूत करें। पारिवारिक मामलों में फालतू बात से बचें।",
+                3: "व्यवस्थित प्रयास सफलता दिलाते हैं। भाई की सलाह मददगार है।",
+                4: "घरेलू मरम्मत या दीर्घकालिक पारिवारिक स्थिरता पर ध्यान दें।",
+                5: "पढ़ाई में एकाग्रता बढ़ती है। रोमांस में व्यावहारिक रहें।",
+                6: "अनुशासन स्वास्थ्य समस्याओं और कार्यस्थल की बाधाओं को दूर करने में मदद करता है।",
+                7: "रिश्तों में प्रतिबद्धता की परीक्षा होती है। वफादार और धैर्यवान रहें।",
+                8: "दीर्घायु और धीमे परिवर्तन। जोखिम भरी शारीरिक गतिविधियों से बचें।",
+                9: "परंपरा और अधिकार का सम्मान करें। तीर्थयात्रा या इतिहास का अध्ययन अनुकूल है।",
+                10: "करियर में कर्म का फल। सार्वजनिक सेवा या तकनीकी कार्य सफल होते हैं।",
+                11: "धीमी लेकिन स्थिर आय वृद्धि। पुराने मित्र सार्थक सहयोग प्रदान करते हैं।",
+                12: "स्वास्थ्य सेवा या कानून पर खर्च। अलगाव और आराम की आवश्यकता।"
             }
         },
         lucky: {
