@@ -63,37 +63,16 @@ export default function UserDashboard() {
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                        {!userData?.profileComplete && (
-                            <Button
-                                onClick={() => router.push('/user/profile/edit')}
-                                className="w-full md:w-auto h-10 px-6 bg-red-500 hover:bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-red-500/20 animate-pulse"
-                            >
-                                Complete Profile
-                            </Button>
-                        )}
-                        <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-6 hover:border-orange-500/30 transition-colors">
+                        <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-6 hover:border-primary/30 transition-colors">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                                    <Wallet className="w-5 h-5 text-orange-500" />
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <Star className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Wallet Balance</p>
-                                    <p className="text-xl font-black text-white">₹{userData?.walletBalance || 0}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Member Status</p>
+                                    <p className="text-xl font-black text-white">Verified User</p>
                                 </div>
                             </div>
-                            <Button
-                                onClick={() => {
-                                    if (!userData?.profileComplete) {
-                                        toast.error("Please complete your profile first.");
-                                        router.push('/user/profile/edit');
-                                    } else {
-                                        setIsRechargeModalOpen(true);
-                                    }
-                                }}
-                                className="h-10 px-4 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-xs uppercase tracking-wider"
-                            >
-                                Recharge
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -259,22 +238,17 @@ export default function UserDashboard() {
                         </div>
                     </div>
 
-                    {/* Transaction History (Small preview) */}
+                    {/* Spiritual Motivation */}
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-white">Recent Transactions</h2>
-                            <Button
-                                onClick={() => router.push('/user/transactions')}
-                                variant="ghost"
-                                className="text-xs uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0"
-                            >
-                                View History
-                            </Button>
+                            <h2 className="text-xl font-bold text-white">Daily Guidance</h2>
                         </div>
-                        <div className="glass bg-zinc-900 border border-white/5 rounded-3xl p-6">
-                            <p className="text-center text-sm text-zinc-500 py-6">
-                                Please visit your detailed <span className="text-orange-500 cursor-pointer" onClick={() => router.push('/user/transactions')}>History</span> page.
-                            </p>
+                        <div className="glass bg-gradient-to-br from-primary/10 to-transparent border border-white/5 rounded-3xl p-8 relative overflow-hidden group">
+                            <div className="relative z-10">
+                                <p className="text-lg font-bold text-white leading-tight mb-2 italic">"Stars don't struggle to shine, and neither should you."</p>
+                                <p className="text-sm text-zinc-400">Connect with an Acharya today to align your energy with the cosmos.</p>
+                            </div>
+                            <Star className="absolute -bottom-4 -right-4 w-24 h-24 text-primary/5 group-hover:text-primary/10 transition-colors" />
                         </div>
                     </div>
                 </div>

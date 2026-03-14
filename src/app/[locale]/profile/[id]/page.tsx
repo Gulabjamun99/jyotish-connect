@@ -99,67 +99,21 @@ export default function ProfilePage() {
         };
 
         try {
-            // Option A: Pay via Wallet (Preferred) - FORCED TRUE FOR FREE TESTING
-            if (true || userData.walletBalance >= currentPrice) {
-                toast.loading("Processing free test booking...", { id: 'booking' });
+            // Simplified Lead-Gen Connect Flow
+            toast.loading("Establishing direct connection...", { id: 'booking' });
 
-                // CLIENT-SIDE DIRECT BOOKING FOR FREE TESTING BYPASS
-                const newBooking = await createBooking({
-                    ...bookingData,
-                    paymentMode: 'wallet'
-                } as any);
+            const newBooking = await createBooking({
+                ...bookingData,
+                price: 0, // Mark as 0 for lead-gen
+                paymentMode: 'lead-gen'
+            } as any);
 
-                toast.success("Free Booking Created! Connecting...", { id: 'booking' });
-                router.push(`/consult/${newBooking.id}?type=${consultationType}`);
-                return;
-            }
-
-            // Option B: Pay via Razorpay (Fallback)
-            toast.error("Insufficient wallet balance. Redirecting to Payment Gateway.", { duration: 4000 });
-
-            initiatePayment({
-                amount: currentPrice,
-                name: `Consultation with ${profile.name}`,
-                description: `${consultationType} specific consultation`,
-                user: {
-                    name: user.displayName || "User",
-                    email: user.email,
-                    contact: user.phoneNumber || "9999999999"
-                },
-                onSuccess: async (response: any) => {
-                    // SERVER-SIDE VERIFICATION & BOOKING CREATION
-                    try {
-                        toast.loading("Verifying payment...", { id: 'booking' });
-
-                        const verifyRes = await fetch("/api/payment/verify", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature,
-                                bookingData
-                            })
-                        });
-
-                        const verifyData = await verifyRes.json();
-
-                        if (!verifyData.success) {
-                            throw new Error(verifyData.message || "Verification Failed");
-                        }
-
-                        toast.success("Payment verified! Session confirmed.", { id: 'booking' });
-                        router.push(`/consult/${verifyData.bookingId}?type=${consultationType}`);
-                    } catch (error: any) {
-                        console.error("Payment Verification Failed:", error);
-                        toast.error("Payment failed verification.", { id: 'booking' });
-                    }
-                }
-            });
-
+            toast.success("Connection Established! Joining room...", { id: 'booking' });
+            router.push(`/consult/${newBooking.id}?type=${consultationType}`);
+            return;
         } catch (error: any) {
-            console.error("Payment failed:", error);
-            toast.error(`Payment failed: ${error.message || "Something went wrong"}`, { id: 'booking' });
+            console.error("Connection failed:", error);
+            toast.error("Direct connection failed. Please try again.");
         }
     };
 
@@ -378,107 +332,58 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            {/* Pricing */}
-                            <div className="bg-black/20 rounded-2xl p-6 border border-white/5 flex justify-between items-center">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Consultation Fee</p>
-                                    <div className="flex flex-col">
-                                        {consultationType !== "video" && (
-                                            <span className="text-xs text-zinc-500 line-through">₹{profile.pricing?.video} / session</span>
-                                        )}
-                                        <span className="text-3xl font-black text-white tracking-tight">₹{getCurrentPrice()}<span className="text-sm text-zinc-500 font-bold"> / session</span></span>
-                                    </div>
+                            {/* Simplified Connection Block */}
+                            <div className="bg-primary/5 rounded-[2rem] p-8 border border-primary/10 space-y-6">
+                                <div className="space-y-2">
+                                    <h3 className="text-xl font-bold text-white tracking-tight">Direct Consultation</h3>
+                                    <p className="text-xs text-zinc-500 font-medium leading-relaxed uppercase tracking-widest">Connect with {profile.name.split(' ')[0]} directly and finalize Dakshina mutualy.</p>
                                 </div>
-                                {consultationType !== "video" && (
-                                    <div className="bg-green-500/10 border border-green-500/20 text-green-500 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest">
-                                        Save {Math.round(((profile.pricing?.video - getCurrentPrice()) / profile.pricing?.video) * 100)}%
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Features */}
-                            <div className="space-y-4 py-2 border-y border-white/5">
-                                <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                                        <Clock className="w-4 h-4 text-zinc-400" />
+                                <div className="space-y-4 py-6 border-y border-white/5">
+                                    <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
+                                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                                            <Clock className="w-4 h-4 text-zinc-400" />
+                                        </div>
+                                        Up to 90 Minutes Guided Session
                                     </div>
-                                    Full 90 Minutes Session
-                                </div>
-                                <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                                        <ShieldCheck className="w-4 h-4 text-zinc-400" />
+                                    <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
+                                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                                            <ShieldCheck className="w-4 h-4 text-zinc-400" />
+                                        </div>
+                                        Secure & Private Consulting Space
                                     </div>
-                                    Secure & Private Rooms
                                 </div>
-                            </div>
 
-                            {/* Scheduling Block (Mobile & Desktop) */}
-                            <div className="space-y-4 pt-2 pb-24 md:pb-0">
-                                {profile.online ? (
-                                    <>
-                                        {/* Desktop-only Connect Instantly button (Mobile uses sticky footer) */}
-                                        <div className="hidden md:block">
-                                            <Button
-                                                onClick={handleBooking}
-                                                className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:shadow-[0_0_40px_rgba(249,115,22,0.3)] transition-all rounded-2xl"
-                                            >
-                                                Connect Instantly
-                                            </Button>
-                                        </div>
-                                        <div className="relative pt-4 md:pt-2">
-                                            <div className="absolute inset-0 flex items-center">
-                                                <span className="w-full border-t border-zinc-800" />
-                                            </div>
-                                            <div className="relative flex justify-center text-xs uppercase font-black tracking-widest">
-                                                <span className="bg-zinc-900 px-4 text-zinc-600">Or Book Later</span>
-                                            </div>
-                                        </div>
-                                        <div className="p-4 bg-black/20 border border-white/5 rounded-2xl mt-4">
-                                            <ScheduleCalendar
-                                                astrologerId={profile.id}
-                                                astrologerName={profile.name}
-                                                consultationType={consultationType}
-                                                price={getCurrentPrice()}
-                                                onSchedule={(date, time) => {
-                                                    toast.success("Scheduled! Check your dashboard.");
-                                                }}
-                                            />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="p-4 bg-black/20 border border-white/5 rounded-2xl space-y-4">
-                                        <p className="text-center text-xs font-black text-amber-500 uppercase tracking-widest">Astrologer Offline. Book a slot below.</p>
-                                        <ScheduleCalendar
-                                            astrologerId={profile.id}
-                                            astrologerName={profile.name}
-                                            consultationType={consultationType}
-                                            price={getCurrentPrice()}
-                                            onSchedule={(date, time) => {
-                                                toast.success("Scheduled! Check your dashboard.");
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Mobile Sticky Action */}
-                            <div className="fixed bottom-0 left-0 w-full p-4 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 md:hidden z-50 flex items-center justify-between gap-4">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total</span>
-                                    <span className="text-xl font-black text-white">₹{getCurrentPrice()}</span>
-                                </div>
                                 <Button
                                     onClick={handleBooking}
-                                    disabled={!profile.online}
-                                    className="h-14 flex-1 text-sm font-black uppercase tracking-widest bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-xl shadow-orange-500/20 rounded-xl"
+                                    className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20 transition-all rounded-2xl"
                                 >
-                                    Buy Session
+                                    Connect Now
                                 </Button>
                             </div>
 
-                            <p className="text-center text-[10px] font-bold text-zinc-600 uppercase tracking-widest hidden md:block mt-8">
-                                Payments Secured by Razorpay
-                            </p>
+                            {/* Scheduling Block */}
+                            <div className="pt-4">
+                                <div className="relative mb-6">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <span className="w-full border-t border-zinc-800" />
+                                    </div>
+                                    <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest text-zinc-600">
+                                        <span className="bg-zinc-950 px-4">Or Schedule Later</span>
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-zinc-900 border border-white/5 rounded-2xl">
+                                    <ScheduleCalendar
+                                        astrologerId={profile.id}
+                                        astrologerName={profile.name}
+                                        consultationType={consultationType}
+                                        price={0}
+                                        onSchedule={(date, time) => {
+                                            toast.success("Scheduled! Check your dashboard.");
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </aside>
 

@@ -220,8 +220,8 @@ export default function AstrologerOnboardingPage() {
                                 return (
                                     <div key={i} className="flex flex-col items-center gap-3">
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 relative z-10 ${isCompleted ? "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]" :
-                                                isCurrent ? "bg-zinc-800 border-2 border-orange-500 text-orange-500" :
-                                                    "bg-zinc-900 border border-zinc-800 text-zinc-500"
+                                            isCurrent ? "bg-zinc-800 border-2 border-orange-500 text-orange-500" :
+                                                "bg-zinc-900 border border-zinc-800 text-zinc-500"
                                             }`}>
                                             {isCompleted ? <CheckCircle className="w-6 h-6" /> : <s.icon className="w-6 h-6" />}
                                         </div>
@@ -329,8 +329,8 @@ export default function AstrologerOnboardingPage() {
                                                 key={spec}
                                                 onClick={() => handleCheckboxChange("specializations", spec)}
                                                 className={`h-12 rounded-xl text-xs font-bold transition-all border ${formData.specializations.includes(spec)
-                                                        ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
-                                                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                                                    ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
+                                                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
                                                     }`}
                                             >
                                                 {spec}
@@ -350,8 +350,8 @@ export default function AstrologerOnboardingPage() {
                                                 key={lang}
                                                 onClick={() => handleCheckboxChange("languages", lang)}
                                                 className={`h-10 rounded-xl text-xs font-bold transition-all border ${formData.languages.includes(lang)
-                                                        ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
-                                                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                                                    ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
+                                                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
                                                     }`}
                                             >
                                                 {lang}
@@ -388,7 +388,7 @@ export default function AstrologerOnboardingPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2">
-                                        <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Standard Session Rate (₹) *</Label>
+                                        <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Indicative Dakshina (₹) *</Label>
                                         <div className="relative">
                                             <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-zinc-500">₹</span>
                                             <Input

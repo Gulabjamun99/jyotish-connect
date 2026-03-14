@@ -116,10 +116,10 @@ export default function AstrologerProfilePage() {
                                 </div>
 
                                 <div className="pt-4 border-t">
-                                    <div className="text-3xl font-bold text-orange-600">
-                                        ₹{astrologer.price}<span className="text-lg text-gray-500">/session</span>
+                                    <div className="text-2xl font-black text-primary uppercase tracking-widest">
+                                        Connect Directly
                                     </div>
-                                    <p className="text-sm text-gray-500">Up to 90 minutes consultation</p>
+                                    <p className="text-sm text-gray-500 font-medium mt-1">Dakshina: Negotiated with Acharya</p>
                                 </div>
                             </div>
                         </div>
@@ -196,9 +196,9 @@ export default function AstrologerProfilePage() {
                             </div>
                         </div>
 
-                        <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                            <p className="text-sm text-blue-800">
-                                💡 <strong>Demo Mode:</strong> Click "Connect Instantly" options above to start immediately. No payment required for testing!
+                        <div className="mt-6 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                            <p className="text-sm text-primary font-medium">
+                                💡 <strong>Direct Connect:</strong> The platform is currently in growth phase. You can connect with Acharyas directly without any upfront wallet balance!
                             </p>
                         </div>
                     </div>

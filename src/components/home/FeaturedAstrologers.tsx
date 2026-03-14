@@ -138,12 +138,11 @@ export function FeaturedAstrologers() {
                                 <div className="flex items-center justify-between mt-1">
                                     <div className="flex flex-col">
                                         <div className="flex items-baseline gap-0.5">
-                                            <span className="text-[14px] font-black text-slate-900 tracking-tighter">₹{astro.price}</span>
-                                            <span className="text-[8px] font-bold text-slate-400 uppercase">/min</span>
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Connect Directly</span>
                                         </div>
                                     </div>
                                     <Link href={`/profile/${astro.id}`}>
-                                        <Button size="sm" className="h-8 md:h-9 rounded-xl px-4 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                        <Button size="sm" className="h-8 md:h-9 rounded-xl px-4 bg-slate-900 hover:bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-lg transition-all">
                                             Consult
                                         </Button>
                                     </Link>

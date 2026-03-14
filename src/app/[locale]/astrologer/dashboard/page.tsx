@@ -177,7 +177,7 @@ export default function AstrologerDashboard() {
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     {[
-                        { label: "Today's Earnings", value: `₹${userData?.walletBalance || 0}`, icon: IndianRupee, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
+                        { label: "Direct Connections", value: bookings.length.toString(), icon: Users, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
                         { label: "Sessions Today", value: "3", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
                         { label: "Total Seekers", value: userData?.consultations || "0", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
                         { label: "Global Rating", value: userData?.rating?.toFixed(1) || "5.0", icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
@@ -331,19 +331,19 @@ export default function AstrologerDashboard() {
                         </div>
 
                         <Button
-                            onClick={() => router.push('/astrologer/transactions')}
-                            className="w-full h-20 justify-between px-6 rounded-[2rem] bg-gradient-to-r from-orange-500/10 to-orange-500/5 hover:from-orange-500/20 hover:to-orange-500/10 border border-orange-500/20 text-white group transition-all"
+                            onClick={() => router.push('/search')}
+                            className="w-full h-20 justify-between px-6 rounded-[2rem] bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border border-primary/20 text-white group transition-all"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500">
-                                    <IndianRupee className="w-5 h-5" />
+                                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                    <TrendingUp className="w-5 h-5" />
                                 </div>
                                 <div className="text-left flex flex-col justify-center">
-                                    <div className="text-sm font-bold">Withdraw Funds & Ledger</div>
-                                    <div className="text-[10px] text-zinc-400 uppercase tracking-widest leading-none mt-0.5">Wallet: ₹{userData?.walletBalance || 0}</div>
+                                    <div className="text-sm font-bold">Grow Your Network</div>
+                                    <div className="text-[10px] text-zinc-400 uppercase tracking-widest leading-none mt-0.5">Scale your spiritual reach today</div>
                                 </div>
                             </div>
-                            <span className="text-zinc-500 group-hover:text-orange-500 group-hover:translate-x-1 transition-all">→</span>
+                            <span className="text-zinc-500 group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
                         </Button>
 
                         <div className="pt-6">

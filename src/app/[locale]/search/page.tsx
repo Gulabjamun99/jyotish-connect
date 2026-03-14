@@ -111,7 +111,6 @@ export default function SearchPage() {
                                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30 ml-4">Sort by</span>
                                 <select className="bg-transparent border-none text-xs font-black uppercase tracking-widest text-foreground/60 outline-none px-4 py-2 cursor-pointer hover:text-primary transition-colors">
                                     <option className="bg-white">Rating: High to Low</option>
-                                    <option className="bg-white">Price: Low to High</option>
                                     <option className="bg-white">Experience</option>
                                 </select>
                             </div>
@@ -182,11 +181,10 @@ export default function SearchPage() {
                                                     ))}
                                                 </div>
 
-                                                <div className="flex justify-between items-end pt-6 border-t border-primary/5">
+                                                <div className="flex justify-between items-center pt-6 border-t border-primary/5">
                                                     <div className="flex flex-col">
-                                                        <span className="text-[10px] text-foreground/20 line-through font-bold tracking-widest">₹{Math.round(astro.price * 1.5)}</span>
-                                                        <span className="text-2xl font-black text-primary tracking-tighter">₹{astro.price}<span className="text-[10px] text-foreground/40 font-black uppercase tracking-widest ml-1">/ session</span></span>
-                                                        <span className="text-[8px] text-foreground/30 font-bold uppercase tracking-widest mt-0.5">Up to 90 mins</span>
+                                                        <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mb-1">Direct Connect</span>
+                                                        <span className="text-[8px] text-foreground/30 font-bold uppercase tracking-widest">Dakshina: Negotiated</span>
                                                     </div>
                                                     <Link href={`/profile/${astro.id}`}>
                                                         <Button className="orange-gradient text-white font-black text-[10px] uppercase tracking-[0.2em] h-12 px-8 rounded-2xl shadow-xl shadow-primary/10 hover:scale-110 transition-transform">
