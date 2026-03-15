@@ -4,7 +4,7 @@ import { calculateAllDivisions } from "./divisional-charts";
 import { detectYogas } from "./yoga-engine";
 import { generateRemedies } from "./remedy-engine";
 
-export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9734, lng: number = 78.6569) {
+export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9734, lng: number = 78.6569, jdSunrise?: number, jdSunset?: number) {
     const sun = planets.find(p => p.name === "Sun");
     const moon = planets.find(p => p.name === "Moon");
 
@@ -28,28 +28,35 @@ export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9
     const vara = date.getDay(); // 0 is Sunday
 
     // 5. Sunrise & Sunset Calculation for IST
-    // Using simplified calculation based on location
-    const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000);
-    const latRad = (lat * Math.PI) / 180;
-
-    // Solar declination approximation
-    const declination = Math.asin(Math.sin(23.45 * Math.PI / 180) * Math.sin((360 / 365) * (dayOfYear - 81) * Math.PI / 180));
-
-    // Hour angle at sunrise/sunset
-    const cosHourAngle = -Math.tan(latRad) * Math.tan(declination);
-    const hourAngle = Math.acos(Math.max(-1, Math.min(1, cosHourAngle))) * 180 / Math.PI;
-
-    // Calculate sunrise/sunset in UTC
-    const sunriseUTC = 12 - hourAngle / 15 - lng / 15;
-    const sunsetUTC = 12 + hourAngle / 15 - lng / 15;
-
-    // Convert to IST (UTC+5:30)
-    // Note: Ideally this should use timezone from coordinates, but falling back to IST as requested for India context
-    // or we can use the timeZone calculation if we had it.
-    // Given the user asked for "India ke hisab se", IST is appropriate.
     const istOffset = 5.5;
-    const sunriseIST = sunriseUTC + istOffset;
-    const sunsetIST = sunsetUTC + istOffset;
+    let sunriseIST = 0;
+    let sunsetIST = 0;
+
+    if (jdSunrise && jdSunset) {
+        // High-Precision NASA Path: Convert JD UT to local decimal hours (IST)
+        const istDays = 5.5 / 24;
+        sunriseIST = ((jdSunrise + 0.5 + istDays) % 1) * 24;
+        sunsetIST = ((jdSunset + 0.5 + istDays) % 1) * 24;
+    } else {
+        // Simplified fallback calculation based on location
+        const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000);
+        const latRad = (lat * Math.PI) / 180;
+
+        // Solar declination approximation
+        const declination = Math.asin(Math.sin(23.45 * Math.PI / 180) * Math.sin((360 / 365) * (dayOfYear - 81) * Math.PI / 180));
+
+        // Hour angle at sunrise/sunset
+        const cosHourAngle = -Math.tan(latRad) * Math.tan(declination);
+        const hourAngle = Math.acos(Math.max(-1, Math.min(1, cosHourAngle))) * 180 / Math.PI;
+
+        // Calculate sunrise/sunset in UTC
+        const sunriseUTC = 12 - hourAngle / 15 - lng / 15;
+        const sunsetUTC = 12 + hourAngle / 15 - lng / 15;
+
+        // Convert to IST (UTC+5:30)
+        sunriseIST = sunriseUTC + istOffset;
+        sunsetIST = sunsetUTC + istOffset;
+    }
 
     // Format time as HH:MM
     const formatTime = (decimal: number) => {
@@ -180,8 +187,8 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
         };
     });
 
-    // Pass lat/lng for accurate panchang calculation
-    const panchang = calculatePanchang(date, planetsWithVaisheshika, lat, lng);
+    // Pass high precision sunrise/sunset from Swiss Ephemeris
+    const panchang = calculatePanchang(date, planetsWithVaisheshika, lat, lng, data.sunrise, data.sunset);
     const moon = planetsWithVaisheshika.find(p => p.name === "Moon");
     const dasha = moon ? calculateVimshottari(moon.nakshatraId, moon.longitude, date) : null;
 

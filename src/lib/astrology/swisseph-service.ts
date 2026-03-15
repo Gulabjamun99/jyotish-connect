@@ -55,8 +55,8 @@ export class AstrologyService {
             { id: this.swe.SE_URANUS, name: "Uranus" },
             { id: this.swe.SE_NEPTUNE, name: "Neptune" },
             { id: this.swe.SE_PLUTO, name: "Pluto" },
-            { id: this.swe.SE_MEAN_NODE, name: "Rahu" },
-            { id: this.swe.SE_MEAN_NODE, name: "Ketu", isKetu: true }, // Ketu is 180 deg from Rahu
+            { id: this.swe.SE_TRUE_NODE, name: "Rahu" },
+            { id: this.swe.SE_TRUE_NODE, name: "Ketu", isKetu: true },
         ];
 
         const ayanamsa = this.swe.get_ayanamsa(jd);
@@ -83,6 +83,21 @@ export class AstrologyService {
                 isRetrograde: (pos[3] || 0) < 0
             };
         });
+
+        // --- High Precision Sunrise/Sunset ---
+        let sunrise: number | undefined;
+        let sunset: number | undefined;
+        try {
+            const geopos = [lng, lat, 0];
+            // rsmi: 1 = sunrise, 2 = sunset
+            const sunriseRes = this.swe.rise_trans(jd, this.swe.SE_SUN, null, this.swe.SEFLG_SWIEPH, 1, geopos, 0, 0);
+            const sunsetRes = this.swe.rise_trans(jd, this.swe.SE_SUN, null, this.swe.SEFLG_SWIEPH, 2, geopos, 0, 0);
+
+            if (sunriseRes && sunriseRes.tret) sunrise = sunriseRes.tret[0];
+            if (sunsetRes && sunsetRes.tret) sunset = sunsetRes.tret[0];
+        } catch (e) {
+            console.warn('[SwissEph] rise_trans failed:', e);
+        }
 
         // --- Ascendant Calculation ---
         // Try swisseph houses() first
@@ -155,7 +170,9 @@ export class AstrologyService {
             ayanamsa,
             planets: results,
             houses: housesCusps,
-            ascendant
+            ascendant,
+            sunrise,
+            sunset
         };
     }
 

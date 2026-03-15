@@ -2,12 +2,15 @@ import Link from "next/link";
 
 export function Footer() {
     return (
-        <footer className="w-full border-t border-primary/10 bg-transparent py-12">
-            <div className="container mx-auto px-4">
+        <footer className="w-full border-t border-white/5 bg-transparent py-14 relative overflow-hidden">
+            {/* Subtle glow */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-primary/5 blur-[100px] pointer-events-none" />
+            
+            <div className="container mx-auto px-4 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-primary">JyotishConnect</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">JyotishConnect</h3>
+                        <p className="text-sm text-muted-foreground/80 leading-relaxed">
                             Connecting you with the cosmos through verified expert astrologers.
                         </p>
                     </div>
@@ -37,8 +40,8 @@ export function Footer() {
                         </p>
                     </div>
                 </div>
-                <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-                    © {new Date().getFullYear()} JyotishConnect. All rights reserved.
+                <div className="mt-14 pt-8 border-t border-white/5 text-center text-[11px] uppercase tracking-widest text-muted-foreground/50 font-bold">
+                    © {new Date().getFullYear()} JyotishConnect. All cosmic rights reserved.
                 </div>
             </div>
         </footer>

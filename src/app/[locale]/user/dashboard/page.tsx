@@ -13,6 +13,7 @@ import { getUserBookings } from "@/services/firestore";
 import { TransactionHistory } from "@/components/profile/TransactionHistory";
 import { WalletRechargeModal } from "@/components/payment/WalletRechargeModal";
 import { toast } from "react-hot-toast";
+import { AstroGPT } from "@/components/ai/AstroGPT";
 
 export default function UserDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["user"]);
@@ -313,6 +314,8 @@ export default function UserDashboard() {
                 onClose={() => setIsRechargeModalOpen(false)}
                 currentBalance={userData?.walletBalance || 0}
             />
+
+            <AstroGPT userData={userData} />
 
             <Footer />
         </main >

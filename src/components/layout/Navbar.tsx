@@ -5,7 +5,6 @@ import { auth } from "@/lib/firebase";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, User as UserIcon, LogOut, Menu, Languages } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter, Link } from "@/i18n/navigation";
@@ -13,7 +12,6 @@ import { useTranslations, useLocale } from "next-intl";
 
 export function Navbar() {
     const { user, role } = useAuth();
-    const { theme, setTheme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
@@ -121,16 +119,6 @@ export function Navbar() {
                             </div>
                         </div>
 
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-10 h-10 rounded-xl glass border-primary/10 hover:bg-primary/5"
-                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        >
-                            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                        </Button>
-
                         {user ? (
                             <div className="flex items-center gap-2">
                                 <Link href={role === "astrologer" ? "/astrologer/dashboard" : "/user/dashboard"}>
@@ -152,14 +140,6 @@ export function Navbar() {
 
                 {/* Mobile menu button */}
                 <div className="md:hidden flex items-center space-x-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    >
-                        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                        <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                         <Menu className="h-6 w-6" />
                     </Button>
