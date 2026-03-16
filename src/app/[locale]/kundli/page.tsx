@@ -369,7 +369,7 @@ export default function KundliPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-50 overflow-x-hidden selection:bg-orange-500/30">
+        <main className="min-h-screen bg-[#050510] text-white overflow-x-hidden selection:bg-orange-500/30 font-inter">
             <Navbar />
             <div className="container mx-auto px-4 py-8 md:py-12 relative z-10">
                 {/* Header */}
@@ -388,49 +388,49 @@ export default function KundliPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Input Form */}
                     <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800">
+                        <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-6 md:p-8 shadow-2xl border border-white/10">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center">
                                     <User className="w-5 h-5" />
                                 </div>
-                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Birth Details</h2>
+                                <h2 className="text-xl font-bold text-white">Birth Details</h2>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Name</label>
+                                    <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Name</label>
                                     <Input
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        className="h-12 bg-slate-50 border-slate-200 rounded-xl focus:ring-orange-500"
+                                        className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-orange-500 text-white placeholder:text-white/30"
                                         placeholder="Full Name"
                                         required
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Date</label>
+                                        <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Date</label>
                                         <Input
                                             type="date"
                                             value={formData.dob}
                                             onChange={e => setFormData({ ...formData, dob: e.target.value })}
-                                            className="h-12 bg-slate-50 border-slate-200 rounded-xl focus:ring-orange-500"
+                                            className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-orange-500 text-white [color-scheme:dark]"
                                             required
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Time</label>
+                                        <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Time</label>
                                         <Input
                                             type="time"
                                             value={formData.tob}
                                             onChange={e => setFormData({ ...formData, tob: e.target.value })}
-                                            className="h-12 bg-slate-50 border-slate-200 rounded-xl focus:ring-orange-500"
+                                            className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-orange-500 text-white [color-scheme:dark]"
                                             required
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Location</label>
+                                    <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Location</label>
                                     <LocationInput
                                         value={formData.birthplace}
                                         onChange={(location, lat, lng) => {
@@ -475,30 +475,30 @@ export default function KundliPage() {
                         <div id="results" className="lg:col-span-8 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
                             {/* User Summary Card */}
-                            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-xl border border-slate-100 relative overflow-hidden">
+                            <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl border border-white/10 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 via-red-500 to-purple-600" />
                                 <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                                     <div className="text-center md:text-left">
-                                        <div className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-1">Birth Chart Report</div>
-                                        <h2 className="text-4xl font-black text-slate-900 dark:text-white capitalize">{formData.name}</h2>
-                                        <p className="text-slate-500 mt-2 flex items-center gap-2 justify-center md:justify-start">
+                                        <div className="text-sm font-bold text-orange-500 uppercase tracking-widest mb-1">Birth Chart Report</div>
+                                        <h2 className="text-4xl font-black text-white capitalize">{formData.name}</h2>
+                                        <p className="text-white/60 mt-2 flex items-center gap-2 justify-center md:justify-start">
                                             <Calendar className="w-4 h-4" /> {new Date(chart.dateStr).toDateString()}
                                             <span className="w-1 h-1 bg-slate-300 rounded-full" />
                                             <MapPin className="w-4 h-4" /> {formData.birthplace || "Unknown Location"}
                                         </p>
                                     </div>
                                     <div className="flex gap-4">
-                                        <div className="bg-orange-50 dark:bg-slate-800 p-4 rounded-2xl text-center min-w-[100px]">
-                                            <div className="text-xs text-slate-500 uppercase font-bold">Lagna</div>
-                                            <div className="text-xl font-black text-orange-600">{translateSign(chart.ascendantSign, locale)}</div>
+                                        <div className="bg-white/5 p-4 rounded-2xl text-center min-w-[100px] border border-white/10">
+                                            <div className="text-xs text-white/40 uppercase font-bold">Lagna</div>
+                                            <div className="text-xl font-black text-orange-500">{translateSign(chart.ascendantSign, locale)}</div>
                                         </div>
-                                        <div className="bg-blue-50 dark:bg-slate-800 p-4 rounded-2xl text-center min-w-[100px]">
-                                            <div className="text-xs text-slate-500 uppercase font-bold">Rasi</div>
-                                            <div className="text-xl font-black text-blue-600">{translateSign(chart.moonSign, locale)}</div>
+                                        <div className="bg-white/5 p-4 rounded-2xl text-center min-w-[100px] border border-white/10">
+                                            <div className="text-xs text-white/40 uppercase font-bold">Rasi</div>
+                                            <div className="text-xl font-black text-blue-400">{translateSign(chart.moonSign, locale)}</div>
                                         </div>
-                                        <div className="bg-purple-50 dark:bg-slate-800 p-4 rounded-2xl text-center min-w-[100px]">
-                                            <div className="text-xs text-slate-500 uppercase font-bold">Nakshatra</div>
-                                            <div className="text-xl font-black text-purple-600">{chart.nakshatra}</div>
+                                        <div className="bg-white/5 p-4 rounded-2xl text-center min-w-[100px] border border-white/10">
+                                            <div className="text-xs text-white/40 uppercase font-bold">Nakshatra</div>
+                                            <div className="text-xl font-black text-purple-400">{chart.nakshatra}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -517,8 +517,8 @@ export default function KundliPage() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                                            ? "bg-white text-orange-600 shadow-md scale-100"
-                                            : "text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95"
+                                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 scale-100"
+                                            : "text-white/40 hover:text-white/70 hover:bg-white/5 scale-95"
                                             }`}
                                     >
                                         <tab.icon className="w-4 h-4" /> {tab.label}
@@ -532,7 +532,7 @@ export default function KundliPage() {
                                 {/* 1. CHARTS TAB */}
                                 {activeTab === 'charts' && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-300">
-                                        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-orange-100 text-orange-700 text-[10px] font-black uppercase tracking-widest rounded-full">D1 Chart</span>
                                                 <h3 className="text-xl font-bold mt-2">Lagna / Birth Chart</h3>
@@ -545,7 +545,7 @@ export default function KundliPage() {
                                                 subTitle="D1 Chart"
                                             />
                                         </div>
-                                        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-full">D9 Chart</span>
                                                 <h3 className="text-xl font-bold mt-2">Navamsa Chart</h3>
@@ -558,10 +558,10 @@ export default function KundliPage() {
                                                 subTitle="D9 Chart"
                                             />
                                         </div>
-                                        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
-                                                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full">Moon Chart</span>
-                                                <h3 className="text-xl font-bold mt-2">Chandra Lagna</h3>
+                                                <span className="px-3 py-1 bg-blue-100/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full">Moon Chart</span>
+                                                <h3 className="text-xl font-bold mt-2 text-white">Chandra Lagna</h3>
                                             </div>
                                             <LagnaChart
                                                 chart={chart.charts?.Moon || {}}
@@ -571,10 +571,10 @@ export default function KundliPage() {
                                                 subTitle="Moon Chart"
                                             />
                                         </div>
-                                        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
-                                                <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-[10px] font-black uppercase tracking-widest rounded-full">D10 Chart</span>
-                                                <h3 className="text-xl font-bold mt-2">Dashamsha</h3>
+                                                <span className="px-3 py-1 bg-yellow-100/10 text-yellow-400 text-[10px] font-black uppercase tracking-widest rounded-full">D10 Chart</span>
+                                                <h3 className="text-xl font-bold mt-2 text-white">Dashamsha</h3>
                                             </div>
                                             <LagnaChart
                                                 chart={chart.charts?.D10 || {}}
@@ -589,33 +589,33 @@ export default function KundliPage() {
 
                                 {/* 2. PLANETS TAB */}
                                 {activeTab === 'planets' && (
-                                    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-right-4">
+                                    <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-white/10 overflow-hidden animate-in fade-in slide-in-from-right-4">
                                         <div className="overflow-x-auto">
                                             <table className="w-full">
-                                                <thead className="bg-slate-50 border-b border-slate-100">
+                                                <thead className="bg-white/5 border-b border-white/10">
                                                     <tr>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Planet</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Sign</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Degree</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Nakshatra</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">House</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Planet</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Sign</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Degree</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Nakshatra</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">House</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-slate-100">
+                                                <tbody className="divide-y divide-white/5">
                                                     {chart.planets.map((p: any, i: number) => (
-                                                        <tr key={p.name} className="hover:bg-slate-50/50 transition-colors">
-                                                            <td className="px-6 py-4 font-bold text-slate-900 flex items-center gap-3">
-                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 text-slate-600`}>
+                                                        <tr key={p.name} className="hover:bg-white/5 transition-colors">
+                                                            <td className="px-6 py-4 font-bold text-white flex items-center gap-3">
+                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-white/10 text-white`}>
                                                                     {p.name[0]}
                                                                 </div>
                                                                 {translatePlanet(p.name, locale)}
                                                             </td>
-                                                            <td className="px-6 py-4 font-medium text-slate-700">{translateSign(p.sign, locale)}</td>
-                                                            <td className="px-6 py-4 font-mono text-xs text-slate-500">
+                                                            <td className="px-6 py-4 font-medium text-white/80">{translateSign(p.sign, locale)}</td>
+                                                            <td className="px-6 py-4 font-mono text-xs text-white/40">
                                                                 {Math.floor(p.longitude % 30)}° {Math.floor((p.longitude % 1) * 60)}'
                                                             </td>
-                                                            <td className="px-6 py-4 text-sm text-slate-600">{getTrans(locale).nakshatras[p.nakshatraId - 1]}</td>
-                                                            <td className="px-6 py-4 font-bold text-slate-900">{p.house}</td>
+                                                            <td className="px-6 py-4 text-sm text-white/60">{getTrans(locale).nakshatras[p.nakshatraId - 1]}</td>
+                                                            <td className="px-6 py-4 font-bold text-orange-500">{p.house}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -627,33 +627,33 @@ export default function KundliPage() {
                                 {activeTab === 'doshas' && (
                                     <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-right-4">
                                         {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
-                                            <div key={key} className={`rounded-[2rem] p-8 border ${data.present ? "bg-red-50 border-red-100" : "bg-green-50 border-green-100"}`}>
+                                            <div key={key} className={`rounded-[2rem] p-8 border backdrop-blur-xl ${data.present ? "bg-red-500/10 border-red-500/20" : "bg-green-500/10 border-green-500/20"}`}>
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${data.present ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${data.present ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500"}`}>
                                                             {data.present ? "⚠️" : "✓"}
                                                         </div>
                                                         <div>
-                                                            <h3 className="text-xl font-black text-slate-900">
+                                                            <h3 className="text-xl font-black text-white">
                                                                 {key}
                                                             </h3>
-                                                            <div className={`text-xs font-bold uppercase tracking-wider ${data.present ? "text-red-600" : "text-green-600"}`}>
+                                                            <div className={`text-xs font-bold uppercase tracking-wider ${data.present ? "text-red-500" : "text-green-500"}`}>
                                                                 {data.present ? (locale === 'hi' ? "दोष उपस्थित" : "Present in Chart") : (locale === 'hi' ? "दोष मुक्त" : "Absent / Safe")}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <p className="text-slate-600 leading-relaxed mb-6">{data.description || "No major negative influence detected."}</p>
+                                                <p className="text-white/60 leading-relaxed mb-6">{data.description || "No major negative influence detected."}</p>
 
                                                 {data.present && (
-                                                    <div className="bg-white/60 rounded-xl p-5 border border-red-100/50">
-                                                        <h4 className="text-xs font-black uppercase text-red-500 mb-3 tracking-widest flex items-center gap-2">
+                                                    <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                                                        <h4 className="text-xs font-black uppercase text-orange-500 mb-3 tracking-widest flex items-center gap-2">
                                                             <Sparkles className="w-3 h-3" /> Vedic Remedies
                                                         </h4>
                                                         <ul className="space-y-2">
                                                             {(kundliData.doshas?.[key]?.remedies || []).map((r: string, idx: number) => (
-                                                                <li key={idx} className="text-sm text-slate-700 flex items-start gap-2">
-                                                                    <span className="text-red-400 mt-1">•</span> {r}
+                                                                <li key={idx} className="text-sm text-white/70 flex items-start gap-2">
+                                                                    <span className="text-orange-400 mt-1">•</span> {r}
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -669,52 +669,52 @@ export default function KundliPage() {
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
 
                                         {/* Current Dasha Card */}
-                                        <div className="bg-indigo-900 p-8 rounded-[2.5rem] text-white overflow-hidden relative">
-                                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl -mr-16 -mt-16" />
+                                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 text-white overflow-hidden relative shadow-2xl">
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
                                             <div className="relative z-10">
-                                                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                                                    <Activity className="w-5 h-5" /> Current Vimshottari Dasha
+                                                <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
+                                                    <Activity className="w-5 h-5 text-indigo-400" /> Current Vimshottari Dasha
                                                 </h3>
                                                 <div className="flex flex-col md:flex-row gap-8 items-center">
                                                     <div className="text-center">
-                                                        <div className="text-6xl font-black mb-2">{translatePlanet(chart.dasha?.currentLords?.[0] || "Sun", locale)}</div>
-                                                        <div className="text-xs font-bold uppercase tracking-widest opacity-60">Mahadasha Lord</div>
+                                                        <div className="text-6xl font-black mb-2 text-white">{translatePlanet(chart.dasha?.currentLords?.[0] || "Sun", locale)}</div>
+                                                        <div className="text-xs font-bold uppercase tracking-widest text-white/40">Mahadasha Lord</div>
                                                     </div>
                                                     <div className="h-12 w-px bg-white/10 hidden md:block" />
                                                     <div className="text-center">
-                                                        <div className="text-4xl font-bold mb-2 text-indigo-200">{translatePlanet(chart.dasha?.currentLords?.[1] || "Moon", locale)}</div>
-                                                        <div className="text-xs font-bold uppercase tracking-widest opacity-60">Antardasha Lord</div>
+                                                        <div className="text-4xl font-bold mb-2 text-indigo-300">{translatePlanet(chart.dasha?.currentLords?.[1] || "Moon", locale)}</div>
+                                                        <div className="text-xs font-bold uppercase tracking-widest text-white/40">Antardasha Lord</div>
                                                     </div>
-                                                    <div className="ml-auto bg-white/10 px-6 py-3 rounded-xl backdrop-blur-sm border border-white/10">
-                                                        <div className="text-xs opacity-60 uppercase font-bold tracking-widest mb-1">Nakshatra Balance</div>
-                                                        <div className="text-2xl font-mono">{(chart.dasha?.percentLeft * 100).toFixed(1)}%</div>
+                                                    <div className="ml-auto bg-white/5 px-6 py-3 rounded-xl backdrop-blur-sm border border-white/10">
+                                                        <div className="text-xs text-white/40 uppercase font-bold tracking-widest mb-1">Nakshatra Balance</div>
+                                                        <div className="text-2xl font-mono text-white">{(chart.dasha?.percentLeft * 100).toFixed(1)}%</div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Detailed Timeline */}
-                                        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-                                            <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
+                                            <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-3">
                                                 <Clock3 className="w-6 h-6 text-orange-500" />
                                                 {locale === 'hi' ? "महादशा समयरेखा (आने वाले वर्ष)" : "Mahadasha Analysis (Timeline)"}
                                             </h3>
 
-                                            <div className="relative border-l-2 border-slate-200 ml-4 space-y-8 pb-4">
+                                            <div className="relative border-l-2 border-white/10 ml-4 space-y-8 pb-4">
                                                 {chart.dasha?.periods?.filter((p: any) => new Date(p.end).getFullYear() >= new Date().getFullYear() - 1).map((p: any, i: number) => (
                                                     <div key={i} className="pl-8 relative group">
-                                                        <span className="absolute -left-[9px] top-6 w-4 h-4 rounded-full border-4 border-white bg-slate-200 group-hover:bg-orange-500 transition-colors" />
+                                                        <span className="absolute -left-[9px] top-6 w-4 h-4 rounded-full border-4 border-[#050510] bg-white/20 group-hover:bg-orange-500 transition-colors" />
 
-                                                        <div className="bg-slate-50 hover:bg-orange-50/50 p-6 rounded-2xl border border-slate-200 group-hover:border-orange-200 transition-all">
+                                                        <div className="bg-white/5 hover:bg-white/10 p-6 rounded-2xl border border-white/5 group-hover:border-orange-500/30 transition-all">
                                                             <div className="flex items-center justify-between mb-2">
-                                                                <h4 className="text-lg font-black text-slate-800">
+                                                                <h4 className="text-lg font-black text-white">
                                                                     {translatePlanet(p.lord, locale)} {locale === 'hi' ? "महादशा" : "Mahadasha"}
                                                                 </h4>
-                                                                <span className="text-xs font-bold bg-white px-3 py-1 rounded-full border border-slate-100 text-slate-500">
+                                                                <span className="text-xs font-bold bg-white/10 px-3 py-1 rounded-full border border-white/10 text-white/60">
                                                                     {new Date(p.start).getFullYear()} - {new Date(p.end).getFullYear()}
                                                                 </span>
                                                             </div>
-                                                            <p className="text-slate-600 text-sm leading-relaxed">
+                                                            <p className="text-white/60 text-sm leading-relaxed">
                                                                 {locale === 'hi'
                                                                     ? `${translatePlanet(p.lord, locale)} का प्रभाव ${Math.round(p.duration)} वर्षों तक रहेगा। यह समय ${kundliData.labels?.life_predictions?.Career || "करियर"} और ${kundliData.labels?.life_predictions?.Health || "स्वास्थ्य"} के लिए महत्वपूर्ण होगा।`
                                                                     : `Period of ${p.lord} lasts for ${Math.round(p.duration)} years. This cycle significantly impacts Career growth and domestic happiness.`}
@@ -726,30 +726,30 @@ export default function KundliPage() {
                                         </div>
 
                                         {/* Life Analysis - AI Powered */}
-                                        <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
+                                        <div className="bg-white/5 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-2xl border border-white/10 relative overflow-hidden">
 
-                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-slate-100 pb-6 relative z-10">
-                                                <h3 className="text-3xl font-black text-slate-900 flex items-center gap-3">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-white/10 pb-6 relative z-10">
+                                                <h3 className="text-3xl font-black text-white flex items-center gap-3">
                                                     <Sparkles className="w-8 h-8 text-orange-500 fill-orange-500/20" />
                                                     {locale === 'hi' ? "विस्तृत जीवन विश्लेषण" : "Detailed Life Analysis"}
                                                 </h3>
-                                                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 rounded-full text-white text-xs font-black uppercase tracking-widest shadow-md flex items-center gap-2">
+                                                <div className="bg-gradient-to-r from-orange-500 to-red-600 px-4 py-2 rounded-full text-white text-xs font-black uppercase tracking-widest shadow-md flex items-center gap-2">
                                                     <Zap className="w-3 h-3 fill-white" /> AI Powered Reading
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-12 relative z-10">
                                                 {chart.predictions && Object.entries(chart.predictions).map(([area, text]: [string, any]) => (
-                                                    <div key={area} className="group bg-slate-50 hover:bg-orange-50/30 p-8 rounded-3xl border border-slate-100 hover:border-orange-200 transition-all duration-500">
+                                                    <div key={area} className="group bg-white/5 hover:bg-orange-500/5 p-8 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all duration-500">
                                                         <div className="flex items-center gap-4 mb-6">
-                                                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                                            <div className="w-12 h-12 rounded-2xl bg-white/5 shadow-sm border border-white/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
                                                                 <Briefcase className="w-6 h-6" />
                                                             </div>
-                                                            <h4 className="text-2xl font-black text-slate-800 group-hover:text-orange-600 transition-colors">
+                                                            <h4 className="text-2xl font-black text-white group-hover:text-orange-500 transition-colors">
                                                                 {kundliData.labels?.life_predictions[area as keyof typeof kundliData.labels.life_predictions] || area}
                                                             </h4>
                                                         </div>
-                                                        <div className="text-slate-600 leading-[1.8] text-lg font-medium whitespace-pre-line space-y-4">
+                                                        <div className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-line space-y-4">
                                                             {text}
                                                         </div>
                                                     </div>

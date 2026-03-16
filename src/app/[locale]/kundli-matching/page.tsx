@@ -255,7 +255,7 @@ export default function KundliMatchingPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-50 flex flex-col selection:bg-orange-500/30">
+        <main className="min-h-screen bg-[#050510] text-white flex flex-col selection:bg-orange-500/30">
             <Navbar />
 
             <div className="container mx-auto px-4 py-12 md:py-20 flex-grow">
@@ -266,40 +266,40 @@ export default function KundliMatchingPage() {
                     <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-none uppercase">
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">{t("kundliMatchingTitle")}</span>
                     </h1>
-                    <p className="text-slate-600 max-w-xl mx-auto">
+                    <p className="text-white/60 max-w-xl mx-auto">
                         {t("kundliMatchingDescription")}
                     </p>
                 </header>
 
                 <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto animate-slide-up">
                     {/* Boy's Details */}
-                    <div className="bg-white backdrop-blur-xl p-8 md:p-10 rounded-3xl space-y-8 border border-slate-100 shadow-xl shadow-slate-200/50">
+                    <div className="bg-white/5 backdrop-blur-3xl p-8 md:p-10 rounded-3xl space-y-8 border border-white/10 shadow-2xl">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center">
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-slate-900">{t("boyIdentityTitle")}</h2>
-                                <p className="text-xs font-bold text-orange-600 uppercase tracking-wider">{t("seekerOfWisdom")}</p>
+                                <h2 className="text-xl font-bold text-white">{t("boyIdentityTitle")}</h2>
+                                <p className="text-xs font-bold text-orange-400 uppercase tracking-wider">{t("seekerOfWisdom")}</p>
                             </div>
                         </div>
                         <div className="space-y-5">
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("fullNameLabel")}</Label>
-                                <Input className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-orange-500" value={boy.name} onChange={e => setBoy({ ...boy, name: e.target.value })} placeholder={t("enterNamePlaceholder")} required />
+                                <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("fullNameLabel")}</Label>
+                                <Input className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-orange-500 text-white placeholder:text-white/30" value={boy.name} onChange={e => setBoy({ ...boy, name: e.target.value })} placeholder={t("enterNamePlaceholder")} required />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("manifestationDateLabel")}</Label>
-                                    <Input className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-orange-500" type="date" value={boy.dob} onChange={e => setBoy({ ...boy, dob: e.target.value })} required />
+                                    <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("manifestationDateLabel")}</Label>
+                                    <Input className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-orange-500 text-white [color-scheme:dark]" type="date" value={boy.dob} onChange={e => setBoy({ ...boy, dob: e.target.value })} required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("timeOfBreathLabel")}</Label>
-                                    <Input className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-orange-500" type="time" value={boy.tob} onChange={e => setBoy({ ...boy, tob: e.target.value })} required />
+                                    <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("timeOfBreathLabel")}</Label>
+                                    <Input className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-orange-500 text-white [color-scheme:dark]" type="time" value={boy.tob} onChange={e => setBoy({ ...boy, tob: e.target.value })} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("birthCoordinatesLabel")}</Label>
+                                <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("birthCoordinatesLabel")}</Label>
                                 <LocationInput
                                     value={boy.place}
                                     onChange={(location, lat, lng) => {
@@ -317,33 +317,33 @@ export default function KundliMatchingPage() {
                     </div>
 
                     {/* Girl's Details */}
-                    <div className="bg-white backdrop-blur-xl p-8 md:p-10 rounded-3xl space-y-8 border border-slate-100 shadow-xl shadow-slate-200/50">
+                    <div className="bg-white/5 backdrop-blur-3xl p-8 md:p-10 rounded-3xl space-y-8 border border-white/10 shadow-2xl">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center">
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-slate-900">{t("girlIdentityTitle")}</h2>
-                                <p className="text-xs font-bold text-red-600 uppercase tracking-wider">{t("seekerOfGrace")}</p>
+                                <h2 className="text-xl font-bold text-white">{t("girlIdentityTitle")}</h2>
+                                <p className="text-xs font-bold text-red-500 uppercase tracking-wider">{t("seekerOfGrace")}</p>
                             </div>
                         </div>
                         <div className="space-y-5">
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("fullNameLabel")}</Label>
-                                <Input className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-red-500" value={girl.name} onChange={e => setGirl({ ...girl, name: e.target.value })} placeholder={t("enterNamePlaceholder")} required />
+                                <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("fullNameLabel")}</Label>
+                                <Input className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-red-500 text-white placeholder:text-white/30" value={girl.name} onChange={e => setGirl({ ...girl, name: e.target.value })} placeholder={t("enterNamePlaceholder")} required />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("manifestationDateLabel")}</Label>
-                                    <Input className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-red-500" type="date" value={girl.dob} onChange={e => setGirl({ ...girl, dob: e.target.value })} required />
+                                    <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("manifestationDateLabel")}</Label>
+                                    <Input className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-red-500 text-white [color-scheme:dark]" type="date" value={girl.dob} onChange={e => setGirl({ ...girl, dob: e.target.value })} required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("timeOfBreathLabel")}</Label>
-                                    <Input className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-red-500" type="time" value={girl.tob} onChange={e => setGirl({ ...girl, tob: e.target.value })} required />
+                                    <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("timeOfBreathLabel")}</Label>
+                                    <Input className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-red-500 text-white [color-scheme:dark]" type="time" value={girl.tob} onChange={e => setGirl({ ...girl, tob: e.target.value })} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("birthCoordinatesLabel")}</Label>
+                                <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("birthCoordinatesLabel")}</Label>
                                 <LocationInput
                                     value={girl.place}
                                     onChange={(location, lat, lng) => {
@@ -376,7 +376,7 @@ export default function KundliMatchingPage() {
                 </div>
 
                 {result && !loading && (
-                    <section id="match-result" className="max-w-6xl mx-auto bg-white/90 backdrop-blur-3xl p-8 md:p-16 rounded-[4rem] border border-slate-100 shadow-2xl animate-slide-up relative">
+                    <section id="match-result" className="max-w-6xl mx-auto bg-white/5 backdrop-blur-3xl p-8 md:p-16 rounded-[4rem] border border-white/10 shadow-2xl animate-slide-up relative text-white">
                         <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
                             <Sparkles className="w-64 h-64 text-orange-500" />
                         </div>
@@ -385,8 +385,8 @@ export default function KundliMatchingPage() {
                                 <Sparkles className="w-3.5 h-3.5" />
                                 {t("analysisComplete")}
                             </div>
-                            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight uppercase mb-4">{t("compatibilityReportTitle")}</h2>
-                            <p className="text-slate-500 font-medium">{t("between")} <span className="text-orange-600 font-black uppercase tracking-widest">{result.boy}</span> & <span className="text-red-600 font-black uppercase tracking-widest">{result.girl}</span></p>
+                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight uppercase mb-4">{t("compatibilityReportTitle")}</h2>
+                            <p className="text-white/60 font-medium">{t("between")} <span className="text-orange-500 font-black uppercase tracking-widest">{result.boy}</span> & <span className="text-red-500 font-black uppercase tracking-widest">{result.girl}</span></p>
                         </div>
 
                         {/* Custom Tabs */}
@@ -417,10 +417,10 @@ export default function KundliMatchingPage() {
                             {activeTab === 'overview' && (
                                 <div className="grid md:grid-cols-4 gap-8 mb-16">
                                     {/* Score Card */}
-                                    <div className="md:col-span-1 bg-orange-50/50 p-10 rounded-[3rem] border border-orange-100 text-center flex flex-col justify-center items-center shadow-inner">
+                                    <div className="md:col-span-1 bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] border border-white/10 text-center flex flex-col justify-center items-center shadow-inner">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-7xl font-black text-orange-600">{result.total_guna}</span>
-                                            <span className="text-xl text-orange-200 font-black">/ 36</span>
+                                            <span className="text-7xl font-black text-orange-500">{result.total_guna}</span>
+                                            <span className="text-xl text-white/20 font-black">/ 36</span>
                                         </div>
                                         <p className="font-black text-[10px] uppercase tracking-widest text-orange-400 mt-4">{t("totalGunas")}</p>
                                         <div className={`inline-flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mt-8 shadow-sm ${result.total_guna > 18 ? "bg-orange-500 text-white" : "bg-amber-500 text-white"}`}>
@@ -447,20 +447,20 @@ export default function KundliMatchingPage() {
 
                                     {/* Dosha Status */}
                                     <div className="md:col-span-2 space-y-4">
-                                        <div className="bg-slate-50 p-6 rounded-2xl flex items-center justify-between border border-slate-100">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t("boyManglikStatus")}</span>
-                                            <span className={`text-xs font-black uppercase tracking-widest ${result.is_manglik_boy ? "text-orange-600" : "text-green-600"}`}>
+                                        <div className="bg-white/5 p-6 rounded-2xl flex items-center justify-between border border-white/10">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t("boyManglikStatus")}</span>
+                                            <span className={`text-xs font-black uppercase tracking-widest ${result.is_manglik_boy ? "text-orange-500" : "text-green-500"}`}>
                                                 {result.is_manglik_boy ? t("manglikPresence") : t("doshMukt")}
                                             </span>
                                         </div>
-                                        <div className="bg-slate-50 p-6 rounded-2xl flex items-center justify-between border border-slate-100">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t("girlManglikStatus")}</span>
-                                            <span className={`text-xs font-black uppercase tracking-widest ${result.is_manglik_girl ? "text-red-600" : "text-green-600"}`}>
+                                        <div className="bg-white/5 p-6 rounded-2xl flex items-center justify-between border border-white/10">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t("girlManglikStatus")}</span>
+                                            <span className={`text-xs font-black uppercase tracking-widest ${result.is_manglik_girl ? "text-red-500" : "text-green-500"}`}>
                                                 {result.is_manglik_girl ? t("manglikPresence") : t("doshMukt")}
                                             </span>
                                         </div>
-                                        <div className="bg-orange-50 p-6 rounded-2xl border border-dashed border-orange-200">
-                                            <p className="text-[10px] font-medium text-orange-700 leading-relaxed text-center italic">
+                                        <div className="bg-orange-500/10 p-6 rounded-2xl border border-dashed border-orange-500/20">
+                                            <p className="text-[10px] font-medium text-orange-400 leading-relaxed text-center italic">
                                                 {t("manglikNote")}
                                             </p>
                                         </div>
@@ -475,16 +475,16 @@ export default function KundliMatchingPage() {
                                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-4">
                                             {t("vedicPanchang")} <div className="h-px bg-slate-100 flex-grow" />
                                         </h3>
-                                        <div className="overflow-hidden rounded-3xl border border-slate-100">
+                                        <div className="overflow-hidden rounded-3xl border border-white/10">
                                             <table className="w-full text-left text-xs">
-                                                <thead className="bg-orange-50/50">
+                                                <thead className="bg-white/5">
                                                     <tr>
-                                                        <th className="py-4 px-6 font-black uppercase opacity-40">{t("attribute")}</th>
-                                                        <th className="py-4 px-6 font-black text-orange-600 uppercase">{t("boy")}</th>
-                                                        <th className="py-4 px-6 font-black text-red-600 uppercase">{t("girl")}</th>
+                                                        <th className="py-4 px-6 font-black uppercase opacity-40 text-white">{t("attribute")}</th>
+                                                        <th className="py-4 px-6 font-black text-orange-500 uppercase">{t("boy")}</th>
+                                                        <th className="py-4 px-6 font-black text-red-500 uppercase">{t("girl")}</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-slate-100">
+                                                <tbody className="divide-y divide-white/10">
                                                     {[
                                                         { label: t("label_nakshatra"), boy: getTrans(locale).nakshatras[result.boyPanchang.nakshatraId - 1] || "-", girl: getTrans(locale).nakshatras[result.girlPanchang.nakshatraId - 1] || "-" },
                                                         { label: t("label_tithi"), boy: getTrans(locale).panchang.tithi[result.boyPanchang.tithiId], girl: getTrans(locale).panchang.tithi[result.girlPanchang.tithiId] },
@@ -492,10 +492,10 @@ export default function KundliMatchingPage() {
                                                         { label: t("label_karan"), boy: getTrans(locale).panchang.karan[result.boyPanchang.karanaId], girl: getTrans(locale).panchang.karan[result.girlPanchang.karanaId] },
                                                         { label: t("label_vara"), boy: getTrans(locale).panchang.vara[result.boyPanchang.vara], girl: getTrans(locale).panchang.vara[result.girlPanchang.vara] }
                                                     ].map((row, idx) => (
-                                                        <tr key={idx}>
-                                                            <td className="py-4 px-6 font-bold text-slate-400 uppercase tracking-tighter">{row.label}</td>
-                                                            <td className="py-4 px-6 font-black text-slate-800">{row.boy}</td>
-                                                            <td className="py-4 px-6 font-black text-slate-800">{row.girl}</td>
+                                                        <tr key={idx} className="hover:bg-white/5 transition-colors">
+                                                            <td className="py-4 px-6 font-bold text-white/40 uppercase tracking-tighter">{row.label}</td>
+                                                            <td className="py-4 px-6 font-black text-white">{row.boy}</td>
+                                                            <td className="py-4 px-6 font-black text-white">{row.girl}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -507,17 +507,17 @@ export default function KundliMatchingPage() {
                                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-4">
                                             {t("vimshottariDasha")} <div className="h-px bg-slate-100 flex-grow" />
                                         </h3>
-                                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                        <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
                                             <div className="space-y-4">
                                                 {result.boyDasha?.mahadashas?.slice(0, 4).map((d: any, i: number) => {
                                                     const isActive = new Date() >= new Date(d.start) && new Date() <= new Date(d.end);
                                                     return (
-                                                        <div key={i} className={`flex justify-between items-center p-4 rounded-xl transition-all ${isActive ? "bg-white shadow-md border-l-4 border-orange-500" : "opacity-60"}`}>
+                                                        <div key={i} className={`flex justify-between items-center p-4 rounded-xl transition-all ${isActive ? "bg-white/10 shadow-lg border-l-4 border-orange-500" : "opacity-40"}`}>
                                                             <div>
-                                                                <span className="text-xs font-black text-slate-900 uppercase tracking-widest">{translatePlanet(d.lord, locale)} {t("mahadasha")}</span>
-                                                                {isActive && <span className="ml-3 px-2 py-0.5 bg-orange-100 text-orange-600 text-[8px] font-black rounded uppercase">{t("currentCycle")}</span>}
+                                                                <span className="text-xs font-black text-white uppercase tracking-widest">{translatePlanet(d.lord, locale)} {t("mahadasha")}</span>
+                                                                {isActive && <span className="ml-3 px-2 py-0.5 bg-orange-500/20 text-orange-400 text-[8px] font-black rounded uppercase">{t("currentCycle")}</span>}
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-slate-500">{new Date(d.start).getFullYear()} - {new Date(d.end).getFullYear()}</span>
+                                                            <span className="text-[10px] font-bold text-white/40">{new Date(d.start).getFullYear()} - {new Date(d.end).getFullYear()}</span>
                                                         </div>
                                                     );
                                                 })}
@@ -569,71 +569,70 @@ export default function KundliMatchingPage() {
                             {/* ANALYSIS TAB */}
                             {activeTab === 'analysis' && detailedReport && (
                                 <div className="grid md:grid-cols-2 gap-8 animate-in fade-in duration-300">
-                                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg">
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-2 bg-pink-100 rounded-lg text-pink-600"><Heart className="w-5 h-5" /></div>
-                                            <h3 className="text-lg font-black uppercase text-slate-800">{detailedReport.marriage.title}</h3>
+                                            <div className="p-2 bg-pink-500/10 rounded-lg text-pink-400"><Heart className="w-5 h-5" /></div>
+                                            <h3 className="text-lg font-black uppercase text-white">{detailedReport.marriage.title}</h3>
                                         </div>
-                                        <p className="text-slate-600 font-medium leading-relaxed">{detailedReport.marriage.verdict}</p>
-                                        <div className="mt-4 inline-block px-4 py-1.5 bg-pink-50 text-pink-700 rounded-md text-xs font-bold uppercase tracking-wider">
+                                        <p className="text-white/70 font-medium leading-relaxed">{detailedReport.marriage.verdict}</p>
+                                        <div className="mt-4 inline-block px-4 py-1.5 bg-pink-500/10 text-pink-400 rounded-md text-xs font-bold uppercase tracking-wider">
                                             {detailedReport.marriage.rating}
                                         </div>
                                     </div>
 
-                                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg">
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><TrendingUp className="w-5 h-5" /></div>
-                                            <h3 className="text-lg font-black uppercase text-slate-800">{detailedReport.forecast.title}</h3>
+                                            <div className="p-2 bg-orange-500/10 rounded-lg text-orange-400"><TrendingUp className="w-5 h-5" /></div>
+                                            <h3 className="text-lg font-black uppercase text-white">{detailedReport.forecast.title}</h3>
                                         </div>
-                                        <p className="text-slate-600 font-medium leading-relaxed">{detailedReport.forecast.verdict}</p>
+                                        <p className="text-white/70 font-medium leading-relaxed">{detailedReport.forecast.verdict}</p>
                                     </div>
 
-                                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg">
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-2 bg-amber-100 rounded-lg text-amber-600"><Timer className="w-5 h-5" /></div>
-                                            <h3 className="text-lg font-black uppercase text-slate-800">{detailedReport.timing.title}</h3>
+                                            <div className="p-2 bg-amber-500/10 rounded-lg text-amber-400"><Timer className="w-5 h-5" /></div>
+                                            <h3 className="text-lg font-black uppercase text-white">{detailedReport.timing.title}</h3>
                                         </div>
-                                        <p className="text-slate-600 font-medium leading-relaxed">{detailedReport.timing.verdict}</p>
-                                        <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        <p className="text-white/70 font-medium leading-relaxed">{detailedReport.timing.verdict}</p>
+                                        <div className="mt-4 flex items-center gap-2 text-xs font-bold text-white/30 uppercase tracking-wider">
                                             <Calendar className="w-4 h-4" /> Shubh Muhurat Yoga
                                         </div>
                                     </div>
 
-                                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg md:col-span-2 grid md:grid-cols-3 gap-6">
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl md:col-span-2 grid md:grid-cols-3 gap-6">
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-black uppercase tracking-widest">
+                                            <div className="flex items-center gap-2 mb-2 text-white/30 text-xs font-black uppercase tracking-widest">
                                                 <Users className="w-4 h-4" /> {detailedReport.nature.title}
                                             </div>
-                                            <p className="text-sm text-slate-700 font-medium">{detailedReport.nature.verdict}</p>
+                                            <p className="text-sm text-white/80 font-medium">{detailedReport.nature.verdict}</p>
                                         </div>
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-black uppercase tracking-widest">
+                                            <div className="flex items-center gap-2 mb-2 text-white/30 text-xs font-black uppercase tracking-widest">
                                                 <Wallet className="w-4 h-4" /> {detailedReport.finance.title}
                                             </div>
-                                            <p className="text-sm text-slate-700 font-medium">{detailedReport.finance.verdict}</p>
+                                            <p className="text-sm text-white/80 font-medium">{detailedReport.finance.verdict}</p>
                                         </div>
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-black uppercase tracking-widest">
+                                            <div className="flex items-center gap-2 mb-2 text-white/30 text-xs font-black uppercase tracking-widest">
                                                 <Sparkles className="w-4 h-4" /> {detailedReport.family.title}
                                             </div>
-                                            <p className="text-sm text-slate-700 font-medium">{detailedReport.family.verdict}</p>
+                                            <p className="text-sm text-white/80 font-medium">{detailedReport.family.verdict}</p>
                                         </div>
                                     </div>
                                 </div>
-
                             )}
 
                             {/* REMEDIES TAB */}
                             {activeTab === 'remedies' && detailedReport && (
                                 <div className="space-y-8">
-                                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg">
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600"><Shield className="w-5 h-5" /></div>
-                                            <h3 className="text-lg font-black uppercase text-slate-800">{detailedReport.remedies.title}</h3>
+                                            <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><Shield className="w-5 h-5" /></div>
+                                            <h3 className="text-lg font-black uppercase text-white">{detailedReport.remedies.title}</h3>
                                         </div>
                                         <ul className="space-y-3">
                                             {detailedReport.remedies.list.map((rem: string, i: number) => (
-                                                <li key={i} className="flex gap-3 text-slate-600 font-medium text-sm">
+                                                <li key={i} className="flex gap-3 text-white/70 font-medium text-sm">
                                                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0" />
                                                     {rem}
                                                 </li>

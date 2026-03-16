@@ -40,18 +40,18 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
 
     const getPlanetColor = (planet: string) => {
         const colors: Record<string, string> = {
-            "Sun": "#ea580c",
-            "Moon": "#2563eb",
-            "Mars": "#dc2626",
-            "Mercury": "#16a34a",
-            "Jupiter": "#ca8a04",
-            "Venus": "#db2777",
-            "Saturn": "#7e22ce",
-            "Rahu": "#334155",
-            "Ketu": "#475569",
+            "Sun": "#fb923c", // Orange-400
+            "Moon": "#60a5fa", // Blue-400
+            "Mars": "#f87171", // Red-400
+            "Mercury": "#4ade80", // Green-400
+            "Jupiter": "#facc15", // Yellow-400
+            "Venus": "#f472b6", // Pink-400
+            "Saturn": "#a78bfa", // Purple-400
+            "Rahu": "#cbd5e1", // Slate-300
+            "Ketu": "#94a3b8", // Slate-400
             "Asc": "#f97316"
         };
-        return colors[planet] || "#0f172a";
+        return colors[planet] || "#ffffff";
     };
 
     const getPlanetShort = (planetName: string) => {
@@ -88,7 +88,7 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
     ];
 
     return (
-        <div className="w-full max-w-[500px] mx-auto bg-white dark:bg-slate-900 rounded-3xl p-6 lg:p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
+        <div className="w-full max-w-[500px] mx-auto bg-white/5 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-2xl border border-white/10">
             <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-[10px] font-black tracking-widest uppercase mb-3">
                     {subTitle}
@@ -96,9 +96,9 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
                 <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{title}</h3>
             </div>
 
-            <div className="relative w-full aspect-square border-2 border-orange-200 dark:border-orange-900/50 bg-[#fffdfa] dark:bg-slate-950 rounded-lg overflow-hidden flex items-center justify-center p-2 lg:p-4">
+            <div className="relative w-full aspect-square border border-white/10 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center p-2 lg:p-4">
                 <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-sm">
-                    <rect x="0" y="0" width="400" height="400" fill="transparent" stroke="#f97316" strokeWidth="2.5" />
+                    <rect x="0" y="0" width="400" height="400" fill="transparent" stroke="#f97316" strokeWidth="1.5" strokeOpacity="0.5" />
 
                     <line x1="0" y1="0" x2="400" y2="400" stroke="#fbd38d" strokeWidth="2" strokeOpacity="0.8" />
                     <line x1="400" y1="0" x2="0" y2="400" stroke="#fbd38d" strokeWidth="2" strokeOpacity="0.8" />
