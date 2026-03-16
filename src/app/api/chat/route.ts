@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 
-// Ensure this runs on edge or node, whichever is preferred. App router API routes default to node unless specified.
-export const runtime = "edge";
+// Using standard Node runtime to ensure full process.env access for the API key
+// export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
     try {
@@ -19,7 +19,8 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "User hasn't provided com
 
 Use the context data to give highly personalized, accurate Vedic advice. If there is no context data, kindly ask them to fill out their profile in the app.`;
 
-        const apiKey = process.env.GEMINI_API_KEY;
+        // Force direct read from process.env to avoid Edge caching issues
+        const apiKey = process.env.GEMINI_API_KEY || "";
 
         if (!apiKey) {
             // Simulated response mode (if API key is missing)
