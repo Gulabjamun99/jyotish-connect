@@ -326,8 +326,8 @@ export default function AstrologerDashboard() {
                     {/* RIGHT COLUMN: Withdraw & Recent */}
                     <div className="lg:col-span-4 space-y-6">
                         <div className="flex items-center gap-3">
-                            <IndianRupee className="w-5 h-5 text-zinc-400" />
-                            <h2 className="text-xl font-bold text-white">Quick Actions</h2>
+                            <TrendingUp className="w-5 h-5 text-zinc-400" />
+                            <h2 className="text-xl font-bold text-white">Engagement Actions</h2>
                         </div>
 
                         <Button
@@ -366,7 +366,7 @@ export default function AstrologerDashboard() {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-xs font-bold text-green-500">+ ₹{b.amount || 250}</div>
+                                                <div className="text-xs font-bold text-green-500">Successful Connection</div>
                                                 <div className="text-[9px] text-zinc-500 uppercase tracking-wider">{b.type}</div>
                                             </div>
                                         </div>

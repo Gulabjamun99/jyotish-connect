@@ -14,6 +14,7 @@ import { TransactionHistory } from "@/components/profile/TransactionHistory";
 import { WalletRechargeModal } from "@/components/payment/WalletRechargeModal";
 import { toast } from "react-hot-toast";
 import { AstroGPT } from "@/components/ai/AstroGPT";
+import { AstroPassport } from "@/components/ai/AstroPassport";
 
 export default function UserDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["user"]);
@@ -84,7 +85,7 @@ export default function UserDashboard() {
                 !userData?.profileComplete && (
                     <div className="bg-red-500/10 border-y border-red-500/20 py-3 px-4 text-center">
                         <p className="text-red-400 text-xs font-bold tracking-widest uppercase">
-                            ⚠️ Action Required: Please complete your profile to book consultations and recharge your wallet.
+                            ⚠️ Action Required: Please complete your profile to book consultations and unlock your full cosmic profile.
                         </p>
                     </div>
                 )
@@ -239,18 +240,9 @@ export default function UserDashboard() {
                         </div>
                     </div>
 
-                    {/* Spiritual Motivation */}
+                    {/* Astro-Passport Section */}
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-white">Daily Guidance</h2>
-                        </div>
-                        <div className="glass bg-gradient-to-br from-primary/10 to-transparent border border-white/5 rounded-3xl p-8 relative overflow-hidden group">
-                            <div className="relative z-10">
-                                <p className="text-lg font-bold text-white leading-tight mb-2 italic">"Stars don't struggle to shine, and neither should you."</p>
-                                <p className="text-sm text-zinc-400">Connect with an Acharya today to align your energy with the cosmos.</p>
-                            </div>
-                            <Star className="absolute -bottom-4 -right-4 w-24 h-24 text-primary/5 group-hover:text-primary/10 transition-colors" />
-                        </div>
+                        <AstroPassport userData={userData} />
                     </div>
                 </div>
 
