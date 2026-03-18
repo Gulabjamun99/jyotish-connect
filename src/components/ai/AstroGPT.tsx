@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Copy, Plus, Send, Sparkles, X, MessageSquare, Loader2 } from "lucide-react";
+import { Send, Sparkles, X, Loader2, User, Calendar, Clock, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,17 +12,36 @@ interface Message {
     content: string;
 }
 
+// Track birth detail collection state
+interface BirthDetails {
+    name?: string;
+    dob?: string;
+    tob?: string;
+    place?: string;
+}
+
 interface AstroGPTProps {
     userData?: any;
 }
 
 export function AstroGPT({ userData }: AstroGPTProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [birthDetails, setBirthDetails] = useState<BirthDetails>({});
+    const [detailsComplete, setDetailsComplete] = useState(false);
+
+    // Build the initial greeting based on whether user data is available
+    const getInitialMessage = () => {
+        if (userData?.kundliData?.[0]) {
+            return "Namaste! 🙏 Your birth details are already linked. Ask me anything — career, love, health, dasha timings — and I will give you a direct, precise Vedic analysis.";
+        }
+        return "Namaste! 🙏 I am **Astro-GPT**, your personal Vedic Guru.\n\nTo give you accurate cosmic insights, I need your birth details first:\n\n📝 **Name** • 📅 **Date of Birth** • 🕐 **Time of Birth** • 📍 **Place of Birth**\n\nPlease share these, then ask your question — I will give you a direct, clear analysis. No vague answers.";
+    };
+
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "initial",
             role: "model",
-            content: "Namaste. I am Astro-GPT, your personal Vedic Guru powered by the cosmos. Ask me about your destiny, current cycles, or relationships."
+            content: getInitialMessage()
         }
     ]);
     const [inputValue, setInputValue] = useState("");
@@ -37,6 +56,19 @@ export function AstroGPT({ userData }: AstroGPTProps) {
         scrollToBottom();
     }, [messages, isLoading]);
 
+    // Check if user has provided all birth details in conversation
+    const extractAndCheckDetails = (allMessages: Message[]) => {
+        const conversationText = allMessages.map(m => m.content).join(" ");
+        // Simple heuristic checks — if DOB pattern found (dd/mm/yyyy or similar), mark complete
+        const hasDOB = /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}\b/.test(conversationText);
+        const hasTime = /\b\d{1,2}:\d{2}\s*(am|pm|AM|PM)?\b/.test(conversationText);
+        const hasPlace = conversationText.toLowerCase().includes("born in") || 
+                        conversationText.toLowerCase().includes("birth place") ||
+                        conversationText.toLowerCase().includes("janam") ||
+                        conversationText.length > 200; // If long conversation, assume details given
+        return hasDOB && (hasTime || hasPlace);
+    };
+
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!inputValue.trim() || isLoading) return;
@@ -47,16 +79,20 @@ export function AstroGPT({ userData }: AstroGPTProps) {
             content: inputValue.trim()
         };
 
-        setMessages(prev => [...prev, newUserMessage]);
+        const newMessages = [...messages, newUserMessage];
+        setMessages(newMessages);
         setInputValue("");
         setIsLoading(true);
 
+        // Update details-complete flag
+        const complete = extractAndCheckDetails(newMessages);
+        setDetailsComplete(complete);
+
         try {
-            // Build Context Data
+            // Build Context Data from saved profile or extracted details
             let contextData = null;
-            if (userData && userData.kundliData) {
-                // If the user has saved a primary Kundli, pass it to the AI
-                const primaryProfile = userData.kundliData[0]; // Simplified for v1
+            if (userData?.kundliData) {
+                const primaryProfile = userData.kundliData[0];
                 contextData = {
                     name: userData.name || primaryProfile?.name,
                     birthInfo: primaryProfile?.rawInput,
@@ -64,13 +100,15 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                     planets: primaryProfile?.planets,
                     doshas: primaryProfile?.doshas
                 };
+            } else if (birthDetails.name || birthDetails.dob) {
+                contextData = birthDetails;
             }
 
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    messages: [...messages, newUserMessage],
+                    messages: newMessages,
                     contextData: contextData
                 })
             });
@@ -98,18 +136,39 @@ export function AstroGPT({ userData }: AstroGPTProps) {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: "model",
-                content: "The planetary alignments are disruptive right now. Please try again later. (Error: " + error.message + ")"
+                content: "The planetary alignments are disruptive right now. Please try again. (" + error.message + ")"
             }]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const suggestedPrompts = [
-        "What is my Moon sign and its meaning?",
-        "When will my career improve based on Dasa?",
-        "Do I have Manglik Dosha?"
+    const quickPrompts = detailsComplete || userData?.kundliData ? [
+        "Career ka future kya hai?",
+        "When will I get married?",
+        "Koi dosha hai mujhe?",
+        "Best remedies for my chart?"
+    ] : [
+        "Mera naam Rahul hai, DOB 15/08/1990, TOB 10:30 AM, Place: Mumbai",
+        "I was born on 20/03/1995 at 6:15 PM in Delhi"
     ];
+
+    const handleReset = () => {
+        setMessages([{ id: "initial", role: "model", content: getInitialMessage() }]);
+        setBirthDetails({});
+        setDetailsComplete(false);
+    };
+
+    // Render markdown-like bold text simply
+    const renderContent = (content: string) => {
+        const parts = content.split(/(\*\*[^*]+\*\*)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i} className="text-white font-black">{part.slice(2, -2)}</strong>;
+            }
+            return <span key={i}>{part}</span>;
+        });
+    };
 
     return (
         <>
@@ -145,7 +204,7 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 50, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                        className="fixed bottom-6 right-6 z-[100] w-[calc(100vw-3rem)] md:w-[450px] h-[600px] max-h-[85vh] glass bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl md:rounded-[2rem] shadow-2xl shadow-black overflow-hidden flex flex-col md:bottom-24 md:right-8"
+                        className="fixed bottom-6 right-6 z-[100] w-[calc(100vw-3rem)] md:w-[460px] h-[620px] max-h-[88vh] glass bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl md:rounded-[2rem] shadow-2xl shadow-black overflow-hidden flex flex-col md:bottom-24 md:right-8"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-gradient-to-r from-accent/10 to-transparent">
@@ -156,17 +215,44 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                 <div>
                                     <h2 className="font-black text-white text-lg tracking-tight">Astro-GPT</h2>
                                     <p className="text-[10px] text-accent font-bold uppercase tracking-widest flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,1)]" /> AI Guru Online
+                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,1)]" /> Vedic AI Guru Online
                                     </p>
                                 </div>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-white rounded-full hover:bg-white/5">
-                                <X className="w-6 h-6" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" onClick={handleReset} title="New Conversation" className="text-zinc-500 hover:text-zinc-300 rounded-full hover:bg-white/5 w-8 h-8">
+                                    <ChevronRight className="w-4 h-4 rotate-180" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-white rounded-full hover:bg-white/5">
+                                    <X className="w-5 h-5" />
+                                </Button>
+                            </div>
                         </div>
 
+                        {/* Birth Details Status Bar */}
+                        {!userData?.kundliData && (
+                            <div className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 border-b border-white/5 ${detailsComplete ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/5 text-zinc-500'}`}>
+                                {detailsComplete ? (
+                                    <>
+                                        <span className="w-2 h-2 rounded-full bg-green-500" />
+                                        Birth Details Received • Analysis Mode Active
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="w-2 h-2 rounded-full bg-orange-400/50 animate-pulse" />
+                                        <span className="flex items-center gap-2">
+                                            <User className="w-3 h-3" /> Name
+                                            <Calendar className="w-3 h-3" /> DOB
+                                            <Clock className="w-3 h-3" /> Time
+                                            <MapPin className="w-3 h-3" /> Place — Required
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin scrollbar-thumb-zinc-800">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-800">
                             {messages.map((msg, idx) => (
                                 <motion.div
                                     key={msg.id}
@@ -174,26 +260,27 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                                    <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap space-y-1 ${
                                         msg.role === 'user' 
                                         ? 'bg-zinc-800 text-white rounded-br-sm' 
-                                        : 'bg-accent/10 border border-accent/20 text-zinc-200 rounded-bl-sm glass'
+                                        : 'bg-accent/10 border border-accent/20 text-zinc-200 rounded-bl-sm'
                                     }`}>
+                                        {/* Quick prompts on first message */}
                                         {msg.role === 'model' && idx === 0 && (
-                                            <div className="flex gap-2 mb-3">
-                                                {suggestedPrompts.map((p, i) => (
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                {quickPrompts.slice(0, 2).map((p, i) => (
                                                     <span 
                                                         key={i} 
-                                                        onClick={() => { setInputValue(p); }}
+                                                        onClick={() => setInputValue(p)}
                                                         className="text-[10px] bg-accent/20 hover:bg-accent/40 text-accent font-bold px-2 py-1 rounded-full cursor-pointer transition-colors"
                                                     >
-                                                        {p.substring(0, 15)}...
+                                                        {p.length > 28 ? p.substring(0, 25) + "..." : p}
                                                     </span>
                                                 ))}
                                             </div>
                                         )}
-                                        <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                                            {msg.content}
+                                        <div>
+                                            {renderContent(msg.content)}
                                         </div>
                                     </div>
                                 </motion.div>
@@ -210,13 +297,26 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                             <div ref={messagesEndRef} />
                         </div>
 
+                        {/* Quick Prompt Suggestions (dynamic) */}
+                        <div className="px-4 py-2 border-t border-white/5 flex gap-2 overflow-x-auto scrollbar-none">
+                            {quickPrompts.map((p, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setInputValue(p)}
+                                    className="flex-shrink-0 text-[10px] bg-white/5 hover:bg-accent/20 text-zinc-400 hover:text-accent font-bold px-3 py-1.5 rounded-full cursor-pointer transition-colors border border-white/5 hover:border-accent/30"
+                                >
+                                    {p.length > 24 ? p.substring(0, 22) + "..." : p}
+                                </button>
+                            ))}
+                        </div>
+
                         {/* Input Area */}
                         <div className="p-4 bg-zinc-950/80 border-t border-white/5 backdrop-blur-xl">
                             <form onSubmit={handleSubmit} className="flex items-center gap-2 relative">
                                 <Input
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
-                                    placeholder="Ask the cosmos..."
+                                    placeholder={detailsComplete || userData?.kundliData ? "Ask your cosmic question..." : "Share your Name, DOB, Time & Place of birth..."}
                                     className="h-12 bg-zinc-900 border-zinc-800 focus-visible:ring-accent/50 text-white rounded-xl pl-4 pr-12 placeholder:text-zinc-600"
                                     disabled={isLoading}
                                 />
@@ -228,8 +328,8 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
                                 </Button>
                             </form>
-                            <p className="text-center text-[9px] text-zinc-600 uppercase tracking-widest font-bold mt-3">
-                                Astro-GPT • 100% NASA Swiss Ephemeris Data
+                            <p className="text-center text-[9px] text-zinc-600 uppercase tracking-widest font-bold mt-2">
+                                Astro-GPT • Swiss Ephemeris Precision
                             </p>
                         </div>
                     </motion.div>
