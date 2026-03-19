@@ -205,9 +205,9 @@ export function generateLifePredictions(chart: any, lang: string) {
     };
 }
 
-// --- Horoscope Transit Engine ---
+// --- Horoscope Transit Engine (internal, superseded) ---
 
-export function generateDailyHoroscope(userSign: string, currentPlanets: any[], lang: string) {
+function _generateDailyHoroscopeOld(userSign: string, currentPlanets: any[], lang: string) {
     const data = INTERPRETATIONS[lang as keyof typeof INTERPRETATIONS] || INTERPRETATIONS.en;
 
     const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
@@ -991,3 +991,64 @@ export const generateAshtakootAnalysis = (
     };
     return textObj[lang as keyof typeof textObj] || textObj.en;
 };
+
+// ─── Daily Horoscope — transit-based, changes every day ───────────────────────
+
+const _SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+function _doy() { const n = new Date(), s = new Date(n.getFullYear(),0,0); return Math.floor((n.getTime()-s.getTime())/864e5); }
+function _pick<T>(a: T[], seed: number): T { return a[Math.abs(seed) % a.length]; }
+
+const _EN = {
+    positive: ["Cosmic currents align in your favour — take bold action on a goal you've hesitated over.","A powerful planetary configuration supports self-expression. Speak your truth and be heard.","Today carries rare auspicious energy. Initiate, connect, and trust your instincts.","Celestial forces amplify your natural magnetism. Relationships and opportunities both flourish.","Inner clarity arrives unexpectedly. A long-standing confusion dissolves today.","The universe lends you extra courage — step outside your comfort zone confidently.","A breakthrough moment may arrive from an unusual direction. Stay open to surprises.","Energy levels are high. Physical and mental stamina support ambitious undertakings.","Your leadership qualities shine today. Others naturally look to you for direction.","Gratitude amplifies abundance. Small wins today set up larger victories tomorrow.","A harmonious planetary link benefits your creative output. Express yourself boldly.","Intuition is sharper than logic today — trust what your gut tells you."],
+    negative: ["Avoid financial commitments under uncertainty. Review any contract twice before signing.","Emotional reactivity peaks briefly — pause before responding in tense conversations.","Minor delays or miscommunications arise. Build extra time into important schedules.","Energy dips mid-day. Prioritise hydration and short breaks to maintain focus.","Resist the urge to overpromise. Under-committing and over-delivering wins respect.","Old anxieties may resurface. Acknowledge them without letting them drive decisions.","Arguments on minor matters can escalate. Choose your battles wisely today.","Distractions dilute productivity. Silence notifications and focus on one task at a time.","A setback in plans is a redirection, not a failure. Adapt flexibly.","Overconfidence could lead to a misstep. Cross-check important information before acting.","Beware of impulsive spending. Wants and needs may feel indistinguishable today.","Travel or commutes may face unexpected delays. Allow extra buffer time."],
+    career: ["Sun illuminates your professional sphere — present ideas boldly, authority figures are receptive.","Emotional intelligence is your work superpower today. Listen more; speak with precision.","Mercury sharpens communications — contracts, proposals and emails carry serious weight.","Mars fuels determination. Tackle the challenging project you've been postponing.","Jupiter expands opportunity. A mentor or unexpected contact opens a significant door.","Analytical work yields breakthroughs today. Research, data and strategy pay dividends.","A bold career move is favoured. Courage to negotiate or propose a new venture is high.","Collaborative efforts outshine solo work today. Involve your team in key decisions.","Leadership tasks flow effortlessly. Your visibility and credibility rise meaningfully.","A delayed result or recognition finally arrives. Your efforts are being noticed.","Focus on long-term strategies rather than short-term firefighting — big-picture thinking wins.","Networking yields surprising results. Reach out to a contact you haven't spoken to recently."],
+    love: ["Venus graces your relationship sector — romantic feelings run deep, express them warmly.","Shared activities with a partner or loved one create lasting memories today.","Singles may encounter someone intriguing in an unexpected social setting.","Open and honest communication resolves a lingering misunderstanding in your relationship.","Your charm and charisma are at their seasonal peak. Make the most of social occasions.","Financial harmony with your partner leads to a productive shared decision.","Old friendships deepen meaningfully. Prioritise the people who truly matter.","Compassion and patience define your most successful relationship interactions today.","A heartfelt gesture — however small — strengthens your closest bond significantly.","Romantic surprises are possible. Keep the evening light and spontaneous.","Family harmony improves. An elder's wisdom proves unexpectedly helpful.","Your emotional availability is a gift today. Be present in conversations."],
+    health: ["Saturn urges disciplined health routines. Rest, hydrate and do not skip exercise.","Detox or intermittent fasting yields excellent results under today's planetary influence.","Outdoor movement — even a short walk — dramatically improves mood and clarity.","Mental wellness requires attention. Meditation or deep breathing offers real relief.","Old health matters resurface for resolution. Consult a professional rather than self-treating.","Pace yourself to prevent burnout. Consistent effort beats sporadic bursts of energy.","Digestive sensitivity is elevated. Opt for lighter, easily digestible meals today.","Sleep quality influences tomorrow's performance. Establish a wind-down routine tonight.","Stress is the root of today's health challenge. Address its source, not just its symptoms.","Your body signals are unusually clear today. Listen to them and rest when needed.","A small lifestyle adjustment — one you've delayed — yields outsized long-term benefits.","Joy is medicine. Schedule something genuinely pleasurable into your afternoon."],
+};
+const _HI = {
+    positive: ["आज ग्रहों की अनुकूल स्थिति आपके पक्ष में है। किसी लक्ष्य पर साहसपूर्वक कदम बढ़ाएं।","आज आत्म-अभिव्यक्ति के लिए शक्तिशाली ग्रह-योग है। अपनी बात खुलकर कहें।","दुर्लभ शुभ ऊर्जा है आज। नई शुरुआत करें और प्रवृत्ति पर भरोसा करें।","आकाशीय शक्तियां आपके आकर्षण को बढ़ाती हैं। सम्बंध और अवसर दोनों फलते हैं।","अंदर से स्पष्टता आती है। एक पुरानी उलझन आज सुलझ जाएगी।","ब्रह्मांड अतिरिक्त साहस देता है — आराम क्षेत्र से बाहर निकलें।","अप्रत्याशित दिशा से सफलता मिल सकती है। बदलावों के लिए खुले रहें।","ऊर्जा का स्तर उच्च है। शारीरिक और मानसिक क्षमता महत्वाकांक्षी कार्यों का समर्थन करती है।","नेतृत्व गुण चमकते हैं आज। लोग स्वाभाविक रूप से आपसे मार्गदर्शन चाहते हैं।","कृतज्ञता से प्रचुरता बढ़ती है। आज की छोटी जीत कल बड़ी उपलब्धि बनती है।","रचनात्मकता के लिए ग्रह-योग अनुकूल है। प्रतिभा को खुलकर व्यक्त करें।","तर्क से अधिक अंतर्ज्ञान काम आता है आज — आंतरिक आवाज़ सुनें।"],
+    negative: ["अनिश्चितता में वित्तीय प्रतिबद्धताओं से बचें। कोई भी अनुबंध दो बार जांचें।","भावनात्मक प्रतिक्रियाशीलता क्षणिक रूप से बढ़ती है — तनावपूर्ण बातचीत में विराम लें।","छोटी देरी या गलतफहमियां हो सकती हैं। महत्वपूर्ण कार्यक्रमों में अतिरिक्त समय रखें।","दोपहर में ऊर्जा कम हो सकती है। पानी पिएं और छोटे ब्रेक लें।","ज़रूरत से ज़्यादा वादा करने से बचें। कम वादा, ज़्यादा प्रदर्शन।","पुरानी चिंताएं फिर उभर सकती हैं। उन्हें स्वीकार करें लेकिन निर्णय पर हावी न होने दें।","छोटी बातों पर विवाद बड़ा रूप ले सकता है। समझदारी से व्यवहार करें।","ध्यान भटकाने से उत्पादकता कम होती है। एक समय में एक काम पर ध्यान दें।","योजनाओं में बाधा पुनर्निर्देशन है, असफलता नहीं। लचीले रहें।","अति-आत्मविश्वास से ग़लती हो सकती है। कार्य करने से पहले जानकारी जांचें।","आवेगी खर्च से बचें। इच्छाएं और ज़रूरतें एक जैसी लग सकती हैं आज।","यात्रा में अप्रत्याशित देरी हो सकती है। अतिरिक्त समय का बफर रखें।"],
+    career: ["सूर्य व्यावसायिक क्षेत्र को रोशन करता है — विचार निडरता से प्रस्तुत करें।","कार्यस्थल पर भावनात्मक बुद्धिमत्ता आज ताकत है। ध्यान से सुनें।","बुध संचार को तीव्र करता है — अनुबंध और प्रस्तुतियां विशेष महत्वपूर्ण हैं।","मंगल दृढ़ता बढ़ाता है। रुके हुए प्रोजेक्ट को आज निपटाएं।","गुरु अवसर का विस्तार करता है। मार्गदर्शक एक महत्वपूर्ण दरवाज़ा खोलता है।","विश्लेषणात्मक कार्य से आज सफलता मिलती है। शोध और रणनीति फलदायी हैं।","करियर में साहसी कदम अनुकूल है। बातचीत का साहस उच्च है।","सहयोगात्मक प्रयास एकल कार्य से बेहतर है आज। टीम को शामिल करें।","नेतृत्व कार्य सहजता से प्रवाहित होते हैं। दृश्यता और विश्वसनीयता बढ़ती है।","विलंबित परिणाम या मान्यता अंततः आती है। प्रयास देखे जा रहे हैं।","दीर्घकालिक रणनीतियों पर ध्यान दें — बड़ी तस्वीर की सोच जीतती है।","नेटवर्किंग आश्चर्यजनक परिणाम देती है। पुराने संपर्क से जुड़ें।"],
+    love: ["शुक्र रिश्ते क्षेत्र को आशीर्वाद देता है — रोमांटिक भावनाएं गहरी होती हैं।","साथी के साथ साझा गतिविधियां आज यादगार पल बनाती हैं।","एकल जातकों को अप्रत्याशित सामाजिक स्थान में कोई रोचक मिल सकता है।","खुला संवाद रिश्ते में पुरानी गलतफहमी सुलझाता है।","आकर्षण मौसमी शिखर पर है। सामाजिक अवसरों का लाभ उठाएं।","साथी के साथ वित्तीय सामंजस्य उत्पादक निर्णय की ओर ले जाता है।","पुरानी दोस्तियां गहरी होती हैं। वास्तव में मायने रखने वाले लोगों को प्राथमिकता दें।","करुणा और धैर्य सफल रिश्ते के अनुभव को परिभाषित करता है आज।","एक छोटा इशारा — निकटतम बंधन को मज़बूत करता है।","रोमांटिक आश्चर्य संभव हैं। शाम को हल्का और सहज रखें।","पारिवारिक सामंजस्य में सुधार होता है। बुजुर्ग की सलाह अप्रत्याशित रूप से सहायक।","भावनात्मक उपलब्धता आज उपहार है। बातचीत में उपस्थित रहें।"],
+    health: ["शनि स्वास्थ्य दिनचर्या में अनुशासन की याद दिलाता है। आराम, पानी और व्यायाम न छोड़ें।","ग्रह प्रभाव में डिटॉक्स या उपवास उत्कृष्ट परिणाम देता है।","बाहरी गतिविधि — छोटी सैर भी — मनोदशा और स्पष्टता में सुधार करती है।","मानसिक स्वास्थ्य पर ध्यान दें। ध्यान या गहरी सांस से राहत मिलती है।","पुरानी स्वास्थ्य समस्याएं उभरती हैं। पेशेवर से परामर्श लें।","जलन से बचने के लिए खुद को गति दें। स्थिर प्रयास बेहतर है।","पाचन संवेदनशीलता बढ़ी है। हल्के, आसानी से पचने वाले भोजन का चुनाव करें।","नींद की गुणवत्ता कल के प्रदर्शन को प्रभावित करती है। शांत दिनचर्या स्थापित करें।","तनाव स्वास्थ्य चुनौती की जड़ है। स्रोत को संबोधित करें।","शरीर के संकेत स्पष्ट हैं आज। सुनें और ज़रूरत पड़ने पर आराम करें।","छोटा जीवनशैली समायोजन — दीर्घकालिक लाभ देता है।","आनंद दवा है। दोपहर में कुछ आनंददायक निर्धारित करें।"],
+};
+
+const _COLORS_EN  = ["Ruby Red","Golden Yellow","Emerald Green","Sapphire Blue","Pearl White","Coral Orange","Violet Purple","Silver Grey","Rose Pink","Deep Teal","Amber","Ivory","Turquoise","Sand Beige","Crimson"];
+const _COLORS_HI  = ["रूबी लाल","सोनेरी पीला","पन्ना हरा","नीलम नीला","मोती सफेद","मूंगा नारंगी","बैंगनी","चाँदी ग्रे","गुलाबी","गहरा नीला","एम्बर","हाथीदांत","फ़िरोज़ा","सैंड बेज","गहरा लाल"];
+const _COLORS_MR  = ["रुबी लाल","सोनेरी पिवळी","पन्ना हिरवा","नीलम निळा","मोती पांढरा","प्रवाळ नारंगी","जांभळा","चांदी राखाडी","गुलाबी","खोल निळा","अंबर","हस्तिदंती","फिरोजी","वाळू बेज","गडद लाल"];
+
+export function generateDailyHoroscope(sign: string, planets: any[], lang: string) {
+    const si  = _SIGNS.indexOf(sign);
+    const doy = _doy();
+    const moon = planets?.find((p: any) => p.name === "Moon")?.sign || "";
+    const mi   = _SIGNS.indexOf(moon);
+    const seed = doy * 37 + si * 13 + (mi >= 0 ? mi * 7 : 0);
+
+    const P = lang === 'hi' ? _HI : _EN; // mr falls back to en for now
+
+    const sunS  = planets?.find((p: any) => p.name === "Sun")?.sign || "";
+    const moonS = moon;
+    const mercS = planets?.find((p: any) => p.name === "Mercury")?.sign || "";
+    const parts = [sunS && `☀ ${sunS}`, moonS && `☽ ${moonS}`, mercS && `☿ ${mercS}`].filter(Boolean);
+    const transitInfo = parts.join(" · ") || `${sign} Daily`;
+
+    const colorArr = lang === 'hi' ? _COLORS_HI : lang === 'mr' ? _COLORS_MR : _COLORS_EN;
+
+    const lMap: any = {
+        en: { career:"Career", love:"Love & Relations", health:"Health", positive:"✨ Positive", negative:"⚠ Challenges", color:"Lucky Color", number:"Lucky No." },
+        hi: { career:"करियर", love:"प्रेम और संबंध", health:"स्वास्थ्य", positive:"✨ शुभ", negative:"⚠ चुनौतियां", color:"शुभ रंग", number:"शुभ अंक" },
+        mr: { career:"करिअर", love:"प्रेम आणि नाते", health:"आरोग्य", positive:"✨ शुभ", negative:"⚠ आव्हाने", color:"शुभ रंग", number:"शुभ अंक" },
+    };
+
+    return {
+        positive:     _pick(P.positive, seed),
+        negative:     _pick(P.negative, seed + 11),
+        career:       _pick(P.career,   seed + 23),
+        love:         _pick(P.love,     seed + 37),
+        health:       _pick(P.health,   seed + 53),
+        luckyNumber:  (seed % 9) + 1,
+        luckyColor:   _pick(colorArr, seed + 71),
+        transitInfo,
+        labels: lMap[lang] || lMap.en,
+    };
+}
