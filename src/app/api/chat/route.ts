@@ -53,6 +53,7 @@ ${contextData ? "Birth details available — you may proceed directly with astro
 
         // Force direct read from process.env to avoid Edge caching issues
         const apiKey = process.env.GEMINI_API_KEY || "";
+        console.log("DEBUG: Astro-GPT API Key present:", !!apiKey, "Length:", apiKey.length);
 
         if (!apiKey) {
             // Simulated response mode (if API key is missing)
@@ -87,13 +88,13 @@ ${contextData ? "Birth details available — you may proceed directly with astro
         }));
 
         const responseStream = await ai.models.generateContentStream({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: [
                 ...history,
                 { role: 'user', parts: [{ text: latestMessage }] }
             ],
             config: {
-                systemInstruction: systemInstruction,
+                systemInstruction: { parts: [{ text: systemInstruction }] }
             }
         });
 

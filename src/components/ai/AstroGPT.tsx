@@ -113,7 +113,10 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                 })
             });
 
-            if (!response.ok) throw new Error("Failed to connect to the cosmos.");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || "Failed to connect to the cosmos.");
+            }
             if (!response.body) throw new Error("No readable stream.");
 
             const reader = response.body.getReader();
