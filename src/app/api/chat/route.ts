@@ -88,14 +88,13 @@ ${contextData ? "Birth details available — you may proceed directly with astro
         }));
 
         const responseStream = await ai.models.generateContentStream({
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-flash-8b",
             contents: [
+                { role: 'user', parts: [{ text: `System Instructions (Follow strictly): ${systemInstruction}` }] },
+                { role: 'model', parts: [{ text: "Understood. I will strictly follow these Vedic astrology guidelines and act as your specialized AI assistant." }] },
                 ...history,
                 { role: 'user', parts: [{ text: latestMessage }] }
-            ],
-            config: {
-                systemInstruction: { parts: [{ text: systemInstruction }] }
-            }
+            ]
         });
 
         // Convert the async iterable to a ReadableStream
