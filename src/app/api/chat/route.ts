@@ -59,8 +59,8 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             history.shift();
         }
 
-        // Use stable models/gemini-1.5-flash-8b in v1beta for better system instruction support
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
+        // Use stable models/gemini-1.5-flash-8b in v1
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         const response = await fetch(apiUrl, {
             method: 'POST',
