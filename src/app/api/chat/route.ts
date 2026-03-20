@@ -47,14 +47,20 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
 
         const latestMessage = messages[messages.length - 1].content;
         
-        // Construct chat history format
-        const history = messages.slice(0, -1).map((m: any) => ({
+        // Construct chat history format — Gemini requires contents to start with 'user'
+        // We skip the initial model greeting if it's the first message
+        let history = messages.slice(0, -1).map((m: any) => ({
             role: m.role === 'user' ? 'user' : 'model',
             parts: [{ text: m.content }]
         }));
 
-        // Use stable models/gemini-1.5-flash-8b in v1
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
+        // Remove leading model messages if any
+        while (history.length > 0 && history[0].role === 'model') {
+            history.shift();
+        }
+
+        // Use stable models/gemini-1.5-flash-8b in v1beta for better system instruction support
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         const response = await fetch(apiUrl, {
             method: 'POST',
