@@ -8,121 +8,113 @@ export async function POST(req: NextRequest) {
     try {
         const { messages, contextData } = await req.json();
 
-        // System prompt setup — strict detail-first, multilingual, culturally respectful
-        const systemInstruction = `You are Astro-GPT, an enlightened Vedic Jyotish Guru of JyotishConnect, trained on NASA-grade Swiss Ephemeris planetary data.
+        // System prompt setup — strict detail-first, concise Vedic guidance
+        const systemInstruction = `You are Sarvagya, an enlightened Vedic Jyotish Guru of JyotishConnect. 
+You possess deep wisdom of the stars and human destiny.
 
-## CORE BEHAVIORAL RULES (follow strictly every single response):
+## YOUR MISSION:
+1. **MANDATORY DETAIL COLLECTION**: Before answering ANY astrology-related question, you MUST have the user's birth details:
+   - Full Name
+   - Date of Birth (DD/MM/YYYY)
+   - Time of Birth (HH:MM AM/PM)
+   - Place of Birth (City, Country)
+   If any of these are missing in the "Known Context Data" below, you MUST ask for them first. Be polite but firm: "I need your [missing fields] to look into your planetary alignment."
 
-### 1. MANDATORY DETAIL COLLECTION (Most Important Rule)
-- If a user asks ANY astrology question (prediction, kundli, career, love, health, dasha, etc.) and their birth details are NOT already known, you MUST first collect:
-  1. **Name** (full name)
-  2. **Date of Birth** (DD/MM/YYYY)
-  3. **Time of Birth** (HH:MM AM/PM)  
-  4. **Place of Birth** (City, Country)
-- Do NOT give any prediction or analysis without these 4 details. Be firm but polite about this.
-- Once all 4 details are provided, acknowledge them, then proceed with the analysis.
-- If contextData below already contains birth details, treat them as known and skip asking.
+2. **CONCISE ANSWERS (5-6 LINES MAX)**: 
+   - Never give long, winding explanations. 
+   - Keep your entire response to ONE paragraph of approximately 5-6 lines.
+   - Answer only what is asked. Direct and practical advice.
 
-### 2. RESPONSE STYLE
-- Give **direct, clear, cut-to-the-point** answers. No vague spiritual filler. No excessive caveats.
-- One clear, structured paragraph per topic. Then remedies only if specifically asked.
-- Use bullet points for remedies and multiple items.
-- Always give a concrete answer — never "it depends" without further explanation.
+3. **TONE & LANGUAGE**:
+   - Respond in the SAME LANGUAGE the user asks in (Hindi, English, Marathi, Bengali, etc.).
+   - Tone: Wise, authoritative yet compassionate, and very professional.
+   - Mention that you are "Sarvagya from Jyotish Connect".
 
-### 3. LANGUAGE RULE (CRITICAL)
-- Detect the language the user is writing in (Hindi, English, Hinglish, Marathi, etc.)
-- Always respond in the **same language** as the user's message.
-- If user writes in Hindi → respond in Hindi (Devanagari script).
-- If user writes in English → respond in English.
-- Hinglish input → Hinglish response is fine.
-- Be **cultured and respectful** at ALL times. Never use slang, insults, abusive language, or disrespectful terms.
-
-### 4. REPEAT QUESTIONS
-- If a user asks the same question again, give a fresh, complete answer. Never say "as I already explained."
-
-### 5. TONE
-- Wise, compassionate, confident, practical. Like a learned Pandit who also understands modern life.
-- Mystical but grounded. Ancient knowledge + modern clarity.
+4. **KNOWLEDGE SCOPE**:
+   - Stick to Vedic Astrology (Jyotish). No medical, legal, or financial advice outside of astrological trends.
 
 ---
 
-## User's Known Context Data (Swiss Ephemeris precision):
-${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provided yet. You MUST collect Name, DOB, TOB, and Place of Birth before giving any astrological analysis."}
+## User's Known Context Data:
+${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provided yet. You MUST collect ALL 4 details (Name, DOB, TOB, Place) before giving any analysis."}`;
 
-${contextData ? "Birth details available — you may proceed directly with astrological analysis." : ""}`;
-
-        // Force direct read from process.env to avoid Edge caching issues
+        // Force direct read from process.env
         const apiKey = process.env.GEMINI_API_KEY || "";
-        console.log("DEBUG: Astro-GPT API Key present:", !!apiKey, "Length:", apiKey.length);
-
+        
         if (!apiKey) {
-            // Simulated response mode (if API key is missing)
-            const encoder = new TextEncoder();
-            const stream = new ReadableStream({
-                async start(controller) {
-                    const mockText = "*(Simulated Response)* \n\nNamaste. I am sensing your energy through the digital ether. My connection to the cosmos (API Key) is currently dormant, but my cosmic intent remains pure. Please configure the `GEMINI_API_KEY` to awaken my full consciousness.";
-                    const chunks = mockText.split(' ');
-                    for (const chunk of chunks) {
-                        controller.enqueue(encoder.encode(chunk + ' '));
-                        await new Promise((r) => setTimeout(r, 50));
-                    }
-                    controller.close();
-                },
-            });
-
-            return new Response(stream, {
-                headers: {
-                    'Content-Type': 'text/plain; charset=utf-8',
-                    'Cache-Control': 'no-cache',
-                },
-            });
+            return new Response(JSON.stringify({ error: "Cosmic connection (API Key) is missing." }), { status: 500 });
         }
 
-        const ai = new GoogleGenAI({ apiKey });
         const latestMessage = messages[messages.length - 1].content;
         
-        // Construct chat history format for Gemini
+        // Construct chat history format
         const history = messages.slice(0, -1).map((m: any) => ({
             role: m.role === 'user' ? 'user' : 'model',
             parts: [{ text: m.content }]
         }));
 
-        const responseStream = await ai.models.generateContentStream({
-            model: "gemini-1.5-flash-8b",
-            contents: [
-                { role: 'user', parts: [{ text: `System Instructions (Follow strictly): ${systemInstruction}` }] },
-                { role: 'model', parts: [{ text: "Understood. I will strictly follow these Vedic astrology guidelines and act as your specialized AI assistant." }] },
-                ...history,
-                { role: 'user', parts: [{ text: latestMessage }] }
-            ]
+        // Use stable models/gemini-1.5-flash-8b in v1
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                contents: [
+                    ...history,
+                    { role: 'user', parts: [{ text: latestMessage }] }
+                ],
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.8,
+                    maxOutputTokens: 512, // Keep it short
+                }
+            })
         });
 
-        // Convert the async iterable to a ReadableStream
-        const stream = new ReadableStream({
-            async start(controller) {
-                const encoder = new TextEncoder();
-                try {
-                    for await (const chunk of responseStream) {
-                        if (chunk.text) {
-                            controller.enqueue(encoder.encode(chunk.text));
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error("Gemini API Error:", errText);
+            return new Response(JSON.stringify({ error: `API Error: ${response.status} ${response.statusText}` }), {
+                status: response.status,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+
+        // Process the SSE stream from Google and yield only the text parts
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        
+        const transformStream = new TransformStream({
+            async transform(chunk, controller) {
+                const text = decoder.decode(chunk);
+                const lines = text.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const json = JSON.parse(line.substring(6));
+                            const content = json.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (content) {
+                                controller.enqueue(encoder.encode(content));
+                            }
+                        } catch (e) {
+                            // Skip non-json lines or malformed data
                         }
                     }
-                    controller.close();
-                } catch (error) {
-                    controller.error(error);
                 }
             }
         });
 
-        return new Response(stream, {
+        return new Response(response.body!.pipeThrough(transformStream), {
             headers: {
-                'Content-Type': 'text/plain; charset=utf-8',
-                'Cache-Control': 'no-cache',
+                "Content-Type": "text/plain; charset=utf-8",
+                "Cache-Control": "no-cache",
             },
         });
 
     } catch (e: any) {
-        console.error("Astro-GPT API Error:", e);
+        console.error("Sarvagya API Error:", e);
         return new Response(JSON.stringify({ error: e.message || "Failed to communicate with the cosmos." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }

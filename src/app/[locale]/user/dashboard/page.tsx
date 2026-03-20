@@ -13,7 +13,7 @@ import { getUserBookings } from "@/services/firestore";
 import { TransactionHistory } from "@/components/profile/TransactionHistory";
 import { WalletRechargeModal } from "@/components/payment/WalletRechargeModal";
 import { toast } from "react-hot-toast";
-import { AstroGPT } from "@/components/ai/AstroGPT";
+import { Sarvagya } from "@/components/ai/Sarvagya";
 import { AstroPassport } from "@/components/ai/AstroPassport";
 
 export default function UserDashboard() {
@@ -307,7 +307,7 @@ export default function UserDashboard() {
                 currentBalance={userData?.walletBalance || 0}
             />
 
-            <AstroGPT userData={userData} />
+            <Sarvagya userData={userData} />
 
             <Footer />
         </main >

@@ -3,44 +3,55 @@ import Link from "next/link";
 import { Sparkles, Video, ShieldCheck, Languages } from "lucide-react";
 
 const PLANETS = [
-    { name: "Sun",     symbol: "☀", color: "#FCD34D", size: 14, orbit: 90,  speed: 50,  startDeg: 0   },
-    { name: "Moon",    symbol: "☽", color: "#E2E8F0", size: 8,  orbit: 120, speed: 20,  startDeg: 40  },
-    { name: "Mars",    symbol: "♂", color: "#F87171", size: 9,  orbit: 155, speed: 38,  startDeg: 140 },
-    { name: "Mercury", symbol: "☿", color: "#A78BFA", size: 7,  orbit: 185, speed: 15,  startDeg: 220 },
-    { name: "Jupiter", symbol: "♃", color: "#FDBA74", size: 13, orbit: 220, speed: 75,  startDeg: 70  },
-    { name: "Venus",   symbol: "♀", color: "#F9A8D4", size: 9,  orbit: 255, speed: 30,  startDeg: 310 },
-    { name: "Saturn",  symbol: "♄", color: "#86EFAC", size: 11, orbit: 292, speed: 110, startDeg: 170 },
-    { name: "Rahu",    symbol: "☊", color: "#94A3B8", size: 6,  orbit: 65,  speed: 65,  startDeg: 260 },
-    { name: "Ketu",    symbol: "☋", color: "#CBD5E1", size: 6,  orbit: 330, speed: 140, startDeg: 80  },
+    { name: "Mercury", symbol: "☿", color: "#A78BFA", size: 6,  orbit: 100, speed: 15,  startDeg: 220 },
+    { name: "Venus",   symbol: "♀", color: "#F9A8D4", size: 8,  orbit: 135, speed: 30,  startDeg: 310 },
+    { name: "Moon",    symbol: "☽", color: "#E2E8F0", size: 7,  orbit: 170, speed: 20,  startDeg: 40  },
+    { name: "Mars",    symbol: "♂", color: "#F87171", size: 9,  orbit: 210, speed: 38,  startDeg: 140 },
+    { name: "Jupiter", symbol: "♃", color: "#FDBA74", size: 14, orbit: 260, speed: 75,  startDeg: 70  },
+    { name: "Saturn",  symbol: "♄", color: "#86EFAC", size: 12, orbit: 320, speed: 110, startDeg: 170 },
+    { name: "Rahu",    symbol: "☊", color: "#94A3B8", size: 5,  orbit: 370, speed: 65,  startDeg: 260 },
+    { name: "Ketu",    symbol: "☋", color: "#CBD5E1", size: 5,  orbit: 430, speed: 140, startDeg: 80  },
 ];
 
 export function Hero() {
     return (
-        <section className="relative py-12 md:py-20 min-h-[85vh] flex items-center overflow-hidden bg-transparent">
+        <section className="relative py-12 md:py-20 min-h-[90vh] flex items-center overflow-hidden bg-transparent">
 
             {/* ── Cosmic Background Layer ── */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
 
                 {/* Starfield dots via SVG */}
                 <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                    {[...Array(60)].map((_, i) => (
+                    {[...Array(80)].map((_, i) => (
                         <circle
                             key={i}
-                            cx={`${(i * 17 + 5) % 100}%`}
-                            cy={`${(i * 23 + 7) % 100}%`}
-                            r={i % 4 === 0 ? "1.2" : "0.6"}
+                            cx={`${(i * 13 + 3) % 100}%`}
+                            cy={`${(i * 19 + 5) % 100}%`}
+                            r={i % 5 === 0 ? "1.5" : "0.7"}
                             fill="white"
-                            opacity={0.2 + (i % 5) * 0.1}
+                            opacity={0.15 + (i % 6) * 0.1}
+                            className={i % 4 === 0 ? "animate-pulse" : ""}
                         />
                     ))}
                 </svg>
 
-                {/* Central nebula glows */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-indigo-600/10 blur-[80px]" style={{ animation: 'pulse 6s ease-in-out infinite' }} />
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-orange-500/8 blur-[60px]" style={{ animation: 'pulse 4s ease-in-out infinite 2s' }} />
-
                 {/* Planet orbit system — centered in viewport */}
                 <div className="absolute left-1/2 top-1/2" style={{ width: 0, height: 0 }}>
+                    
+                    {/* Central Sun */}
+                    <div 
+                        className="absolute rounded-full z-20"
+                        style={{
+                            width: 60,
+                            height: 60,
+                            top: -30,
+                            left: -30,
+                            background: 'radial-gradient(circle, #FCD34D 0%, #F59E0B 70%, transparent 100%)',
+                            boxShadow: '0 0 80px #F59E0B, 0 0 120px rgba(245,158,11,0.3)',
+                        }}
+                    >
+                        <div className="absolute inset-0 animate-pulse opacity-50 bg-[#FBBF24] rounded-full blur-xl" />
+                    </div>
 
                     {/* Orbit ring circles */}
                     {PLANETS.map((p) => (
@@ -52,8 +63,8 @@ export function Hero() {
                                 height: p.orbit * 2,
                                 top: -p.orbit,
                                 left: -p.orbit,
-                                borderColor: 'rgba(255,255,255,0.04)',
-                                borderStyle: 'dashed',
+                                borderColor: 'rgba(255,158,11,0.06)',
+                                borderStyle: 'solid',
                                 borderWidth: 1,
                             }}
                         />
@@ -82,16 +93,13 @@ export function Hero() {
                                     background: p.color,
                                     top: -p.orbit - p.size / 2,
                                     left: -p.size / 2,
-                                    boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
-                                    opacity: 0.85,
+                                    boxShadow: `0 0 ${p.size * 3}px ${p.color}`,
+                                    opacity: 0.9,
                                 }}
                             />
                         </div>
                     ))}
                 </div>
-
-                {/* Slow outer ring */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/5" style={{ width: 700, height: 700, animation: 'spin 120s linear infinite' }} />
 
                 {/* Inject keyframes via style tag */}
                 <style>{`
@@ -162,7 +170,7 @@ export function Hero() {
                                 <div className="w-12 h-12 rounded-2xl glass-accent flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                     <Sparkles className="w-6 h-6 text-accent" />
                                 </div>
-                                <h3 className="font-black text-lg text-white mb-1">Astro-GPT AI</h3>
+                                <h3 className="font-black text-lg text-white mb-1">Sarvagya (AI)</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed">Context-aware algorithmic insights</p>
                             </div>
                         </div>
@@ -173,7 +181,7 @@ export function Hero() {
                             { icon: Video, label: 'Video', cls: 'glass-accent', color: 'text-accent' },
                             { icon: ShieldCheck, label: 'Verified', cls: 'glass-orange', color: 'text-primary' },
                             { icon: Languages, label: 'Languages', cls: 'glass-orange', color: 'text-primary' },
-                            { icon: Sparkles, label: 'Astro-AI', cls: 'glass-accent', color: 'text-accent' },
+                            { icon: Sparkles, label: 'Sarvagya AI', cls: 'glass-accent', color: 'text-accent' },
                         ].map(({ icon: Icon, label, cls, color }) => (
                             <div key={label} className="glass p-4 rounded-2xl flex flex-col items-center gap-2 border border-white/5">
                                 <div className={`w-10 h-10 rounded-xl ${cls} flex items-center justify-center`}>

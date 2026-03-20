@@ -33,6 +33,9 @@ export default function KundliPage() {
     const [chart, setChart] = useState<any>(null);
     const [activeTab, setActiveTab] = useState("charts");
     const lagnaChartRef = useRef<HTMLDivElement>(null);
+    const d9ChartRef = useRef<HTMLDivElement>(null);
+    const moonChartRef = useRef<HTMLDivElement>(null);
+    const d10ChartRef = useRef<HTMLDivElement>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,7 +67,7 @@ export default function KundliPage() {
             if (!response.ok) throw new Error("API failure");
             const fullData = await response.json();
 
-            const trans = getTrans(locale);
+            const trans: any = getTrans(locale);
 
             const ascPlanet = fullData.planets.find((p: any) => p.name === "Asc");
             const moonPlanet = fullData.planets.find((p: any) => p.name === "Moon");
@@ -78,8 +81,8 @@ export default function KundliPage() {
                 moonSign: moonPlanet?.sign || "Aries",
                 moonLongitude: moonPlanet?.longitude ?? 0,
                 sunSign: sunPlanet?.sign || "Pisces",
-                nakshatra: moonPlanet?.nakshatraId
-                    ? trans.nakshatras[moonPlanet.nakshatraId - 1]
+                nakshatra: moonPlanet?.nakshatraId 
+                    ? trans.nakshatras[moonPlanet.nakshatraId - 1] 
                     : "Unknown",
                 predictions: null
             };
@@ -109,23 +112,36 @@ export default function KundliPage() {
         if (!chart) return;
 
         // === Helper: Capture SVG chart element to PNG base64 ===
-        const captureChartImage = async (): Promise<string | null> => {
+        const captureChartImage = async (ref: React.RefObject<HTMLDivElement | null>): Promise<string | null> => {
             try {
-                const svgEl = lagnaChartRef.current?.querySelector('svg');
+                const svgEl = ref.current?.querySelector('svg');
                 if (!svgEl) return null;
-                const svgData = new XMLSerializer().serializeToString(svgEl);
+                
+                // Clone SVG to modify without affecting UI
+                const clonedSvg = svgEl.cloneNode(true) as SVGSVGElement;
+                clonedSvg.setAttribute('width', '800');
+                clonedSvg.setAttribute('height', '800');
+                
+                // Fix for text visibility in canvas
+                const texts = clonedSvg.querySelectorAll('text');
+                texts.forEach(t => {
+                    t.setAttribute('style', 'font-family: Arial, sans-serif; font-weight: bold;');
+                });
+
+                const svgData = new XMLSerializer().serializeToString(clonedSvg);
                 const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
                 const svgUrl = URL.createObjectURL(svgBlob);
+
                 return await new Promise<string>((resolve, reject) => {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        canvas.width = 600;
-                        canvas.height = 600;
+                        canvas.width = 800;
+                        canvas.height = 800;
                         const ctx = canvas.getContext('2d')!;
-                        ctx.fillStyle = '#0a0a1a';
-                        ctx.fillRect(0, 0, 600, 600);
-                        ctx.drawImage(img, 0, 0, 600, 600);
+                        ctx.fillStyle = '#ffffff'; // Use white background for PDF
+                        ctx.fillRect(0, 0, 800, 800);
+                        ctx.drawImage(img, 0, 0, 800, 800);
                         URL.revokeObjectURL(svgUrl);
                         resolve(canvas.toDataURL('image/png'));
                     };
@@ -140,375 +156,133 @@ export default function KundliPage() {
         };
 
         const doc = new jsPDF();
-        const trans = getTrans(locale);
-        const p = chart.panchang;
-        const kd = kundliData;
+        const trans: any = getTrans(locale);
+        
+        // --- 1. PREPARE ASSETS (Capture all charts) ---
+        const d1Base64 = await captureChartImage(lagnaChartRef);
+        const d9Base64 = await captureChartImage(d9ChartRef);
+        const moonBase64 = await captureChartImage(moonChartRef);
+        const d10Base64 = await captureChartImage(d10ChartRef);
 
-        // Load logo image
-        let logoBase64: string | null = null;
-        try {
-            const logoRes = await fetch('/logo.png');
-            const logoBlob = await logoRes.blob();
-            logoBase64 = await new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(logoBlob);
-            });
-        } catch (e) {
-            console.warn('Could not load logo for PDF:', e);
-        }
+        const l = trans.labels || trans.common;
 
-        // Helper for decorative header
-        const addSectionHeader = (text: string, y: number) => {
-            doc.setFillColor(255, 240, 230); // Light orange bg
-            doc.rect(14, y, 182, 10, "F");
-            doc.setFontSize(14);
-            doc.setTextColor(234, 88, 12); // Orange-600
-            doc.setFont("helvetica", "bold");
-            doc.text(text, 20, y + 7);
-            doc.setDrawColor(234, 88, 12);
-            doc.line(14, y + 10, 196, y + 10);
-            return y + 20;
-        };
-
-        const addPageBorder = () => {
-            doc.setDrawColor(234, 88, 12);
-            doc.setLineWidth(0.5);
-            doc.rect(5, 5, 200, 287);
-            doc.rect(6, 6, 198, 285);
-        };
-
-        // --- PAGE 1: COVER & BIO ---
-        addPageBorder();
-
-        // Logo/Brand — Embed actual logo image
-        if (logoBase64) {
-            try {
-                doc.addImage(logoBase64, 'PNG', 75, 20, 60, 16);
-            } catch (e) {
-                // Fallback if image fails
-                doc.setFillColor(14, 165, 233);
-                doc.roundedRect(85, 25, 40, 12, 3, 3, "F");
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("J", 99, 33);
-            }
-        } else {
-            // Text fallback
-            doc.setFillColor(14, 165, 233);
-            doc.roundedRect(85, 25, 40, 12, 3, 3, "F");
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text("J", 99, 33);
-        }
-
-        // Brand name below logo
-        doc.setTextColor(14, 165, 233);
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text("JyotishConnect", 105, 46, { align: "center" });
-
-        // Decorative line
-        doc.setDrawColor(234, 88, 12);
-        doc.setLineWidth(0.8);
-        doc.line(60, 52, 150, 52);
-
-        doc.setTextColor(234, 88, 12);
+        // --- PAGE 1: COVER ---
+        doc.setFillColor(10, 10, 26);
+        doc.rect(0, 0, 210, 297, 'F');
+        doc.setTextColor(249, 115, 22);
         doc.setFontSize(36);
         doc.setFont("helvetica", "bold");
-        doc.text("Janma Kundli", 105, 72, { align: "center" });
-        doc.setFontSize(14);
-        doc.setTextColor(100);
-        doc.text("Premium Vedic Astrology Report", 105, 82, { align: "center" });
-
-        // User Details Box
-        doc.setDrawColor(200);
-        doc.roundedRect(40, 100, 130, 60, 3, 3);
+        doc.text("Astro-Connect", 105, 80, { align: "center" });
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(20);
-        doc.setTextColor(0);
-        doc.text(formData.name, 105, 115, { align: "center" });
-
-        doc.setFontSize(12);
-        doc.setTextColor(80);
-        const details = [
-            `${locale === 'hi' ? 'Date' : 'DOB'}: ${formData.dob}`,
-            `${locale === 'hi' ? 'Time' : 'TOB'}: ${formData.tob}`,
-            `${locale === 'hi' ? 'Place' : 'Place'}: ${formData.birthplace}`
-        ];
-        details.forEach((line, i) => doc.text(line, 105, 130 + (i * 8), { align: "center" }));
-
-        doc.text("Generated by JyotishConnect", 105, 280, { align: "center" });
-
-        // --- PAGE 2: D1 LAGNA CHART (drawn programmatically) ---
-        doc.addPage();
-        addPageBorder();
-        let chartY = 15;
-        chartY = addSectionHeader(locale === 'hi' ? "लग्न कुण्डली (D1 चार्ट)" : locale === 'mr' ? "लग्न कुंडली (D1 चार्ट)" : "Lagna Kundli — D1 Chart", chartY);
-
-        // ── Draw North Indian Kundli chart using jsPDF lines ──
-        // Based on the EXACT polygon coordinates in LagnaChart.tsx (400×400 system)
-        // Scale to PDF: size=160 units → scale=0.4, origin=(ox,oy)
-        const ox = 25, oy = chartY + 2, cSize = 160;
-        const sc = cSize / 400; // 0.4
-        const cx = (x: number) => ox + x * sc;
-        const cy = (y: number) => oy + y * sc;
-
-        doc.setDrawColor(80, 80, 80);
-        doc.setLineWidth(0.4);
-
-        // Outer square
-        doc.rect(cx(0), cy(0), cSize, cSize);
-
-        // Inner rectangle: (100,100)→(300,100)→(300,300)→(100,300)
-        doc.rect(cx(100), cy(100), cSize * 0.5, cSize * 0.5);
-
-        // Diagonal lines (corner↔inner corners + midpoints↔inner corners)
-        const lines = [
-            [0,0, 100,100], [400,0, 300,100], [0,400, 100,300], [400,400, 300,300],
-            [200,0, 100,100], [200,0, 300,100],
-            [0,200, 100,100], [0,200, 100,300],
-            [400,200, 300,100], [400,200, 300,300],
-            [200,400, 100,300], [200,400, 300,300],
-        ];
-        lines.forEach(([x1,y1,x2,y2]) => doc.line(cx(x1),cy(y1),cx(x2),cy(y2)));
-
-        // ── Place house numbers & planets ──
-        // House center coords (from LagnaChart.tsx cx/cy values):
-        const houseCenters: { h: number; svgX: number; svgY: number }[] = [
-            { h:1,  svgX:200, svgY:100 },
-            { h:2,  svgX:100, svgY:40  },
-            { h:3,  svgX:40,  svgY:100 },
-            { h:4,  svgX:100, svgY:200 },
-            { h:5,  svgX:40,  svgY:300 },
-            { h:6,  svgX:100, svgY:360 },
-            { h:7,  svgX:200, svgY:300 },
-            { h:8,  svgX:300, svgY:360 },
-            { h:9,  svgX:360, svgY:300 },
-            { h:10, svgX:300, svgY:200 },
-            { h:11, svgX:360, svgY:100 },
-            { h:12, svgX:300, svgY:40  },
-        ];
-
-        // Group planets by house
-        const planetsByHouse: Record<number, string[]> = {};
-        chart.planets?.forEach((pl: any) => {
-            const h = pl.house || 1;
-            if (!planetsByHouse[h]) planetsByHouse[h] = [];
-            const name = locale === 'en'
-                ? pl.name.substring(0, 2)
-                : translatePlanet(pl.name, locale).substring(0, 2);
-            planetsByHouse[h].push(name);
-        });
-
-        houseCenters.forEach(({ h, svgX, svgY }) => {
-            const px = cx(svgX);
-            const py = cy(svgY);
-            // House number (small grey)
-            doc.setFontSize(6);
-            doc.setTextColor(160);
-            doc.setFont("helvetica", "normal");
-            doc.text(`${h}`, px, py - 4, { align: "center" });
-            // Planet names
-            const planets = planetsByHouse[h] || [];
-            doc.setFontSize(7);
-            doc.setTextColor(30);
-            doc.setFont("helvetica", "bold");
-            if (h === 1) {
-                // Mark lagna
-                doc.setTextColor(200, 80, 0);
-                doc.text("L", px, py + 1, { align: "center" });
-                doc.setTextColor(30);
-                doc.text(planets.join(" "), px, py + 6, { align: "center" });
-            } else {
-                doc.text(planets.join(" "), px, py + 2, { align: "center" });
-            }
-        });
-
-        // Chart caption
-        doc.setFontSize(8.5);
-        doc.setTextColor(100);
-        doc.setFont("helvetica", "normal");
-        doc.text(
-            `${locale === 'hi' ? 'लग्न' : locale === 'mr' ? 'लग्न' : 'Asc'}: ${translateSign(chart.ascendantSign, locale)}  ·  ` +
-            `${locale === 'hi' ? 'चंद्र' : locale === 'mr' ? 'चंद्र' : 'Moon'}: ${translateSign(chart.moonSign, locale)}  ·  ` +
-            `${locale === 'hi' ? 'सूर्य' : locale === 'mr' ? 'सूर्य' : 'Sun'}: ${translateSign(chart.sunSign, locale)}`,
-            105, oy + cSize + 8, { align: "center" }
-        );
-
-        // Planet color legend (right of chart)
-        const legendX = ox + cSize + 8;
-        doc.setFontSize(7.5);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(60);
-        doc.text(locale === 'hi' ? "ग्रह संक्षेप" : locale === 'mr' ? "ग्रह संक्षेप" : "Planets", legendX, oy + 4);
-        doc.setFont("helvetica", "normal");
-        chart.planets?.forEach((pl: any, i: number) => {
-            const ty = oy + 10 + i * 9;
-            doc.setTextColor(80);
-            doc.text(`${translatePlanet(pl.name, locale)}: ${translateSign(pl.sign, locale)} (H${pl.house || '-'})`, legendX, ty);
-        });
-
-        // --- PAGE 3: PANCHANG & AVAKHADA ---
-        doc.addPage();
-        addPageBorder();
-
-
-        let y = 20;
-        y = addSectionHeader(locale === 'hi' ? "पंचांग और जन्म विवरण" : "Panchang & Birth Details", y);
-
-        autoTable(doc, {
-            startY: y,
-            head: [[locale === 'hi' ? 'विशेषता' : 'Attribute', locale === 'hi' ? 'विवरण' : 'Value']],
-            body: [
-                [locale === 'hi' ? 'तिथि' : 'Tithi', `${trans.panchang.tithi[p.tithiId]} (${p.paksha})`],
-                [locale === 'hi' ? 'योग' : 'Yoga', trans.panchang.yoga[p.yogaId]],
-                [locale === 'hi' ? 'करण' : 'Karana', trans.panchang.karan[p.karanaId]],
-                [locale === 'hi' ? 'नक्षत्र' : 'Nakshatra', chart.nakshatra],
-                [locale === 'hi' ? 'सूर्य राशि' : 'Sun Sign', translateSign(chart.sunSign, locale)],
-                [locale === 'hi' ? 'चंद्र राशि' : 'Moon Sign', translateSign(chart.moonSign, locale)],
-                [locale === 'hi' ? 'अयन' : 'Ayan', 'Uttarayana (Approx)'], // Placeholder
-                [locale === 'hi' ? 'सूर्योदय' : 'Sunrise', p.sunrise]
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [234, 88, 12], textColor: 255 },
-            styles: { fontSize: 11, cellPadding: 4 }
-        });
-
-        // --- PAGE 3: PLANETARY POSITIONS ---
-        doc.addPage();
-        addPageBorder();
-        y = 20;
-        y = addSectionHeader(locale === 'hi' ? "ग्रह स्पष्ट (Planetary Positions)" : "Planetary Positions", y);
-
-        autoTable(doc, {
-            startY: y,
-            head: [[
-                locale === 'hi' ? 'ग्रह' : 'Planet',
-                locale === 'hi' ? 'राशि' : 'Sign',
-                locale === 'hi' ? 'अंश' : 'Degree',
-                locale === 'hi' ? 'नक्षत्र' : 'Nakshatra',
-                locale === 'hi' ? 'भाव' : 'House'
-            ]],
-            body: chart.planets.map((pl: any) => [
-                translatePlanet(pl.name, locale),
-                translateSign(pl.sign, locale),
-                `${Math.floor(pl.longitude % 30)}° ${Math.floor((pl.longitude % 1) * 60)}'`,
-                trans.nakshatras[pl.nakshatraId - 1] || pl.nakshatra,
-                pl.house
-            ]),
-            theme: 'striped',
-            headStyles: { fillColor: [14, 165, 233] }
-        });
-
-        y = (doc as any).lastAutoTable.finalY + 15;
+        doc.text(locale === 'hi' ? "व्यक्तिगत कुंडली रिपोर्ट" : "Premium Kundli Report", 105, 95, { align: "center" });
+        doc.setFontSize(16);
+        doc.text(formData.name || "User", 105, 130, { align: "center" });
         doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text("Note: Positions are calculated using Chitrapaksha (Lahiri) Ayanamsa.", 14, y);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Generated on ${new Date().toLocaleDateString()} · Powered by Astro-Connect AI`, 105, 280, { align: "center" });
 
-        // --- PAGE 4: DOSHA ANALYSIS ---
+        // --- PAGE 2: CHARTS (D1 & D9) ---
         doc.addPage();
-        addPageBorder();
-        y = 20;
-        y = addSectionHeader(locale === 'hi' ? "दोष विश्लेषण" : "Dosha Analysis", y);
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(18);
+        doc.text(locale === 'hi' ? "कुण्डली चार्ट्स (Charts)" : "Kundli Charts", 20, 20);
 
-        const doshaData = [
-            { name: "Manglik", data: chart.doshas.Manglik },
-            { name: "Kaal Sarp", data: chart.doshas.KaalSarp },
-            { name: "Pitra", data: chart.doshas.Pitra },
-            { name: "Sade Sati", data: chart.doshas.SadeSati }
-        ];
-
-        doshaData.forEach((d) => {
-            doc.setFontSize(12);
-            doc.setTextColor(d.data.present ? 220 : 0, d.data.present ? 20 : 100, 60); // Red if present
-            doc.setFont("helvetica", "bold");
-            doc.text(`${d.name}: ${d.data.present ? (locale === 'hi' ? "उपस्थित" : "DETECTED") : (locale === 'hi' ? "अनुपस्थित" : "ABSENT")}`, 20, y);
-            y += 7;
-            doc.setFontSize(10);
-            doc.setTextColor(60);
-            doc.setFont("helvetica", "normal");
-            const descLines = doc.splitTextToSize(d.data.description || "No major affliction detected.", 170);
-            doc.text(descLines, 20, y);
-            y += (descLines.length * 5) + 5;
-
-            // Remedy if present
-            const doshasAny = chart.doshas as any;
-            const doshaDetails = doshasAny[d.name];
-            if (d.data.present && doshaDetails?.remedies) {
-                doc.setTextColor(14, 165, 233);
-                doc.text("Remedy:", 20, y);
-                doc.setTextColor(80);
-                const rems = doshaDetails.remedies;
-                rems.forEach((r: string) => {
-                    y += 5;
-                    doc.text(`• ${r}`, 25, y);
-                });
-                y += 10;
-            }
-            y += 5;
-        });
-
-        // --- PAGE 5: PREDICTIONS ---
-        doc.addPage();
-        addPageBorder();
-        y = 20;
-        y = addSectionHeader(locale === 'hi' ? "जीवन भविष्यफल" : "Life Predictions", y);
-
-        if (chart.predictions) {
-            Object.entries(chart.predictions).forEach(([area, text]) => {
-                const label = (kundliData.labels?.life_predictions as any)?.[area] || area;
-
-                // Check if we need a new page for the header + some text
-                if (y > 260) {
-                    doc.addPage();
-                    addPageBorder();
-                    y = 20;
-                }
-
-                doc.setFontSize(12);
-                doc.setTextColor(234, 88, 12);
-                doc.setFont("helvetica", "bold");
-                doc.text(label, 20, y);
-                y += 8;
-
-                doc.setFontSize(10);
-                doc.setTextColor(60);
-                doc.setFont("helvetica", "normal");
-
-                const lines = doc.splitTextToSize(text as string, 170);
-
-                // Draw lines one by one and handle page breaks
-                lines.forEach((line: string) => {
-                    if (y > 280) {
-                        doc.addPage();
-                        addPageBorder();
-                        y = 20;
-                    }
-                    doc.text(line, 20, y);
-                    y += 6;
-                });
-
-                y += 10; // Extra gap between sections
-            });
+        if (d1Base64) {
+            doc.setFontSize(11);
+            doc.text(locale === 'hi' ? "लग्न कुण्डली (D1)" : "Lagna Chart (D1)", 20, 35);
+            doc.addImage(d1Base64, 'PNG', 20, 40, 80, 80);
+        }
+        if (d9Base64) {
+            doc.setFontSize(11);
+            doc.text(locale === 'hi' ? "नवांश कुण्डली (D9)" : "Navamsa Chart (D9)", 110, 35);
+            doc.addImage(d9Base64, 'PNG', 110, 40, 80, 80);
+        }
+        if (moonBase64) {
+            doc.setFontSize(11);
+            doc.text(locale === 'hi' ? "चन्द्र कुण्डली" : "Moon Chart", 20, 135);
+            doc.addImage(moonBase64, 'PNG', 20, 140, 80, 80);
+        }
+        if (d10Base64) {
+            doc.setFontSize(11);
+            doc.text(locale === 'hi' ? "दशमांश कुण्डली (D10)" : "Dashamsha Chart (D10)", 110, 135);
+            doc.addImage(d10Base64, 'PNG', 110, 140, 80, 80);
         }
 
-        y = addSectionHeader(locale === 'hi' ? "भाग्यशाली रत्न" : "Lucky Gemstones", y);
-        const stones = [
-            [`Sun (${locale === 'hi' ? 'सूर्य' : 'Sun'})`, (kd as any).gemstones?.Sun || "Ruby"],
-            [`Moon (${locale === 'hi' ? 'चंद्र' : 'Moon'})`, (kd as any).gemstones?.Moon || "Pearl"],
-            [`Lagnesh (${translateSign(chart.ascendantSign, locale)})`, "Consult Astrologer"] // Dynamic logic needed for Lagnesh stone
-        ];
-
+        // --- PAGE 3: BIRTH DETAILS & PANCHANG ---
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text(locale === 'hi' ? "जन्म विवरण और पंचांग" : "Birth Details & Panchang", 20, 20);
         autoTable(doc, {
-            startY: y,
-            head: [['Planet', 'Gemstone']],
-            body: stones,
-            theme: 'grid'
+            startY: 30,
+            head: [[locale === 'hi' ? 'विवरण' : 'Attribute', locale === 'hi' ? 'मान' : 'Value']],
+            body: [
+                ['Name', formData.name],
+                ['Date', formData.dob],
+                ['Time', formData.tob],
+                ['Place', formData.birthplace],
+                ['Tithi', chart.panchang.tithi],
+                ['Nakshatra', chart.planets.find((p: any) => p.name === "Moon")?.nakshatra || "N/A"],
+                ['Yoga', chart.panchang.yoga],
+                ['Karan', chart.panchang.karana],
+                ['Sunrise', chart.panchang.sunrise],
+                ['Sunset', chart.panchang.sunset],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [249, 115, 22] }
         });
 
-        doc.save(`${formData.name}_Premium_Kundli.pdf`);
+        // --- PAGE 4: PLANETARY POSITIONS ---
+        doc.addPage();
+        doc.text(locale === 'hi' ? "ग्रह स्थिति (Planets)" : "Planetary Positions", 20, 20);
+        autoTable(doc, {
+            startY: 30,
+            head: [['Planet', 'Sign', 'Degree', 'House', 'Retro']],
+            body: chart.planets.map((p: any) => [
+                translatePlanet(p.name, locale),
+                translateSign(p.sign, locale),
+                `${Math.floor(p.longitude % 30)}° ${Math.round((p.longitude % 1) * 60)}'`,
+                p.house,
+                p.isRetrograde ? 'R' : ''
+            ]),
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+
+        // --- PAGE 5: DOSHA ANALYSIS ---
+        doc.addPage();
+        doc.text(locale === 'hi' ? "दोष विश्लेषण" : "Dosha Analysis", 20, 20);
+        const doshas = Object.entries(chart.doshas).map(([key, value]: [string, any]) => [
+            key,
+            value.present ? "YES" : "NO",
+            value.description
+        ]);
+        autoTable(doc, {
+            startY: 30,
+            head: [['Dosha', 'Active', 'Description']],
+            body: doshas,
+            theme: 'striped',
+            headStyles: { fillColor: [239, 68, 68] },
+            columnStyles: { 2: { cellWidth: 110 } }
+        });
+
+        // --- PAGE 6: LIFE PREDICTIONS ---
+        doc.addPage();
+        doc.text(locale === 'hi' ? "जीवन भविष्यवाणियां" : "Life Predictions", 20, 20);
+        const preds = Object.entries(chart.predictions || {}).map(([key, value]) => [
+            (trans.labels?.life_predictions as any)?.[key] || key,
+            value
+        ]);
+        autoTable(doc, {
+            startY: 30,
+            head: [['Area', 'Analysis']],
+            body: preds,
+            theme: 'plain',
+            headStyles: { fillColor: [139, 92, 246] },
+            columnStyles: { 1: { cellWidth: 140 } }
+        });
+
+        doc.save(`Kundli_Report_${formData.name}.pdf`);
     };
 
     return (
@@ -688,7 +462,7 @@ export default function KundliPage() {
                                                 subTitle="D1 Chart"
                                             />
                                         </div>
-                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
+                                        <div ref={d9ChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-full">D9 Chart</span>
                                                 <h3 className="text-xl font-bold mt-2">Navamsa Chart</h3>
@@ -701,7 +475,7 @@ export default function KundliPage() {
                                                 subTitle="D9 Chart"
                                             />
                                         </div>
-                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
+                                        <div ref={moonChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-blue-100/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full">Moon Chart</span>
                                                 <h3 className="text-xl font-bold mt-2 text-white">Chandra Lagna</h3>
@@ -714,7 +488,7 @@ export default function KundliPage() {
                                                 subTitle="Moon Chart"
                                             />
                                         </div>
-                                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
+                                        <div ref={d10ChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-yellow-100/10 text-yellow-400 text-[10px] font-black uppercase tracking-widest rounded-full">D10 Chart</span>
                                                 <h3 className="text-xl font-bold mt-2 text-white">Dashamsha</h3>

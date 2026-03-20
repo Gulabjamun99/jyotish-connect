@@ -20,11 +20,11 @@ interface BirthDetails {
     place?: string;
 }
 
-interface AstroGPTProps {
+interface SarvagyaProps {
     userData?: any;
 }
 
-export function AstroGPT({ userData }: AstroGPTProps) {
+export function Sarvagya({ userData }: SarvagyaProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [birthDetails, setBirthDetails] = useState<BirthDetails>({});
     const [detailsComplete, setDetailsComplete] = useState(false);
@@ -32,9 +32,9 @@ export function AstroGPT({ userData }: AstroGPTProps) {
     // Build the initial greeting based on whether user data is available
     const getInitialMessage = () => {
         if (userData?.kundliData?.[0]) {
-            return "Namaste! 🙏 Your birth details are already linked. Ask me anything — career, love, health, dasha timings — and I will give you a direct, precise Vedic analysis.";
+            return "Hi, I am **Sarvagya** from Jyotish Connect. I can tell you about your current problems according to Jyotish. Your birth details are already linked. Please ask your question directly.";
         }
-        return "Namaste! 🙏 I am **Astro-GPT**, your personal Vedic Guru.\n\nTo give you accurate cosmic insights, I need your birth details first:\n\n📝 **Name** • 📅 **Date of Birth** • 🕐 **Time of Birth** • 📍 **Place of Birth**\n\nPlease share these, then ask your question — I will give you a direct, clear analysis. No vague answers.";
+        return "Hi, I am **Sarvagya** from Jyotish Connect. I can tell you about your current problems according to Jyotish. \n\nTo help you, please provide your **Name, Date of Birth, Time of Birth, and Birth Place**. This is **mandatory** for any astrological analysis.";
     };
 
     const [messages, setMessages] = useState<Message[]>([
@@ -115,7 +115,7 @@ export function AstroGPT({ userData }: AstroGPTProps) {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || "Failed to connect to the cosmos.");
+                throw new Error(errorData.error || "Failed to communicate with Sarvagya.");
             }
             if (!response.body) throw new Error("No readable stream.");
 
@@ -147,13 +147,13 @@ export function AstroGPT({ userData }: AstroGPTProps) {
     };
 
     const quickPrompts = detailsComplete || userData?.kundliData ? [
-        "Career ka future kya hai?",
-        "When will I get married?",
-        "Koi dosha hai mujhe?",
-        "Best remedies for my chart?"
+        "Career prediction (5 lines)",
+        "Marriage timings?",
+        "Health issues?",
+        "Financial status?"
     ] : [
-        "Mera naam Rahul hai, DOB 15/08/1990, TOB 10:30 AM, Place: Mumbai",
-        "I was born on 20/03/1995 at 6:15 PM in Delhi"
+        "My name is Rahul, 15/08/1990, 10:30 AM, Delhi",
+        "I was born on 20/03/1995 at 6:15 PM in Mumbai"
     ];
 
     const handleReset = () => {
@@ -216,9 +216,9 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                     <Sparkles className="w-5 h-5 text-accent" />
                                 </div>
                                 <div>
-                                    <h2 className="font-black text-white text-lg tracking-tight">Astro-GPT</h2>
+                                    <h2 className="font-black text-white text-lg tracking-tight">Sarvagya</h2>
                                     <p className="text-[10px] text-accent font-bold uppercase tracking-widest flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,1)]" /> Vedic AI Guru Online
+                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(34,197,94,1)]" /> Vedic Guru Online
                                     </p>
                                 </div>
                             </div>
@@ -238,7 +238,7 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                 {detailsComplete ? (
                                     <>
                                         <span className="w-2 h-2 rounded-full bg-green-500" />
-                                        Birth Details Received • Analysis Mode Active
+                                        Details Received • Analysis Active
                                     </>
                                 ) : (
                                     <>
@@ -319,7 +319,7 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                 <Input
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
-                                    placeholder={detailsComplete || userData?.kundliData ? "Ask your cosmic question..." : "Share your Name, DOB, Time & Place of birth..."}
+                                    placeholder={detailsComplete || userData?.kundliData ? "Ask your question (concise)..." : "Share your Name, DOB, Time & Place..."}
                                     className="h-12 bg-zinc-900 border-zinc-800 focus-visible:ring-accent/50 text-white rounded-xl pl-4 pr-12 placeholder:text-zinc-600"
                                     disabled={isLoading}
                                 />
@@ -332,7 +332,7 @@ export function AstroGPT({ userData }: AstroGPTProps) {
                                 </Button>
                             </form>
                             <p className="text-center text-[9px] text-zinc-600 uppercase tracking-widest font-bold mt-2">
-                                Astro-GPT • Swiss Ephemeris Precision
+                                Sarvagya • Vedic Guidance from JyotishConnect
                             </p>
                         </div>
                     </motion.div>

@@ -7,7 +7,7 @@ import { Hero } from "@/components/home/Hero";
 import { FeaturedAstrologers } from "@/components/home/FeaturedAstrologers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { AstroGPT } from "@/components/ai/AstroGPT";
+import { Sarvagya } from "@/components/ai/Sarvagya";
 
 export default function Home() {
   const t = useTranslations("Index");
@@ -54,6 +54,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* AI Assistant FAB */}
+      <Sarvagya />
+
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 backdrop-blur-3xl -z-10" />
@@ -71,8 +74,6 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-      <AstroGPT />
 
       <Footer />
     </main>
