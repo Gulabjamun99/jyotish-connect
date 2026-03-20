@@ -70,7 +70,10 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         }
 
         // 4. Final safety check: if last message is from user, extract it and leave rest in history
-        const latestMessage = history.pop(); // This is the last user message
+        const latestMessage = history.pop();
+        if (!latestMessage) {
+            return new Response(JSON.stringify({ error: "No user message found to process." }), { status: 400 });
+        }
         
         // Double check roles alternate after pop. If empty, it's fine. 
         // If not empty, ensures and alternates.
@@ -83,15 +86,15 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             }
         }
 
-        // Use stable models/gemini-1.5-flash-8b in v1
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
+        // Use standard models/gemini-1.5-flash in v1 for maximum compatibility
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         // v1 does NOT support "systemInstruction" field. 
         // We must prepend it to the first user message.
         const firstMessage = cleanHistory.length > 0 ? cleanHistory[0] : latestMessage;
-        const originalText = firstMessage.parts[0].text;
         
         // Inject system prompt into the first user message
+        const originalText = firstMessage.parts[0]?.text || "";
         const combinedFirstMessageText = `[SYSTEM INSTRUCTION: ${systemInstruction}]\n\nUser Question: ${originalText}`;
         
         // Update the first message in our payload
