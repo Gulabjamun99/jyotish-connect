@@ -8,6 +8,10 @@ export async function POST(req: NextRequest) {
     try {
         const { messages, contextData } = await req.json();
 
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            return new Response(JSON.stringify({ error: "No messages provided." }), { status: 400 });
+        }
+
         // System prompt setup — strict detail-first, concise Vedic guidance
         const systemInstruction = `You are Sarvagya, an enlightened Vedic Jyotish Guru of JyotishConnect. 
 You possess deep wisdom of the stars and human destiny.
@@ -40,49 +44,79 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
 
         // Force direct read from process.env
         const apiKey = process.env.GEMINI_API_KEY || "";
-        
         if (!apiKey) {
+            console.error("CRITICAL: GEMINI_API_KEY is missing in process.env");
             return new Response(JSON.stringify({ error: "Cosmic connection (API Key) is missing." }), { status: 500 });
         }
 
-        const latestMessage = messages[messages.length - 1].content;
+        // Construct chat history format — Gemini requires contents to start with 'user' and alternate roles
+        // 1. Filter out empty or invalid messages
+        const validMessages = messages.filter(m => m && typeof m.content === 'string' && m.content.trim().length > 0);
         
-        // Construct chat history format — Gemini requires contents to start with 'user'
-        // We skip the initial model greeting if it's the first message
-        let history = messages.slice(0, -1).map((m: any) => ({
+        // 2. Map to Gemini format
+        let history = validMessages.map((m: any) => ({
             role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }]
+            parts: [{ text: m.content.trim() }]
         }));
 
-        // Remove leading model messages if any
+        // 3. Ensure alternating roles and starting with 'user'
+        // Skip leading model messages
         while (history.length > 0 && history[0].role === 'model') {
             history.shift();
         }
 
-        // Use stable models/gemini-1.5-flash-8b in v1
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
+        if (history.length === 0) {
+            return new Response(JSON.stringify({ error: "No valid user messages found." }), { status: 400 });
+        }
+
+        // 4. Final safety check: if last message is from user, extract it and leave rest in history
+        const latestMessage = history.pop(); // This is the last user message
         
+        // Double check roles alternate after pop. If empty, it's fine. 
+        // If not empty, ensures and alternates.
+        const cleanHistory = [];
+        let nextRole = 'user';
+        for (const msg of history) {
+            if (msg.role === nextRole) {
+                cleanHistory.push(msg);
+                nextRole = nextRole === 'user' ? 'model' : 'user';
+            }
+        }
+
+        // Use standard models/gemini-1.5-flash for maximum stability
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+        
+        const requestBody = {
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            contents: [
+                ...cleanHistory,
+                latestMessage
+            ],
+            generationConfig: {
+                temperature: 0.7,
+                topP: 0.8,
+                maxOutputTokens: 512,
+            }
+        };
+
+        console.log("Gemini Request Body:", JSON.stringify(requestBody, null, 2).substring(0, 500) + "...");
+
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                systemInstruction: { parts: [{ text: systemInstruction }] },
-                contents: [
-                    ...history,
-                    { role: 'user', parts: [{ text: latestMessage }] }
-                ],
-                generationConfig: {
-                    temperature: 0.7,
-                    topP: 0.8,
-                    maxOutputTokens: 512, // Keep it short
-                }
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
             const errText = await response.text();
-            console.error("Gemini API Error:", errText);
-            return new Response(JSON.stringify({ error: `API Error: ${response.status} ${response.statusText}` }), {
+            console.error("Gemini API Error details:", errText);
+            let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+            try {
+                const errJson = JSON.parse(errText);
+                if (errJson.error?.message) errorMessage = errJson.error.message;
+            } catch (e) {}
+            
+            return new Response(JSON.stringify({ error: errorMessage }), {
                 status: response.status,
                 headers: { "Content-Type": "application/json" }
             });
@@ -104,9 +138,7 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
                             if (content) {
                                 controller.enqueue(encoder.encode(content));
                             }
-                        } catch (e) {
-                            // Skip non-json lines or malformed data
-                        }
+                        } catch (e) { }
                     }
                 }
             }
@@ -120,7 +152,7 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         });
 
     } catch (e: any) {
-        console.error("Sarvagya API Error:", e);
+        console.error("Sarvagya Server Side Error:", e);
         return new Response(JSON.stringify({ error: e.message || "Failed to communicate with the cosmos." }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
