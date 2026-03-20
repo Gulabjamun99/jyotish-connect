@@ -86,8 +86,22 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         // Use stable models/gemini-1.5-flash-8b in v1
         const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:streamGenerateContent?alt=sse&key=${apiKey}`;
         
+        // v1 does NOT support "systemInstruction" field. 
+        // We must prepend it to the first user message.
+        const firstMessage = cleanHistory.length > 0 ? cleanHistory[0] : latestMessage;
+        const originalText = firstMessage.parts[0].text;
+        
+        // Inject system prompt into the first user message
+        const combinedFirstMessageText = `[SYSTEM INSTRUCTION: ${systemInstruction}]\n\nUser Question: ${originalText}`;
+        
+        // Update the first message in our payload
+        if (cleanHistory.length > 0) {
+            cleanHistory[0].parts[0].text = combinedFirstMessageText;
+        } else {
+            latestMessage.parts[0].text = combinedFirstMessageText;
+        }
+
         const requestBody = {
-            systemInstruction: { parts: [{ text: systemInstruction }] },
             contents: [
                 ...cleanHistory,
                 latestMessage
@@ -95,11 +109,11 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             generationConfig: {
                 temperature: 0.7,
                 topP: 0.8,
-                maxOutputTokens: 512,
+                maxOutputTokens: 800, // Slightly more for better detail
             }
         };
 
-        console.log("Gemini Request Body:", JSON.stringify(requestBody, null, 2).substring(0, 500) + "...");
+        console.log("Gemini Request Body (v1 Prepended):", JSON.stringify(requestBody, null, 2).substring(0, 500) + "...");
 
         const response = await fetch(apiUrl, {
             method: 'POST',
