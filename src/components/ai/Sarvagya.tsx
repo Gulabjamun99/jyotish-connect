@@ -56,6 +56,13 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         scrollToBottom();
     }, [messages, isLoading]);
 
+    // Handle opening from external events
+    useEffect(() => {
+        const handleOpen = () => setIsOpen(true);
+        window.addEventListener('open-sarvagya', handleOpen);
+        return () => window.removeEventListener('open-sarvagya', handleOpen);
+    }, []);
+
     // Check if user has provided all birth details in conversation
     const extractAndCheckDetails = (allMessages: Message[]) => {
         const conversationText = allMessages.map(m => m.content).join(" ");

@@ -35,22 +35,22 @@ export function Hero() {
                     ))}
                 </svg>
 
-                {/* Planet orbit system — centered in viewport */}
-                <div className="absolute left-1/2 top-1/2" style={{ width: 0, height: 0 }}>
+                {/* Planet orbit system — adjusted for text background */}
+                <div className="absolute left-1/2 lg:left-[25%] top-1/2" style={{ width: 0, height: 0 }}>
                     
-                    {/* Central Sun */}
+                    {/* Central Sun — Now sits behind the text area */}
                     <div 
-                        className="absolute rounded-full z-20"
+                        className="absolute rounded-full z-0 opacity-80"
                         style={{
-                            width: 60,
-                            height: 60,
-                            top: -30,
-                            left: -30,
-                            background: 'radial-gradient(circle, #FCD34D 0%, #F59E0B 70%, transparent 100%)',
-                            boxShadow: '0 0 80px #F59E0B, 0 0 120px rgba(245,158,11,0.3)',
+                            width: 120,
+                            height: 120,
+                            top: -60,
+                            left: -60,
+                            background: 'radial-gradient(circle, #FCD34D 0%, #F59E0B 60%, transparent 100%)',
+                            boxShadow: '0 0 100px #F59E0B, 0 0 150px rgba(245,158,11,0.4)',
                         }}
                     >
-                        <div className="absolute inset-0 animate-pulse opacity-50 bg-[#FBBF24] rounded-full blur-xl" />
+                        <div className="absolute inset-0 animate-pulse opacity-40 bg-[#FBBF24] rounded-full blur-2xl" />
                     </div>
 
                     {/* Orbit ring circles */}
@@ -119,7 +119,7 @@ export function Hero() {
                         <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-accent/30 glass-accent text-accent text-[11px] font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0 shadow-[0_0_20px_rgba(217,119,6,0.15)]">
                             <Sparkles className="w-3.5 h-3.5" /> Vedic Cosmic Masters
                         </div>
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.1]">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.1] text-white">
                             Consult India's Best <br />
                             <span className="text-gradient drop-shadow-lg">Verified Guides</span>
                         </h1>
@@ -143,36 +143,67 @@ export function Hero() {
                     <div className="hidden lg:flex flex-col gap-4 relative justify-center items-end">
                         <div className="absolute top-1/2 right-0 -translate-y-1/2 w-64 h-64 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
                         {[
-                            { icon: Video, title: 'Face-to-Face', desc: 'Private video sessions', cls: 'glass-accent', color: 'text-accent', delay: '0s' },
+                            { icon: Video, title: 'Face-to-Face', desc: 'Private video sessions', cls: 'glass-accent', color: 'text-accent', delay: '0s', href: '/search' },
                             { icon: ShieldCheck, title: 'Vedic Verified', desc: 'Secure background checks', cls: 'glass-orange', color: 'text-primary', delay: '0.4s' },
                             { icon: Languages, title: 'Multilingual', desc: 'Connect in 8+ languages', cls: 'glass-orange', color: 'text-primary', delay: '0.2s' },
-                            { icon: Sparkles, title: 'Sarvagya (AI)', desc: 'Algorithmic insights', cls: 'glass-accent', color: 'text-accent', delay: '0.6s' },
+                            { icon: Sparkles, title: 'Sarvagya (AI)', desc: 'Algorithmic insights', cls: 'glass-accent', color: 'text-accent', delay: '0.6s', trigger: 'open-sarvagya' },
                         ].map((f) => (
-                            <div key={f.title} style={{ animationDelay: f.delay }} className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4">
-                                <div className={`w-10 h-10 shrink-0 rounded-xl ${f.cls} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                    <f.icon className={`w-5 h-5 ${f.color}`} />
-                                </div>
-                                <div className="min-w-0">
-                                    <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">{f.title}</h3>
-                                    <p className="text-[10px] text-muted-foreground leading-tight truncate">{f.desc}</p>
-                                </div>
-                            </div>
+                            f.trigger ? (
+                                <button 
+                                    key={f.title} 
+                                    onClick={() => window.dispatchEvent(new CustomEvent(f.trigger!))}
+                                    style={{ animationDelay: f.delay }} 
+                                    className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4 text-left"
+                                >
+                                    <div className={`w-10 h-10 shrink-0 rounded-xl ${f.cls} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                        <f.icon className={`w-5 h-5 ${f.color}`} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">{f.title}</h3>
+                                        <p className="text-[10px] text-muted-foreground leading-tight truncate">{f.desc}</p>
+                                    </div>
+                                </button>
+                            ) : (
+                                <Link 
+                                    key={f.title} 
+                                    href={f.href || '#'} 
+                                    style={{ animationDelay: f.delay }} 
+                                    className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4"
+                                >
+                                    <div className={`w-10 h-10 shrink-0 rounded-xl ${f.cls} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                        <f.icon className={`w-5 h-5 ${f.color}`} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">{f.title}</h3>
+                                        <p className="text-[10px] text-muted-foreground leading-tight truncate">{f.desc}</p>
+                                    </div>
+                                </Link>
+                            )
                         ))}
                     </div>
 
                     <div className="lg:hidden flex flex-wrap justify-center gap-2 pt-6 border-t border-white/5 mt-2">
                         {[
-                            { icon: Video, label: 'Video', cls: 'glass-accent', color: 'text-accent' },
+                            { icon: Video, label: 'Video', cls: 'glass-accent', color: 'text-accent', href: '/search' },
                             { icon: ShieldCheck, label: 'Verified', cls: 'glass-orange', color: 'text-primary' },
                             { icon: Languages, label: 'Languages', cls: 'glass-orange', color: 'text-primary' },
-                            { icon: Sparkles, label: 'AI Guru', cls: 'glass-accent', color: 'text-accent' },
-                        ].map(({ icon: Icon, label, cls, color }) => (
-                            <div key={label} className="glass px-3 py-2 rounded-xl flex items-center gap-2 border border-white/5">
-                                <div className={`w-7 h-7 rounded-lg ${cls} flex items-center justify-center shrink-0`}>
-                                    <Icon className={`w-3.5 h-3.5 ${color}`} />
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-wider text-white">{label}</span>
-                            </div>
+                            { icon: Sparkles, label: 'AI Guru', cls: 'glass-accent', color: 'text-accent', trigger: 'open-sarvagya' },
+                        ].map(({ icon: Icon, label, cls, color, href, trigger }) => (
+                            trigger ? (
+                                <button key={label} onClick={() => window.dispatchEvent(new CustomEvent(trigger))} className="glass px-3 py-2 rounded-xl flex items-center gap-2 border border-white/5">
+                                    <div className={`w-7 h-7 rounded-lg ${cls} flex items-center justify-center shrink-0`}>
+                                        <Icon className={`w-3.5 h-3.5 ${color}`} />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-white">{label}</span>
+                                </button>
+                            ) : (
+                                <Link key={label} href={href || '#'} className="glass px-3 py-2 rounded-xl flex items-center gap-2 border border-white/5">
+                                    <div className={`w-7 h-7 rounded-lg ${cls} flex items-center justify-center shrink-0`}>
+                                        <Icon className={`w-3.5 h-3.5 ${color}`} />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-white">{label}</span>
+                                </Link>
+                            )
                         ))}
                     </div>
                 </div>
