@@ -24,9 +24,9 @@ You possess deep wisdom of the stars and human destiny.
    - Place of Birth (City, Country)
    If any of these are missing in the "Known Context Data" below, you MUST ask for them first. Be polite but firm: "I need your [missing fields] to look into your planetary alignment."
 
-2. **CONCISE ANSWERS (5-6 LINES MAX)**: 
-   - Never give long, winding explanations. 
-   - Keep your entire response to ONE paragraph of approximately 5-6 lines.
+2. **THOROUGH BUT CONCISE ANSWERS**: 
+   - Provide a complete answer to the user's query.
+   - Use simple language. Aim for 1-2 paragraphs (approx 8-10 lines total) so the user gets all important points.
    - Answer only what is asked. Direct and practical advice.
 
 3. **TONE & LANGUAGE**:
@@ -113,7 +113,7 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             generationConfig: {
                 temperature: 0.7,
                 topP: 0.8,
-                maxOutputTokens: 800, // Slightly more for better detail
+                maxOutputTokens: 2048, // Increased for complete answers
             }
         };
 
@@ -143,21 +143,43 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         // Process the SSE stream from Google and yield only the text parts
         const encoder = new TextEncoder();
         const decoder = new TextDecoder();
+        let buffer = ""; // Buffer to handle partial lines across chunks
         
         const transformStream = new TransformStream({
             async transform(chunk, controller) {
-                const text = decoder.decode(chunk);
-                const lines = text.split('\n');
+                buffer += decoder.decode(chunk, { stream: true });
+                const lines = buffer.split('\n');
+                
+                // Keep the last partial line in the buffer
+                buffer = lines.pop() || "";
+                
                 for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const json = JSON.parse(line.substring(6));
-                            const content = json.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (content) {
-                                controller.enqueue(encoder.encode(content));
-                            }
-                        } catch (e) { }
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+                    
+                    try {
+                        const json = JSON.parse(trimmedLine.substring(6));
+                        // Support both standard and candidate-based formats
+                        const content = json.candidates?.[0]?.content?.parts?.[0]?.text || 
+                                      json.content?.parts?.[0]?.text;
+                        
+                        if (content) {
+                            controller.enqueue(encoder.encode(content));
+                        }
+                    } catch (e) {
+                        // Skip malformed JSON lines
                     }
+                }
+            },
+            flush(controller) {
+                // Handle any remaining text in the buffer
+                if (buffer.startsWith('data: ')) {
+                    try {
+                        const json = JSON.parse(buffer.substring(6));
+                        const content = json.candidates?.[0]?.content?.parts?.[0]?.text || 
+                                      json.content?.parts?.[0]?.text;
+                        if (content) controller.enqueue(encoder.encode(content));
+                    } catch (e) {}
                 }
             }
         });
@@ -166,6 +188,7 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             headers: {
                 "Content-Type": "text/plain; charset=utf-8",
                 "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
             },
         });
 
