@@ -86,8 +86,8 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             }
         }
 
-        // Use standard models/gemini-1.5-flash in v1 for maximum compatibility
-        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+        // Use gemini-1.5-flash-latest as per user suggestion for better compatibility
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         // v1 does NOT support "systemInstruction" field. 
         // We must prepend it to the first user message.
