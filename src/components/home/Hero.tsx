@@ -36,21 +36,21 @@ export function Hero() {
                 </svg>
 
                 {/* Planet orbit system — adjusted for text background */}
-                <div className="absolute left-1/2 lg:left-[25%] top-1/2" style={{ width: 0, height: 0 }}>
+                <div className="absolute left-1/2 lg:left-[15%] top-1/2" style={{ width: 0, height: 0 }}>
                     
-                    {/* Central Sun — Now sits behind the text area */}
+                    {/* Central Sun — Now sits behind the text area, much subtler */}
                     <div 
-                        className="absolute rounded-full z-0 opacity-80"
+                        className="absolute rounded-full z-0 opacity-40 group-hover:opacity-60 transition-opacity duration-1000"
                         style={{
-                            width: 120,
-                            height: 120,
-                            top: -60,
-                            left: -60,
-                            background: 'radial-gradient(circle, #FCD34D 0%, #F59E0B 60%, transparent 100%)',
-                            boxShadow: '0 0 100px #F59E0B, 0 0 150px rgba(245,158,11,0.4)',
+                            width: 140,
+                            height: 140,
+                            top: -70,
+                            left: -70,
+                            background: 'radial-gradient(circle, #FCD34D 0%, #F59E0B 70%, transparent 100%)',
+                            boxShadow: '0 0 100px #F59E0B, 0 0 150px rgba(245,158,11,0.2)',
                         }}
                     >
-                        <div className="absolute inset-0 animate-pulse opacity-40 bg-[#FBBF24] rounded-full blur-2xl" />
+                        <div className="absolute inset-0 animate-pulse opacity-20 bg-[#FBBF24] rounded-full blur-3xl" />
                     </div>
 
                     {/* Orbit ring circles */}
