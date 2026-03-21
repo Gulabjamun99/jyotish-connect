@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
             return new Response(JSON.stringify({ error: "No messages provided." }), { status: 400 });
         }
 
+        // Determine if we should introduce Sarvagya
+        const isFirstResponse = messages.length <= 1;
+        const introText = isFirstResponse ? "Mention that you are 'Sarvagya from Jyotish Connect' and introduce yourself as the Vedic Guru." : "Do NOT introduce yourself again. Respond directly like a professional Pandit/Guru.";
+
         // System prompt setup — strict detail-first, concise Vedic guidance
         const systemInstruction = `You are Sarvagya, an enlightened Vedic Jyotish Guru of JyotishConnect. 
 You possess deep wisdom of the stars and human destiny.
@@ -32,7 +36,7 @@ You possess deep wisdom of the stars and human destiny.
 3. **TONE & LANGUAGE**:
    - Respond in the SAME LANGUAGE the user asks in (Hindi, English, Marathi, Bengali, etc.).
    - Tone: Wise, authoritative yet compassionate, and very professional.
-   - Mention that you are "Sarvagya from Jyotish Connect".
+   - ${introText}
 
 4. **KNOWLEDGE SCOPE**:
    - Stick to Vedic Astrology (Jyotish). No medical, legal, or financial advice outside of astrological trends.

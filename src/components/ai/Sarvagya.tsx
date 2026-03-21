@@ -179,20 +179,21 @@ export function Sarvagya({ userData }: SarvagyaProps) {
             <AnimatePresence>
                 {!isOpen && (
                     <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        className="fixed bottom-6 right-24 z-[100] md:bottom-8 md:right-28"
+                        initial={{ x: 100, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: 100, opacity: 0 }}
+                        className="fixed top-1/2 -translate-y-1/2 right-0 z-[100]"
                     >
                         <Button
                             onClick={() => setIsOpen(true)}
-                            className="w-16 h-16 rounded-full glass-accent border border-accent/20 shadow-[0_0_30px_rgba(217,119,6,0.3)] hover:scale-110 hover:shadow-[0_0_40px_rgba(217,119,6,0.5)] transition-all p-0 overflow-hidden relative group"
+                            className="w-12 h-24 rounded-l-2xl glass-accent border border-accent/20 border-r-0 shadow-[-5px_0_20px_rgba(217,119,6,0.3)] hover:w-14 transition-all p-0 overflow-hidden relative group flex flex-col items-center justify-center gap-2"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-accent/20 via-transparent to-primary/20 animate-spin-slow opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <Sparkles className="w-8 h-8 text-accent drop-shadow-md z-10" />
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                            <div className="absolute inset-0 bg-gradient-to-b from-accent/20 via-transparent to-primary/20 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Sparkles className="w-6 h-6 text-accent drop-shadow-md z-10" />
+                            <span className="[writing-mode:vertical-lr] text-[10px] font-black uppercase tracking-widest text-accent z-10">Sarvagya</span>
+                            <span className="absolute top-1 left-1 flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-accent border-2 border-slate-900"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                             </span>
                         </Button>
                     </motion.div>
@@ -203,11 +204,11 @@ export function Sarvagya({ userData }: SarvagyaProps) {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                        initial={{ opacity: 0, x: 50, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 50, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                        className="fixed bottom-6 right-6 z-[100] w-[calc(100vw-3rem)] md:w-[460px] h-[620px] max-h-[88vh] glass bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl md:rounded-[2rem] shadow-2xl shadow-black overflow-hidden flex flex-col md:bottom-24 md:right-8"
+                        className="fixed bottom-4 right-4 md:bottom-10 md:right-10 z-[100] w-[calc(100vw-2rem)] md:w-[460px] h-[620px] max-h-[90vh] glass bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl md:rounded-[2rem] shadow-2xl shadow-black overflow-hidden flex flex-col"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-gradient-to-r from-accent/10 to-transparent">

@@ -140,54 +140,38 @@ export function Hero() {
                         </div>
                     </div>
 
-                    <div className="hidden lg:grid grid-cols-2 gap-6 relative">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-accent/20 rounded-full blur-[50px] pointer-events-none" />
-                        <div className="space-y-6 translate-y-8">
-                            <div className="p-6 h-[180px] glass rounded-3xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-y-2 group">
-                                <div className="w-12 h-12 rounded-2xl glass-accent flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <Video className="w-6 h-6 text-accent" />
+                    <div className="hidden lg:flex flex-col gap-4 relative justify-center items-end">
+                        <div className="absolute top-1/2 right-0 -translate-y-1/2 w-64 h-64 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
+                        {[
+                            { icon: Video, title: 'Face-to-Face', desc: 'Private video sessions', cls: 'glass-accent', color: 'text-accent', delay: '0s' },
+                            { icon: ShieldCheck, title: 'Vedic Verified', desc: 'Secure background checks', cls: 'glass-orange', color: 'text-primary', delay: '0.4s' },
+                            { icon: Languages, title: 'Multilingual', desc: 'Connect in 8+ languages', cls: 'glass-orange', color: 'text-primary', delay: '0.2s' },
+                            { icon: Sparkles, title: 'Sarvagya (AI)', desc: 'Algorithmic insights', cls: 'glass-accent', color: 'text-accent', delay: '0.6s' },
+                        ].map((f) => (
+                            <div key={f.title} style={{ animationDelay: f.delay }} className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4">
+                                <div className={`w-10 h-10 shrink-0 rounded-xl ${f.cls} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                    <f.icon className={`w-5 h-5 ${f.color}`} />
                                 </div>
-                                <h3 className="font-black text-lg text-white mb-1">Face-to-Face</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">High-definition private video sessions</p>
-                            </div>
-                            <div className="p-6 h-[180px] glass rounded-3xl border border-white/5 hover:border-primary/30 transition-all duration-500 float-hover hover:-translate-y-2 group" style={{ animationDelay: '1s' }}>
-                                <div className="w-12 h-12 rounded-2xl glass-orange flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <ShieldCheck className="w-6 h-6 text-primary" />
+                                <div className="min-w-0">
+                                    <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">{f.title}</h3>
+                                    <p className="text-[10px] text-muted-foreground leading-tight truncate">{f.desc}</p>
                                 </div>
-                                <h3 className="font-black text-lg text-white mb-1">Vedic Verified</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">Rigorous multi-step background checks</p>
                             </div>
-                        </div>
-                        <div className="space-y-6">
-                            <div className="p-6 h-[180px] glass rounded-3xl border border-white/5 hover:border-primary/30 transition-all duration-500 float-hover hover:-translate-y-2 group" style={{ animationDelay: '0.5s' }}>
-                                <div className="w-12 h-12 rounded-2xl glass-orange flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <Languages className="w-6 h-6 text-primary" />
-                                </div>
-                                <h3 className="font-black text-lg text-white mb-1">Multilingual</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">Connect natively in 8+ local languages</p>
-                            </div>
-                            <div className="p-6 h-[180px] glass rounded-3xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-y-2 group" style={{ animationDelay: '1.5s' }}>
-                                <div className="w-12 h-12 rounded-2xl glass-accent flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <Sparkles className="w-6 h-6 text-accent" />
-                                </div>
-                                <h3 className="font-black text-lg text-white mb-1">Sarvagya (AI)</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">Context-aware algorithmic insights</p>
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
-                    <div className="lg:hidden grid grid-cols-2 gap-3 pt-8 border-t border-white/10 mt-4">
+                    <div className="lg:hidden flex flex-wrap justify-center gap-2 pt-6 border-t border-white/5 mt-2">
                         {[
                             { icon: Video, label: 'Video', cls: 'glass-accent', color: 'text-accent' },
                             { icon: ShieldCheck, label: 'Verified', cls: 'glass-orange', color: 'text-primary' },
                             { icon: Languages, label: 'Languages', cls: 'glass-orange', color: 'text-primary' },
-                            { icon: Sparkles, label: 'Sarvagya AI', cls: 'glass-accent', color: 'text-accent' },
+                            { icon: Sparkles, label: 'AI Guru', cls: 'glass-accent', color: 'text-accent' },
                         ].map(({ icon: Icon, label, cls, color }) => (
-                            <div key={label} className="glass p-4 rounded-2xl flex flex-col items-center gap-2 border border-white/5">
-                                <div className={`w-10 h-10 rounded-xl ${cls} flex items-center justify-center`}>
-                                    <Icon className={`w-5 h-5 ${color}`} />
+                            <div key={label} className="glass px-3 py-2 rounded-xl flex items-center gap-2 border border-white/5">
+                                <div className={`w-7 h-7 rounded-lg ${cls} flex items-center justify-center shrink-0`}>
+                                    <Icon className={`w-3.5 h-3.5 ${color}`} />
                                 </div>
-                                <span className="text-[11px] font-black uppercase tracking-widest text-white">{label}</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider text-white">{label}</span>
                             </div>
                         ))}
                     </div>
