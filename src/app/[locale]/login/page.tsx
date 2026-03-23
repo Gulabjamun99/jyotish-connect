@@ -95,8 +95,12 @@ export default function LoginPage() {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await sendEmailVerification(userCredential.user);
-            toast.success("Account created! Verify your email to complete setup.", { duration: 6000 });
-            await handleUserAuth(userCredential.user);
+            toast.success("Account created! Please check your email to verify your account before logging in.", { duration: 8000 });
+            
+            // Immediately sign out to enforce email verification
+            await auth.signOut();
+            setAuthMode("LOGIN");
+            setPassword("");
         } catch (error: any) {
             handleAuthError(error);
         } finally {
