@@ -4,6 +4,12 @@ import { calculateAllDivisions } from "./divisional-charts";
 import { detectYogas } from "./yoga-engine";
 import { generateRemedies } from "./remedy-engine";
 
+export function getZodiacSign(longitude: number): string {
+    const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+    const signId = Math.floor((longitude % 360) / 30);
+    return signs[signId];
+}
+
 export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9734, lng: number = 78.6569, jdSunrise?: number, jdSunset?: number) {
     const sun = planets.find(p => p.name === "Sun");
     const moon = planets.find(p => p.name === "Moon");
