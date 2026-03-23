@@ -4,11 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { auth, db } from "@/lib/firebase";
-import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
+import { 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    RecaptchaVerifier, 
+    signInWithPhoneNumber, 
+    ConfirmationResult,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    sendPasswordResetEmail
+} from "firebase/auth";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { Eye, EyeOff, Mail, Lock, Smartphone, ArrowLeft } from "lucide-react";
 
 declare global {
     interface Window {
@@ -16,11 +27,26 @@ declare global {
     }
 }
 
+type AuthMode = "LOGIN" | "SIGNUP" | "OTP" | "FORGOT_PASSWORD";
+
 export default function LoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirect = searchParams.get("redirect") || "/";
     const [loading, setLoading] = useState(false);
+    
+    const [authMode, setAuthMode] = useState<AuthMode>("LOGIN");
+
+    // Email/Password State
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+
+    // OTP State
+    const [showOtpInput, setShowOtpInput] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [otp, setOtp] = useState("");
+    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
     // Helper to handle offline/flaky connections
     const getDocWithRetry = async (docRef: any, retries = 3): Promise<any> => {
@@ -36,46 +62,103 @@ export default function LoginPage() {
         }
     };
 
-    // OTP State
-    const [showOtpInput, setShowOtpInput] = useState(false);
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [otp, setOtp] = useState("");
-    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-
+    // --- GOOGLE AUTH ---
     const handleGoogleLogin = async () => {
-        // Safe check for mock auth (if env vars missing)
         if (!auth || !auth.app) {
-            console.error("Auth object is invalid/mock.", auth);
             toast.error("Configuration Error: Firebase keys missing. Please redeploy.");
             return;
         }
-
         setLoading(true);
         const provider = new GoogleAuthProvider();
         try {
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            await handleUserAuth(user);
+            await handleUserAuth(result.user);
         } catch (error: any) {
-            console.error("Login error:", error);
             handleAuthError(error);
         } finally {
             setLoading(false);
         }
     };
 
+    // --- EMAIL / PASSWORD AUTH ---
+    const handleEmailSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) {
+            toast.error("Please enter email and password");
+            return;
+        }
+        if (password.length < 6) {
+            toast.error("Password must be at least 6 characters");
+            return;
+        }
+        setLoading(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await sendEmailVerification(userCredential.user);
+            toast.success("Account created! Verify your email to complete setup.", { duration: 6000 });
+            await handleUserAuth(userCredential.user);
+        } catch (error: any) {
+            handleAuthError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEmailSignIn = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) {
+            toast.error("Please enter email and password");
+            return;
+        }
+        setLoading(true);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            if (!userCredential.user.emailVerified) {
+                toast.error("Please verify your email before logging in.");
+                // Optionally: re-send verification email here
+                await sendEmailVerification(userCredential.user);
+                toast.success("Verification email resent.");
+                auth.signOut();
+                setLoading(false);
+                return;
+            }
+            await handleUserAuth(userCredential.user);
+        } catch (error: any) {
+            handleAuthError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePasswordReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) {
+            toast.error("Please enter your email to reset password.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await sendPasswordResetEmail(auth, email);
+            toast.success("Password reset email sent! Check your inbox.");
+            setAuthMode("LOGIN");
+        } catch (error: any) {
+            handleAuthError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- MOBILE OTP AUTH ---
     const setupRecaptcha = () => {
         if (!window.recaptchaVerifier) {
             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'invisible',
-                'callback': () => {
-                    // reCAPTCHA solved
-                }
             });
         }
     };
 
-    const handleSendOtp = async () => {
+    const handleSendOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!phoneNumber || phoneNumber.length < 10) {
             toast.error("Please enter a valid phone number (e.g., +919999999999)");
             return;
@@ -92,62 +175,51 @@ export default function LoginPage() {
             setShowOtpInput(true);
             toast.success("OTP sent to your phone");
         } catch (error: any) {
-            console.error("OTP Error:", error);
-            toast.error(error.message || "Failed to send OTP");
+            handleAuthError(error);
             if (window.recaptchaVerifier) window.recaptchaVerifier.clear();
         } finally {
             setLoading(false);
         }
     };
 
-    const handleVerifyOtp = async () => {
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!otp || !confirmationResult) {
             toast.error("Please enter the OTP");
             return;
         }
         setLoading(true);
         try {
-            console.log("Verifying OTP...");
             const result = await confirmationResult.confirm(otp);
-            const user = result.user;
-            console.log("OTP verified successfully, user:", user.uid);
-            await handleUserAuth(user);
+            await handleUserAuth(result.user);
         } catch (error: any) {
-            console.error("OTP Verification Error:", error);
-            toast.error(error.message || "Invalid OTP. Please try again.");
+            handleAuthError(error);
+        } finally {
             setLoading(false);
         }
     };
 
+    // --- DB SYNC LOGIC ---
     const handleUserAuth = async (user: any) => {
         try {
-            console.log("Checking user auth status for:", user.uid);
-
             let userDoc = null;
             let astroDoc = null;
             let firestoreAvailable = true;
 
-            // Try to check Firestore, but don't fail if offline
             try {
                 userDoc = await getDocWithRetry(doc(db, "users", user.uid));
                 astroDoc = await getDocWithRetry(doc(db, "astrologers", user.uid));
             } catch (firestoreError: any) {
-                console.warn("Firestore unavailable, proceeding without user check:", firestoreError.message);
                 firestoreAvailable = false;
                 toast("Firestore offline - using temporary session", { icon: "⚠️" });
             }
 
-            // If Firestore is offline OR user doesn't exist, treat as new user
             if (!firestoreAvailable || (!userDoc?.exists() && !astroDoc?.exists())) {
                 const roleParam = searchParams.get("role");
-                console.log("New User Setup. Role Param:", roleParam);
                 const targetRole = roleParam === "astrologer" ? "astrologer" : "user";
 
                 if (firestoreAvailable) {
-                    // Only try to create document if Firestore is available
                     const collectionName = targetRole === "astrologer" ? "astrologers" : "users";
-                    console.log("Creating new user document in:", collectionName);
-
                     try {
                         await setDoc(doc(db, collectionName, user.uid), {
                             uid: user.uid,
@@ -174,36 +246,22 @@ export default function LoginPage() {
 
                 toast.success(targetRole === "astrologer" ? "Welcome Expert! Please complete your profile." : "Welcome to JyotishConnect!");
 
-                if (targetRole === "astrologer") {
-                    console.log("Redirecting to astrologer onboarding");
-                    toast.success("Login Successful! Redirecting...");
-                    setTimeout(() => {
-                        window.location.href = "/astrologer/onboarding";
-                    }, 1000);
-                    return;
-                }
+                const destination = targetRole === "astrologer" ? "/astrologer/onboarding" : "/onboarding";
+                setTimeout(() => window.location.href = destination, 1000);
+                return;
             } else {
-                // User ALREADY EXISTS
                 let roleParam = searchParams.get("role");
-
-                // Fallback to localStorage if query param lost
                 if (!roleParam && typeof window !== "undefined") {
                     const storedIntent = localStorage.getItem("loginIntent");
                     if (storedIntent === "astrologer") {
                         roleParam = "astrologer";
-                        // Clear it so it doesn't persist forever
                         localStorage.removeItem("loginIntent");
                     }
                 }
 
-                console.log("Existing User Detected. Role Param:", roleParam, "AstroDoc Exists:", astroDoc?.exists());
-
-                // Check if they are trying to become an astrologer but currently are just a user
                 if (roleParam === "astrologer" && !astroDoc?.exists()) {
-                    console.log("Upgrading existing user to astrologer...");
                     try {
                         const currentBalance = userDoc?.exists() ? userDoc.data().walletBalance || 0 : 0;
-
                         await setDoc(doc(db, "astrologers", user.uid), {
                             uid: user.uid,
                             email: user.email || "",
@@ -221,160 +279,331 @@ export default function LoginPage() {
                             walletBalance: currentBalance
                         });
 
-                        // CRITICAL: Delete the old 'users' doc so AuthContext finds the 'astrologers' doc
                         if (userDoc?.exists()) {
                             await deleteDoc(doc(db, "users", user.uid));
                         }
 
                         toast.success("Account upgraded to Expert! Redirecting...");
-                        setTimeout(() => {
-                            window.location.href = "/astrologer/onboarding";
-                        }, 1000);
+                        setTimeout(() => window.location.href = "/astrologer/onboarding", 1000);
                         return;
                     } catch (err) {
-                        console.error("Upgrade failed:", err);
                         toast.error("Failed to upgrade account");
                     }
                 } else if (roleParam === "astrologer" && astroDoc?.exists()) {
-                    // Already an astrologer
-                    console.log("Already an astrologer, checking for cleanup...");
-
-                    // Self-healing: If user doc still exists, delete it to fix "Unauthorized" error
                     if (userDoc?.exists()) {
-                        console.log("Found duplicate user doc, deleting...");
                         await deleteDoc(doc(db, "users", user.uid));
-                        toast.success("Profile fixed! Redirecting...");
                     }
-
-                    console.log("Redirecting to dashboard...");
-                    setTimeout(() => {
-                        window.location.href = "/astrologer/dashboard";
-                    }, 1000);
+                    setTimeout(() => window.location.href = "/astrologer/dashboard", 1000);
                     return;
                 }
             }
 
-            console.log("Redirecting to:", redirect);
             toast.success("Welcome back!");
-            setTimeout(() => {
-                window.location.href = redirect;
-            }, 1000);
+            setTimeout(() => window.location.href = redirect, 1000);
         } catch (error: any) {
-            console.error("User Auth Error:", error);
             toast.error("Failed to complete authentication. Please try again.");
             setLoading(false);
         }
     };
 
     const handleAuthError = (error: any) => {
-        console.error("Auth Error Detail:", error);
-        let msg = error.message || "Failed to login";
+        let msg = error.message || "Authentication failed";
         if (error.code === 'auth/popup-closed-by-user') msg = "Login popup was closed.";
         else if (error.code === 'auth/cancelled-popup-request') msg = "Only one popup allowed at a time.";
         else if (error.code === 'auth/network-request-failed') msg = "Network error. Check your connection.";
-        else if (error.code === 'auth/invalid-api-key') msg = "Invalid Firebase API Key. Check config.";
-        else if (error.code === 'auth/configuration-not-found') msg = "Google Sign-In is disabled in Console.";
-        else if (error.code === 'auth/internal-error') {
-            msg = "Phone Auth is likely disabled. Enable 'Phone' in Firebase Console.";
-        }
+        else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') msg = "Invalid email or password.";
+        else if (error.code === 'auth/user-not-found') msg = "No user found with this email.";
+        else if (error.code === 'auth/email-already-in-use') msg = "Email is already registered. Please sign in.";
         else if (error.code === 'auth/invalid-phone-number') msg = "Invalid phone number format.";
-
+        
         toast.error(msg, { duration: 5000 });
     };
 
-    return (
-        <main className="min-h-screen flex flex-col">
-            <Navbar />
-            <div className="flex-grow flex items-center justify-center p-4 bg-transparent relative overflow-hidden">
-                {/* Divine Background Effects */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[150px] rounded-full -z-10 animate-float" />
+    // --- RENDER HELPERS ---
+    const renderGoogleButton = () => (
+        <Button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full h-14 bg-white text-foreground hover:bg-sky-50 font-bold text-base flex items-center justify-center gap-3 rounded-2xl shadow-lg border border-primary/10 transition-all hover:scale-[1.02] active:scale-95"
+        >
+            <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
+            Continue with Google
+        </Button>
+    );
 
-                <div className="max-w-md w-full glass p-10 rounded-[3rem] space-y-10 animate-slide-up shadow-2xl border-primary/10">
-                    <div className="text-center space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 mb-2">
-                            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Divine Access</span>
-                        </div>
-                        <h1 className="text-4xl font-black text-gradient tracking-tighter">
-                            Welcome Back
+    const renderDivider = (text: string) => (
+        <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-primary/10"></div></div>
+            <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-zinc-950 px-4 text-foreground/40 font-black tracking-widest">{text}</span></div>
+        </div>
+    );
+
+    return (
+        <main className="min-h-screen flex flex-col bg-zinc-950 text-foreground">
+            <Navbar />
+            <div className="flex-grow flex items-center justify-center p-4 relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[150px] rounded-full -z-10 animate-float" />
+                
+                <div className="max-w-[400px] w-full glass p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-white/5 relative z-10">
+                    
+                    {/* Header */}
+                    <div className="text-center space-y-2 mb-8">
+                        <h1 className="text-3xl font-black text-white tracking-tight">
+                            {authMode === "LOGIN" && "Welcome Back"}
+                            {authMode === "SIGNUP" && "Join JyotishConnect"}
+                            {authMode === "OTP" && "Mobile Login"}
+                            {authMode === "FORGOT_PASSWORD" && "Reset Password"}
                         </h1>
-                        <p className="text-sm text-foreground/40 font-medium italic">Begin your spiritual journey once more</p>
+                        <p className="text-sm text-foreground/50 font-medium">
+                            {authMode === "LOGIN" && "Sign in to continue your journey"}
+                            {authMode === "SIGNUP" && "Create an account to get started"}
+                            {authMode === "OTP" && "Enter your mobile number to verify"}
+                            {authMode === "FORGOT_PASSWORD" && "We'll send you a reset link"}
+                        </p>
                     </div>
 
-                    <div className="space-y-4">
-                        <Button
-                            onClick={handleGoogleLogin}
-                            disabled={loading}
-                            className="w-full h-14 bg-white text-foreground hover:bg-sky-50 font-bold text-lg flex items-center justify-center gap-4 rounded-2xl shadow-xl shadow-primary/5 border border-primary/10 transition-all hover:scale-[1.02] active:scale-95"
-                        >
-                            <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-                            {loading ? "Signing in..." : "Continue with Google"}
-                        </Button>
-
-                        <div className="relative py-6">
-                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-primary/10"></div></div>
-                            <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-white/50 backdrop-blur-sm px-4 text-foreground/40 font-black tracking-widest">Or Divine Phone</span></div>
-                        </div>
-
-                        {/* OTP Logic Section */}
-                        <div id="recaptcha-container"></div>
-
-                        {!showOtpInput ? (
-                            <div className="space-y-6">
+                    
+                    {/* --- LOGIN VIEW --- */}
+                    {authMode === "LOGIN" && (
+                        <div className="space-y-4 animate-in fade-in">
+                            <form onSubmit={handleEmailSignIn} className="space-y-4">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-foreground/40 ml-1">Phone Identity</label>
-                                    <input
-                                        type="tel"
-                                        className="flex h-16 w-full rounded-2xl border border-primary/10 bg-primary/5 px-6 py-2 text-lg font-bold placeholder:text-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all text-foreground"
-                                        placeholder="+91 99999 99999"
-                                        value={phoneNumber}
-                                        onChange={(e) => setPhoneNumber(e.target.value)}
-                                    />
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+                                        <input
+                                            type="email"
+                                            required
+                                            className="w-full h-14 pl-12 pr-4 rounded-2xl border border-white/10 bg-white/5 text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            placeholder="Email address"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            required
+                                            className="w-full h-14 pl-12 pr-12 rounded-2xl border border-white/10 bg-white/5 text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            placeholder="Password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
+                                    </div>
                                 </div>
+                                
+                                <div className="flex justify-end">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setAuthMode("FORGOT_PASSWORD")}
+                                        className="text-xs text-primary hover:text-primary/80 font-bold transition-colors"
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                </div>
+
                                 <Button
-                                    onClick={handleSendOtp}
-                                    className="w-full h-16 orange-gradient hover:opacity-90 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                                    type="submit"
                                     disabled={loading}
+                                    className="w-full h-14 orange-gradient text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                                 >
-                                    {loading ? "Requesting..." : "Send Divine OTP"}
+                                    {loading ? "Signing In..." : "Sign In"}
                                 </Button>
-                                <p className="text-[9px] text-center text-foreground/30 font-bold uppercase tracking-widest leading-relaxed">
-                                    *For Trial: Use +919999999999 and 123456
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                            </form>
+
+                            {renderDivider("OR")}
+
+                            {renderGoogleButton()}
+
+                            <Button
+                                type="button"
+                                onClick={() => setAuthMode("OTP")}
+                                variant="outline"
+                                className="w-full h-14 glass text-white font-bold text-sm rounded-2xl border border-white/10 hover:bg-white/5 transition-all flex items-center gap-2"
+                            >
+                                <Smartphone className="w-5 h-5" />
+                                Continue with Mobile
+                            </Button>
+
+                            <p className="text-center text-xs text-foreground/60 pt-4">
+                                Don't have an account?{" "}
+                                <button onClick={() => setAuthMode("SIGNUP")} className="text-primary font-bold hover:underline">
+                                    Sign Up
+                                </button>
+                            </p>
+                        </div>
+                    )}
+
+
+                    {/* --- SIGNUP VIEW --- */}
+                    {authMode === "SIGNUP" && (
+                        <div className="space-y-4 animate-in fade-in">
+                            <form onSubmit={handleEmailSignUp} className="space-y-4">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-foreground/40 ml-1 text-center block w-full">Verification Code</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+                                        <input
+                                            type="email"
+                                            required
+                                            className="w-full h-14 pl-12 pr-4 rounded-2xl border border-white/10 bg-white/5 text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            placeholder="Email address"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            required
+                                            minLength={6}
+                                            className="w-full h-14 pl-12 pr-12 rounded-2xl border border-white/10 bg-white/5 text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            placeholder="Create password (min 6 chars)"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full h-14 orange-gradient text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                                >
+                                    {loading ? "Creating..." : "Sign Up"}
+                                </Button>
+                            </form>
+
+                            {renderDivider("OR")}
+
+                            {renderGoogleButton()}
+
+                            <p className="text-center text-xs text-foreground/60 pt-4">
+                                Already have an account?{" "}
+                                <button onClick={() => setAuthMode("LOGIN")} className="text-primary font-bold hover:underline">
+                                    Sign In
+                                </button>
+                            </p>
+                        </div>
+                    )}
+
+
+                    {/* --- OTP VIEW --- */}
+                    {authMode === "OTP" && (
+                        <div className="space-y-4 animate-in fade-in">
+                            <button 
+                                onClick={() => setAuthMode("LOGIN")}
+                                className="flex items-center gap-1 text-xs text-foreground/50 hover:text-white transition-colors mb-4"
+                            >
+                                <ArrowLeft className="w-4 h-4" /> Back to Login
+                            </button>
+                            
+                            <div id="recaptcha-container"></div>
+                            
+                            {!showOtpInput ? (
+                                <form onSubmit={handleSendOtp} className="space-y-4">
+                                    <div className="relative">
+                                        <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+                                        <input
+                                            type="tel"
+                                            required
+                                            className="w-full h-14 pl-12 pr-4 rounded-2xl border border-white/10 bg-white/5 text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            placeholder="+91 99999 99999"
+                                            value={phoneNumber}
+                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full h-14 orange-gradient text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                                    >
+                                        {loading ? "Sending..." : "Send OTP"}
+                                    </Button>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleVerifyOtp} className="space-y-4">
                                     <input
                                         type="text"
-                                        className="flex h-16 w-full rounded-2xl border border-primary/10 bg-primary/5 px-6 py-2 text-2xl text-center tracking-[0.5em] font-black focus:border-primary/50 outline-none transition-all text-foreground"
+                                        required
+                                        maxLength={6}
+                                        className="w-full h-14 text-center tracking-[0.5em] font-black text-2xl rounded-2xl border border-white/10 bg-white/5 text-white focus:outline-none focus:border-primary/50 transition-colors"
                                         placeholder="000000"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
-                                        maxLength={6}
+                                    />
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full h-14 orange-gradient text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                                    >
+                                        {loading ? "Verifying..." : "Verify & Sign In"}
+                                    </Button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowOtpInput(false)} 
+                                        className="w-full text-xs font-bold text-foreground/40 hover:text-white transition-colors"
+                                    >
+                                        Change Phone Number
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+                    )}
+
+
+                    {/* --- FORGOT PASSWORD VIEW --- */}
+                    {authMode === "FORGOT_PASSWORD" && (
+                        <div className="space-y-4 animate-in fade-in">
+                            <button 
+                                onClick={() => setAuthMode("LOGIN")}
+                                className="flex items-center gap-1 text-xs text-foreground/50 hover:text-white transition-colors mb-4"
+                            >
+                                <ArrowLeft className="w-4 h-4" /> Back to Login
+                            </button>
+                            
+                            <form onSubmit={handlePasswordReset} className="space-y-4">
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full h-14 pl-12 pr-4 rounded-2xl border border-white/10 bg-white/5 text-base text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                        placeholder="Email address"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                     />
                                 </div>
                                 <Button
-                                    onClick={handleVerifyOtp}
-                                    className="w-full h-16 orange-gradient hover:opacity-90 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                                    type="submit"
                                     disabled={loading}
+                                    className="w-full h-14 orange-gradient text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                                 >
-                                    {loading ? "Authenticating..." : "Establish Presence"}
+                                    {loading ? "Sending..." : "Send Reset Link"}
                                 </Button>
-                                <button onClick={() => setShowOtpInput(false)} className="w-full text-[10px] font-black uppercase tracking-widest text-foreground/30 hover:text-primary transition-colors">
-                                    Change Identity Pattern
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            </form>
+                        </div>
+                    )}
 
-                    <p className="text-center text-[10px] font-black uppercase tracking-widest text-foreground/20">
-                        By ascending, you honor our <a href="/terms" className="text-primary hover:text-primary/80">Divine Terms</a> & <a href="/privacy" className="text-primary hover:text-primary/80">Spirit Privacy</a>
-                    </p>
                 </div>
             </div>
             <Footer />
         </main>
     );
 }
+
