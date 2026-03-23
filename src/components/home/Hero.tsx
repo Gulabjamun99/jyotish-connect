@@ -35,8 +35,8 @@ export function Hero() {
                     ))}
                 </svg>
 
-                {/* Planet orbit system — centered between text and features grid */}
-                <div className="absolute left-1/2 top-1/2" style={{ width: 0, height: 0 }}>
+                {/* Planet orbit system — shifted right to avoid text glow overlap */}
+                <div className="absolute left-[65%] top-1/2" style={{ width: 0, height: 0 }}>
                     
                     {/* Central Sun — Now sits behind the text area, much subtler */}
                     <div 
