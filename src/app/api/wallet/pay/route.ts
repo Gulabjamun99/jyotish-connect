@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { doc, collection, runTransaction } from 'firebase/firestore';
+import { sendAstrologerAlert } from '@/services/email';
+import { sendMeetingInvite } from '@/lib/email';
 
 export async function POST(req: Request) {
     try {
@@ -56,6 +58,32 @@ export async function POST(req: Request) {
                 createdAt: new Date().toISOString()
             });
         });
+        // 4. Send Confirmation Emails (Asynchronously)
+        const userEmail = bookingData.userEmail;
+        const astrologerEmail = bookingData.astrologerEmail;
+        
+        if (userEmail) {
+            sendMeetingInvite({
+                to: userEmail,
+                userName: bookingData.userName || "Seeker",
+                astrologerName: bookingData.astrologerName || "Master",
+                type: bookingData.type,
+                date: bookingData.date,
+                time: bookingData.time,
+                joinUrl: `https://jyotishconnect.com/consult/${bookingId}?type=${bookingData.type}`
+            }).catch(e => console.error("Wallet Booking User Invite Error:", e));
+        }
+
+        if (astrologerEmail) {
+            sendAstrologerAlert({
+                astrologerEmail,
+                astrologerName: bookingData.astrologerName || "Master",
+                userName: bookingData.userName || "Seeker",
+                date: bookingData.date,
+                time: bookingData.time,
+                bookingId: bookingId
+            }).catch(e => console.error("Wallet Booking Astrologer Email Error:", e));
+        }
 
         return NextResponse.json({ success: true, bookingId });
 

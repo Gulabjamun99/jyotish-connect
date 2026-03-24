@@ -46,7 +46,7 @@ export const sendBookingConfirmation = async ({
                     </div>
                     <div style="padding: 30px; background-color: #fff;">
                         <h2 style="color: #333; margin-top: 0;">Namaste ${userName},</h2>
-                        <p style="color: #555; line-height: 1.6;">Your cosmic transit has been aligned. Your consultation with <strong>${astrologerName}</strong> is confirmed.</p>
+                        <p style="color: #475569; font-size: 16px; line-height: 1.6;">Your cosmic session is officially scheduled. <strong>Master ${astrologerName}</strong> is looking forward to providing profound guidance.</p>
                         
                         <div style="background-color: #fff7ed; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fed7aa;">
                             <h3 style="margin-top: 0; color: #c2410c;">Session Details</h3>
@@ -61,7 +61,7 @@ export const sendBookingConfirmation = async ({
                         <p style="color: #555; margin-bottom: 30px;">Please ensure you have a stable internet connection and are in a quiet room for the session.</p>
                         
                         <div style="text-align: center;">
-                            <a href="https://jyotishconnect.com/user/dashboard" style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
+                            <a href="https://jyotishconnect.com/consult/${bookingId}?type=video" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">Join Consultation Room</a>
                         </div>
                     </div>
                     <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #eee;">

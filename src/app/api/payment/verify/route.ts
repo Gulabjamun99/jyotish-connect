@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/lib/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
-import { sendBookingConfirmation, sendAstrologerAlert } from '@/services/email';
+import { sendAstrologerAlert } from '@/services/email';
+import { sendMeetingInvite } from '@/lib/email';
 
 export async function POST(req: Request) {
     try {
@@ -52,14 +53,14 @@ export async function POST(req: Request) {
         const astrologerName = bookingData.astrologerName || "Master";
 
         if (userEmail) {
-            await sendBookingConfirmation({
-                userEmail,
+            await sendMeetingInvite({
+                to: userEmail,
                 userName,
                 astrologerName,
+                type: bookingData.type || "video",
                 date: bookingData.date,
                 time: bookingData.time,
-                bookingId: bookingId,
-                amount: bookingData.price || 0
+                joinUrl: `https://jyotishconnect.com/consult/${bookingId}?type=${bookingData.type || "video"}`
             });
         }
 
@@ -69,7 +70,8 @@ export async function POST(req: Request) {
                 astrologerName,
                 userName,
                 date: bookingData.date,
-                time: bookingData.time
+                time: bookingData.time,
+                bookingId: bookingId
             });
         }
 
