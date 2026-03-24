@@ -9,6 +9,7 @@ import { Sparkles, MapPin, Clock3, Calendar, User, Star, Zap, Activity, Heart, B
 import { toast } from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
 import { LagnaChart } from "@/components/kundli/LagnaChart";
 import { DetailCard, DetailRow } from "@/components/kundli/DetailCard";
@@ -36,6 +37,7 @@ export default function KundliPage() {
     const d9ChartRef = useRef<HTMLDivElement>(null);
     const moonChartRef = useRef<HTMLDivElement>(null);
     const d10ChartRef = useRef<HTMLDivElement>(null);
+    const pdfContentRef = useRef<HTMLDivElement>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -155,16 +157,39 @@ export default function KundliPage() {
             }
         };
 
-        const doc = new jsPDF();
+        const captureSection = async (elementId: string): Promise<string | null> => {
+            const element = document.getElementById(elementId);
+            if (!element) return null;
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2, // Higher resolution
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                    logging: false
+                });
+                return canvas.toDataURL('image/jpeg', 0.85); // JPEG is smaller than PNG for PDFs
+            } catch (e) {
+                console.error(`Failed to capture section ${elementId}:`, e);
+                return null;
+            }
+        };
+
+        const doc = new jsPDF('p', 'mm', 'a4');
         const trans: any = getTrans(locale);
         
-        // --- 1. PREPARE ASSETS (Capture all charts) ---
-        const d1Base64 = await captureChartImage(lagnaChartRef);
-        const d9Base64 = await captureChartImage(d9ChartRef);
-        const moonBase64 = await captureChartImage(moonChartRef);
-        const d10Base64 = await captureChartImage(d10ChartRef);
-
-        const l = trans.labels || trans.common;
+        // --- 1. PREPARE ASSETS (Phase 1: Charts & Snapshots) ---
+        toast.loading("Rendering high-quality report...", { id: "pdf-gen" });
+        
+        const [d1Img, d9Img, moonImg, d10Img, predictionsImg, panchangImg, planetsImg, doshasImg] = await Promise.all([
+            captureChartImage(lagnaChartRef),
+            captureChartImage(d9ChartRef),
+            captureChartImage(moonChartRef),
+            captureChartImage(d10ChartRef),
+            captureSection("pdf-predictions"),
+            captureSection("pdf-panchang"),
+            captureSection("pdf-planets"),
+            captureSection("pdf-doshas")
+        ]);
 
         // --- PAGE 1: COVER ---
         doc.setFillColor(10, 10, 26);
@@ -175,7 +200,7 @@ export default function KundliPage() {
         doc.text("Astro-Connect", 105, 80, { align: "center" });
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(20);
-        doc.text(locale === 'hi' ? "व्यक्तिगत कुंडली रिपोर्ट" : "Premium Kundli Report", 105, 95, { align: "center" });
+        doc.text(locale === 'hi' ? "व्यक्तिगत कुंडली रिपोर्ट" : locale === 'bn' ? "প্রিমিয়াম কুষ্ঠি রিপোর্ট" : locale === 'mr' ? "प्रीमियम कुंडली अहवाल" : "Premium Kundli Report", 105, 95, { align: "center" });
         doc.setFontSize(16);
         doc.text(formData.name || "User", 105, 130, { align: "center" });
         doc.setFontSize(10);
@@ -186,102 +211,50 @@ export default function KundliPage() {
         doc.addPage();
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(18);
-        doc.text(locale === 'hi' ? "कुण्डली चार्ट्स (Charts)" : "Kundli Charts", 20, 20);
+        doc.text(locale === 'hi' ? "कुण्डली चार्ट्स (Charts)" : locale === 'bn' ? "কুষ্ঠি চার্ট" : locale === 'mr' ? "कुंडली तक्ते" : "Kundli Charts", 15, 20);
 
-        if (d1Base64) {
+        if (d1Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "लग्न कुण्डली (D1)" : "Lagna Chart (D1)", 20, 35);
-            doc.addImage(d1Base64, 'PNG', 20, 40, 80, 80);
+            doc.text(locale === 'hi' ? "लग्न कुण्डली (D1)" : locale === 'bn' ? "লগ্ন চার্ট (D1)" : locale === 'mr' ? "लग्न कुंडली (D1)" : "Lagna Chart (D1)", 15, 35);
+            doc.addImage(d1Img, 'PNG', 15, 40, 85, 85);
         }
-        if (d9Base64) {
+        if (d9Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "नवांश कुण्डली (D9)" : "Navamsa Chart (D9)", 110, 35);
-            doc.addImage(d9Base64, 'PNG', 110, 40, 80, 80);
+            doc.text(locale === 'hi' ? "नवांश कुण्डली (D9)" : locale === 'bn' ? "নবাংশ চার্ট (D9)" : locale === 'mr' ? "नवांश कुंडली (D9)" : "Navamsa Chart (D9)", 110, 35);
+            doc.addImage(d9Img, 'PNG', 110, 40, 85, 85);
         }
-        if (moonBase64) {
+        if (moonImg) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "चन्द्र कुण्डली" : "Moon Chart", 20, 135);
-            doc.addImage(moonBase64, 'PNG', 20, 140, 80, 80);
+            doc.text(locale === 'hi' ? "चन्द्र कुण्डली" : locale === 'bn' ? "চন্দ্র চার্ট" : locale === 'mr' ? "चंद्र कुंडली" : "Moon Chart", 15, 145);
+            doc.addImage(moonImg, 'PNG', 15, 150, 85, 85);
         }
-        if (d10Base64) {
+        if (d10Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "दशमांश कुण्डली (D10)" : "Dashamsha Chart (D10)", 110, 135);
-            doc.addImage(d10Base64, 'PNG', 110, 140, 80, 80);
+            doc.text(locale === 'hi' ? "दशमांश कुण्डली (D10)" : locale === 'bn' ? "দশমাংশ চার্ট (D10)" : locale === 'mr' ? "दशमांश कुंडली (D10)" : "Dashamsha Chart (D10)", 110, 145);
+            doc.addImage(d10Img, 'PNG', 110, 150, 85, 85);
         }
 
-        // --- PAGE 3: BIRTH DETAILS & PANCHANG ---
-        doc.addPage();
-        doc.setFontSize(16);
-        doc.text(locale === 'hi' ? "जन्म विवरण और पंचांग" : "Birth Details & Panchang", 20, 20);
-        autoTable(doc, {
-            startY: 30,
-            head: [[locale === 'hi' ? 'विवरण' : 'Attribute', locale === 'hi' ? 'मान' : 'Value']],
-            body: [
-                ['Name', formData.name],
-                ['Date', formData.dob],
-                ['Time', formData.tob],
-                ['Place', formData.birthplace],
-                ['Tithi', chart.panchang.tithi],
-                ['Nakshatra', chart.planets.find((p: any) => p.name === "Moon")?.nakshatra || "N/A"],
-                ['Yoga', chart.panchang.yoga],
-                ['Karan', chart.panchang.karana],
-                ['Sunrise', chart.panchang.sunrise],
-                ['Sunset', chart.panchang.sunset],
-            ],
-            theme: 'striped',
-            headStyles: { fillColor: [249, 115, 22] }
-        });
+        // --- PAGE 3: PANCHANG & PLANETS (Snapshots) ---
+        if (panchangImg) {
+            doc.addPage();
+            doc.addImage(panchangImg, 'JPEG', 0, 0, 210, 297);
+        }
+        if (planetsImg) {
+            doc.addPage();
+            doc.addImage(planetsImg, 'JPEG', 0, 0, 210, 297);
+        }
 
-        // --- PAGE 4: PLANETARY POSITIONS ---
-        doc.addPage();
-        doc.text(locale === 'hi' ? "ग्रह स्थिति (Planets)" : "Planetary Positions", 20, 20);
-        autoTable(doc, {
-            startY: 30,
-            head: [['Planet', 'Sign', 'Degree', 'House', 'Retro']],
-            body: chart.planets.map((p: any) => [
-                translatePlanet(p.name, locale),
-                translateSign(p.sign, locale),
-                `${Math.floor(p.longitude % 30)}° ${Math.round((p.longitude % 1) * 60)}'`,
-                p.house,
-                p.isRetrograde ? 'R' : ''
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [59, 130, 246] }
-        });
+        // --- PAGE 4+: DOSHAS & PREDICTIONS (Snapshots) ---
+        if (doshasImg) {
+            doc.addPage();
+            doc.addImage(doshasImg, 'JPEG', 0, 0, 210, 297);
+        }
+        if (predictionsImg) {
+            doc.addPage();
+            doc.addImage(predictionsImg, 'JPEG', 0, 0, 210, 297);
+        }
 
-        // --- PAGE 5: DOSHA ANALYSIS ---
-        doc.addPage();
-        doc.text(locale === 'hi' ? "दोष विश्लेषण" : "Dosha Analysis", 20, 20);
-        const doshas = Object.entries(chart.doshas).map(([key, value]: [string, any]) => [
-            key,
-            value.present ? "YES" : "NO",
-            value.description
-        ]);
-        autoTable(doc, {
-            startY: 30,
-            head: [['Dosha', 'Active', 'Description']],
-            body: doshas,
-            theme: 'striped',
-            headStyles: { fillColor: [239, 68, 68] },
-            columnStyles: { 2: { cellWidth: 110 } }
-        });
-
-        // --- PAGE 6: LIFE PREDICTIONS ---
-        doc.addPage();
-        doc.text(locale === 'hi' ? "जीवन भविष्यवाणियां" : "Life Predictions", 20, 20);
-        const preds = Object.entries(chart.predictions || {}).map(([key, value]) => [
-            (trans.labels?.life_predictions as any)?.[key] || key,
-            value
-        ]);
-        autoTable(doc, {
-            startY: 30,
-            head: [['Area', 'Analysis']],
-            body: preds,
-            theme: 'plain',
-            headStyles: { fillColor: [139, 92, 246] },
-            columnStyles: { 1: { cellWidth: 140 } }
-        });
-
+        toast.success("Report generated!", { id: "pdf-gen" });
         doc.save(`Kundli_Report_${formData.name}.pdf`);
     };
 
@@ -744,6 +717,132 @@ export default function KundliPage() {
                 </div>
             </div>
             <Footer />
+            
+            {/* Hidden PDF Export Content */}
+            {chart && (
+                <div 
+                    ref={pdfContentRef}
+                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
+                    style={{ fontFeatureSettings: '"kern" 1', WebkitFontSmoothing: 'antialiased' }}
+                >
+                    {/* Page: Predictions */}
+                    <div id="pdf-predictions" className="space-y-8 p-10 mb-20 bg-white min-h-[1100px]">
+                        <h1 className="text-3xl font-black text-orange-600 border-b-4 border-orange-500 pb-2 mb-8">
+                            {locale === 'hi' ? "जीवन भविष्यवाणियां" : locale === 'mr' ? "जीवन भविष्यवाणी" : locale === 'bn' ? "জীবনবাণী" : "Life Predictions"}
+                        </h1>
+                        <div className="space-y-10">
+                            {Object.entries(chart.predictions || {}).map(([key, value]) => (
+                                <div key={key} className="border-l-4 border-slate-200 pl-6 py-2">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-wide mb-3">
+                                        {(getTrans(locale).labels?.life_predictions as any)?.[key] || key}
+                                    </h3>
+                                    <p className="text-lg text-slate-700 leading-8 text-justify">
+                                        {value as string}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Page: Birth Details & Panchang */}
+                    <div id="pdf-panchang" className="p-10 mb-20 bg-white min-h-[1100px]">
+                        <h1 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-2 mb-8">
+                            {locale === 'hi' ? "जन्म विवरण और पंचांग" : locale === 'bn' ? "জন্ম বিবরণ" : "Birth Details & Panchang"}
+                        </h1>
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="bg-blue-600 text-white">
+                                    <th className="p-4 text-left border border-blue-500">Attribute</th>
+                                    <th className="p-4 text-left border border-blue-500">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-lg">
+                                {[
+                                    ['Name', formData.name],
+                                    ['Date', formData.dob],
+                                    ['Time', formData.tob],
+                                    ['Place', formData.birthplace],
+                                    ['Tithi', chart.panchang.tithi],
+                                    ['Nakshatra', chart.planets.find((p: any) => p.name === "Moon")?.nakshatra || "N/A"],
+                                    ['Yoga', chart.panchang.yoga],
+                                    ['Karan', chart.panchang.karana],
+                                    ['Sunrise', chart.panchang.sunrise],
+                                    ['Sunset', chart.panchang.sunset],
+                                ].map(([label, val], idx) => (
+                                    <tr key={idx} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                                        <td className="p-4 border border-slate-200 font-bold">{label}</td>
+                                        <td className="p-4 border border-slate-200 ">{val}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Page: Planetary Positions */}
+                    <div id="pdf-planets" className="p-10 mb-20 bg-white min-h-[1100px]">
+                        <h1 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-2 mb-8">
+                            {locale === 'hi' ? "ग्रह स्थिति" : locale === 'bn' ? "গ্রহের অবস্থান" : "Planetary Positions"}
+                        </h1>
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="bg-purple-600 text-white">
+                                    <th className="p-4 text-left border border-purple-500">Planet</th>
+                                    <th className="p-4 text-left border border-purple-500">Sign</th>
+                                    <th className="p-4 text-left border border-purple-500">Degree</th>
+                                    <th className="p-4 text-left border border-purple-500">House</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-lg text-slate-800">
+                                {chart.planets.map((p: any, idx: number) => (
+                                    <tr key={idx} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                                        <td className="p-4 border border-slate-200 font-bold">{translatePlanet(p.name, locale)}</td>
+                                        <td className="p-4 border border-slate-200">{translateSign(p.sign, locale)}</td>
+                                        <td className="p-4 border border-slate-200 font-mono text-sm">{Math.floor(p.longitude % 30)}° {Math.round((p.longitude % 1) * 60)}'</td>
+                                        <td className="p-4 border border-slate-200 font-bold text-center">{p.house}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Page: Doshas */}
+                    <div id="pdf-doshas" className="space-y-8 p-10 bg-white min-h-[1100px]">
+                        <h1 className="text-3xl font-black text-red-600 border-b-4 border-red-500 pb-2 mb-8">
+                            {locale === 'hi' ? "दोष विश्लेषण" : locale === 'mr' ? "दोष विश्लेषण" : locale === 'bn' ? "দোষ বিশ্লেষণ" : "Dosha Analysis"}
+                        </h1>
+                        <div className="grid grid-cols-1 gap-12">
+                            {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
+                                <div key={key} className={`p-8 rounded-3xl border-2 ${data.present ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className={`text-2xl ${data.present ? "text-red-600" : "text-green-600"}`}>
+                                            {data.present ? "⚠️" : "✓"}
+                                        </div>
+                                        <h2 className="text-2xl font-black text-slate-900">{key}</h2>
+                                        <span className={`ml-auto px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${data.present ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800"}`}>
+                                            {data.present ? "Active" : "Safe"}
+                                        </span>
+                                    </div>
+                                    <p className="text-lg text-slate-700 leading-relaxed mb-6 italic">
+                                        {data.description}
+                                    </p>
+                                    {data.present && (
+                                        <div className="bg-white p-6 rounded-2xl border border-red-100">
+                                            <h4 className="text-sm font-black text-orange-600 uppercase mb-3 tracking-widest italic">Vedic Remedies</h4>
+                                            <ul className="space-y-3">
+                                                {(getTrans(locale).doshas?.[key]?.remedies || []).map((r: string, idx: number) => (
+                                                    <li key={idx} className="text-md text-slate-700 flex items-start gap-3 leading-relaxed">
+                                                        <span className="text-orange-500 font-bold">•</span> {r}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

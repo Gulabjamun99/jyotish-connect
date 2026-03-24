@@ -123,3 +123,73 @@ export const sendAstrologerAlert = async ({
         return { success: false };
     }
 };
+
+export const sendMeetingInvite = async ({ 
+    to, 
+    userName, 
+    astrologerName, 
+    type, 
+    date, 
+    time, 
+    bookingId 
+}: { 
+    to: string, 
+    userName: string, 
+    astrologerName: string, 
+    type: string, 
+    date: string, 
+    time: string, 
+    bookingId: string 
+}) => {
+    if (!resend) return { success: false };
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://jyotishconnect.com';
+    const joinUrl = `${appUrl}/consult/${bookingId}?type=${type}`;
+
+    const html = `
+    <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+        <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">JyotishConnect</h1>
+            <p style="color: #ffedd5; margin-top: 8px; font-weight: 500; opacity: 0.9;">Your Sacred Consultation is Confirmed</p>
+        </div>
+        <div style="padding: 40px; background-color: white;">
+            <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700;">Namaste ${userName},</h2>
+            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+                Your <strong>${type.toUpperCase()}</strong> consultation with <strong>Master ${astrologerName}</strong> has been successfully scheduled. Prepare your space for a journey of celestial discovery.
+            </p>
+            
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 24px 0;">
+                <h3 style="margin-top: 0; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Session Parameters</h3>
+                <div style="margin-bottom: 12px; color: #1e293b;"><strong style="color: #475569;">Guide:</strong> Master ${astrologerName}</div>
+                <div style="margin-bottom: 12px; color: #1e293b;"><strong style="color: #475569;">Modality:</strong> ${type.charAt(0).toUpperCase() + type.slice(1)} Session</div>
+                <div style="margin-bottom: 12px; color: #1e293b;"><strong style="color: #475569;">Date:</strong> ${date}</div>
+                <div style="color: #1e293b;"><strong style="color: #475569;">Time:</strong> ${time}</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 32px;">
+                <a href="${joinUrl}" style="background-color: #2563eb; color: white; padding: 18px 36px; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); transition: all 0.2s;">
+                    Join Consultation Room
+                </a>
+            </div>
+            
+            <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 24px; line-height: 1.5;">
+                Please ensure you are in a quiet environment with a stable connection.<br/>
+                The universe speaks to those who listen carefully. ✨
+            </p>
+        </div>
+    </div>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'JyotishConnect <bookings@jyotishconnect.com>',
+            to: [to],
+            subject: `Sacred Consultation Confirmed: Master ${astrologerName}`,
+            html
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to send meeting invite:", error);
+        return { success: false, error };
+    }
+};

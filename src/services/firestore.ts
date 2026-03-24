@@ -74,7 +74,7 @@ export interface Booking {
     type: "video" | "audio" | "chat";
     price: number;
     paymentMode?: 'wallet' | 'razorpay';
-    status: "pending" | "active" | "completed" | "cancelled";
+    status: "pending" | "active" | "completed" | "cancelled" | "canceled"; // Handle both for safety
     durationSeconds?: number;
     transcript?: string;
     createdAt?: any;
@@ -98,7 +98,7 @@ export interface Astrologer {
     image: string;
     photoURL?: string;
     verified: boolean;
-    online: boolean;
+    isOnline: boolean;
     bio?: string;
     experience?: number;
     education?: string;
@@ -143,8 +143,7 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
                 price: raw.consultationRate || 50,
                 image: raw.photoURL || "/placeholder-avatar.png",
                 verified: raw.verified || false,
-                online: true,
-                bio: raw.bio || "",
+                isOnline: raw.isOnline ?? raw.online ?? false,
                 specializations: ensureArray(raw.specializations),
                 languages: ensureArray(raw.languages).length > 0 ? ensureArray(raw.languages) : ["English"]
             } as Astrologer;
@@ -337,7 +336,7 @@ export const getAllAstrologers = async () => {
                 price: raw.consultationRate || 50,
                 image: raw.photoURL || "/placeholder-avatar.png",
                 verified: raw.verified || false,
-                online: raw.online || false,
+                isOnline: raw.isOnline ?? raw.online ?? false,
                 bio: raw.bio || "",
                 experience: raw.experience || 0
             } as Astrologer;

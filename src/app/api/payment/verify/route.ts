@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/lib/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
-import { sendAstrologerAlert } from '@/services/email';
-import { sendMeetingInvite } from '@/lib/email';
+import { sendAstrologerAlert, sendMeetingInvite } from '@/services/email';
 
 export async function POST(req: Request) {
     try {
@@ -60,7 +59,7 @@ export async function POST(req: Request) {
                 type: bookingData.type || "video",
                 date: bookingData.date,
                 time: bookingData.time,
-                joinUrl: `https://jyotishconnect.com/consult/${bookingId}?type=${bookingData.type || "video"}`
+                bookingId: bookingId
             });
         }
 

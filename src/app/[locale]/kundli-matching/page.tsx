@@ -6,11 +6,12 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Heart, Sparkles, AlertCircle, CheckCircle, Calendar, Timer, Shield, Info, TrendingUp, Users, Wallet, Activity } from "lucide-react";
 import { toast } from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
 // import { calculatePlanets, calculateGunMilan, calculatePanchang } from "@/lib/astrology/calculator";
 // ... imports
@@ -38,6 +39,7 @@ export default function KundliMatchingPage() {
     const [result, setResult] = useState<any>(null);
     const [detailedReport, setDetailedReport] = useState<any>(null);
     const [activeTab, setActiveTab] = useState("overview");
+    const pdfContentRef = useRef<HTMLDivElement>(null);
 
     const handleMatch = async () => {
         if (!boy.name || !boy.dob || !girl.name || !girl.dob) {
@@ -105,140 +107,52 @@ export default function KundliMatchingPage() {
     const handleDownloadPDF = async () => {
         if (!result) return;
 
-        const doc = new jsPDF();
-        const trans = getTrans(locale);
+        toast.loading("Preparing your divine report...", { id: "pdf-match" });
 
-        // Add Logo
-        try {
-            const logoUrl = '/logo.png';
-            const imgData = await new Promise<string>((resolve, reject) => {
-                const img = new Image();
-                img.src = logoUrl;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    if (ctx) {
-                        ctx.drawImage(img, 0, 0);
-                        resolve(canvas.toDataURL('image/png'));
-                    } else {
-                        reject('Canvas context failed');
-                    }
-                };
-                img.onerror = reject;
-            });
-            doc.addImage(imgData, 'PNG', 170, 5, 25, 25);
-        } catch (e) {
-            console.error("Logo loading failed", e);
-        }
-
-        // Header
-        doc.setFillColor(14, 165, 233);
-        doc.rect(0, 0, 210, 40, "F");
-        doc.setFontSize(22);
-        doc.setTextColor(255, 255, 255);
-        doc.text(locale === 'hi' ? "कुंडली मिलान रिपोर्ट" : "Kundli Matching Report", 14, 20);
-        doc.setFontSize(10);
-        doc.text("JyotishConnect - Sacred Union Analysis", 14, 28);
-
-        // Couple Details
-        doc.setTextColor(0);
-        doc.setFontSize(14);
-        doc.text(`${locale === 'hi' ? 'वर और वधु' : 'Boy & Girl'}: ${result.boy} & ${result.girl}`, 14, 55);
-
-        doc.setFontSize(12);
-        doc.setTextColor(14, 165, 233);
-        doc.text(`${trans.common.Score}: ${result.total_guna} / 36`, 14, 65);
-
-        // Partner Details Table
-        autoTable(doc, {
-            startY: 75,
-            head: [[locale === 'hi' ? 'विवरण' : 'Attribute', locale === 'hi' ? 'वर (Boy)' : 'Boy', locale === 'hi' ? 'वधु (Girl)' : 'Girl']],
-            body: [
-                [locale === 'hi' ? 'तिथि' : 'Tithi', trans.panchang.tithi[result.boyPanchang.tithiId], trans.panchang.tithi[result.girlPanchang.tithiId]],
-                [locale === 'hi' ? 'योग' : 'Yoga', trans.panchang.yoga[result.boyPanchang.yogaId], trans.panchang.yoga[result.girlPanchang.yogaId]],
-                [locale === 'hi' ? 'करण' : 'Karan', trans.panchang.karan[result.boyPanchang.karanaId], trans.panchang.karan[result.girlPanchang.karanaId]],
-                [locale === 'hi' ? 'वार' : 'Vara', trans.panchang.vara[result.boyPanchang.vara], trans.panchang.vara[result.girlPanchang.vara]]
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [14, 165, 233] }
-        });
-
-        // Ashtakoot Table
-        autoTable(doc, {
-            startY: (doc as any).lastAutoTable.finalY + 15,
-            head: [[
-                locale === 'hi' ? 'अष्टकूट मिलान' : 'Ashtakoot Milan',
-                locale === 'hi' ? 'अधिकतम' : 'Max',
-                locale === 'hi' ? 'प्राप्त' : 'Obtained'
-            ]],
-            body: Object.entries(result.ashtakoot).map(([key, val]: any) => [
-                (trans.kootas as any)[key] || key,
-                val.total,
-                val.score
-            ]),
-            headStyles: { fillColor: [14, 165, 233] },
-            theme: 'grid'
-        });
-
-        let finalY = (doc as any).lastAutoTable.finalY + 15;
-
-        // Add Detailed Report Sections to PDF
-        if (detailedReport) {
-            const addSection = (title: string, content: string) => {
-                if (finalY > 250) {
-                    doc.addPage();
-                    finalY = 20;
-                }
-                doc.setFontSize(12);
-                doc.setTextColor(14, 165, 233);
-                doc.setFont("helvetica", "bold");
-                doc.text(title, 14, finalY);
-                finalY += 7;
-
-                doc.setFontSize(10);
-                doc.setTextColor(60);
-                doc.setFont("helvetica", "normal");
-                const splitText = doc.splitTextToSize(content, 180);
-                doc.text(splitText, 14, finalY);
-                finalY += (splitText.length * 5) + 10;
-            };
-
-            addSection(detailedReport.marriage.title, detailedReport.marriage.verdict);
-            addSection(detailedReport.nature.title, detailedReport.nature.verdict);
-            addSection(detailedReport.family.title, detailedReport.family.verdict);
-            addSection(detailedReport.finance.title, detailedReport.finance.verdict);
-            addSection(detailedReport.forecast.title, detailedReport.forecast.verdict);
-
-            // Remedies
-            if (finalY > 250) {
-                doc.addPage();
-                finalY = 20;
+        const captureSection = async (elementId: string): Promise<string | null> => {
+            const element = document.getElementById(elementId);
+            if (!element) return null;
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                    logging: false
+                });
+                return canvas.toDataURL('image/jpeg', 0.85);
+            } catch (e) {
+                console.error(`Failed to capture section ${elementId}:`, e);
+                return null;
             }
-            doc.setFontSize(12);
-            doc.setTextColor(14, 165, 233);
-            doc.setFont("helvetica", "bold");
-            doc.text(detailedReport.remedies.title, 14, finalY);
-            finalY += 7;
-            doc.setFontSize(10);
-            doc.setTextColor(60);
-            doc.setFont("helvetica", "normal");
-            detailedReport.remedies.list.forEach((rem: string) => {
-                const splitText = doc.splitTextToSize(`• ${rem}`, 180);
-                doc.text(splitText, 14, finalY);
-                finalY += (splitText.length * 5) + 2;
-            });
-            finalY += 10;
+        };
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // --- Capture Sections ---
+        const [overviewImg, detailsImg, findingsImg] = await Promise.all([
+            captureSection("pdf-match-overview"),
+            captureSection("pdf-match-details"),
+            captureSection("pdf-match-findings")
+        ]);
+
+        // Cover / Page 1: Overview
+        if (overviewImg) {
+            doc.addImage(overviewImg, 'JPEG', 0, 0, 210, 297);
         }
 
-        doc.setFontSize(14);
-        doc.setTextColor(0);
-        doc.text(t("conclusion"), 14, finalY);
-        doc.setFontSize(10);
-        doc.setTextColor(60);
-        doc.text(getCompatibilityMessage(result.total_guna), 14, finalY + 8);
+        // Page 2: Details (Panchang & Ashtakoot)
+        if (detailsImg) {
+            doc.addPage();
+            doc.addImage(detailsImg, 'JPEG', 0, 0, 210, 297);
+        }
 
+        // Page 3: Detailed Findings & Remedies
+        if (findingsImg) {
+            doc.addPage();
+            doc.addImage(findingsImg, 'JPEG', 0, 0, 210, 297);
+        }
+
+        toast.success("Match Report ready!", { id: "pdf-match" });
         doc.save(`Matching_${result.boy}_${result.girl}.pdf`);
     };
 
@@ -655,6 +569,156 @@ export default function KundliMatchingPage() {
                 )}
             </div>
             <Footer />
-        </main >
+
+            {/* Hidden PDF Export Content for Matching */}
+            {result && (
+                <div 
+                    ref={pdfContentRef}
+                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
+                >
+                    {/* Page 1: Overview & Score */}
+                    <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-orange-500/10">
+                        <div className="flex justify-between items-center border-b-4 border-orange-500 pb-6 mb-10">
+                            <h1 className="text-4xl font-black text-orange-600 uppercase tracking-tighter">
+                                {locale === 'hi' ? "कुंडली मिलान रिपोर्ट" : "Match Report"}
+                            </h1>
+                            <div className="text-right">
+                                <div className="text-5xl font-black text-orange-500">{result.total_guna} / 36</div>
+                                <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">{t("totalGunas")}</div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-10 mb-12">
+                            <div className="bg-orange-50 p-6 rounded-3xl border-2 border-orange-100">
+                                <h3 className="text-sm font-black text-orange-600 uppercase mb-4 tracking-widest">{t("boyIdentityTitle")}</h3>
+                                <div className="text-2xl font-black text-slate-900 mb-1">{result.boy}</div>
+                                <div className="text-xs text-slate-500 font-bold uppercase">{boy.dob} | {boy.tob}</div>
+                            </div>
+                            <div className="bg-red-50 p-6 rounded-3xl border-2 border-red-100">
+                                <h3 className="text-sm font-black text-red-600 uppercase mb-4 tracking-widest">{t("girlIdentityTitle")}</h3>
+                                <div className="text-2xl font-black text-slate-900 mb-1">{result.girl}</div>
+                                <div className="text-xs text-slate-500 font-bold uppercase">{girl.dob} | {girl.tob}</div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-black text-slate-800 border-l-4 border-orange-500 pl-4">{t("compatibilityReportTitle")}</h3>
+                            <div className="p-8 bg-slate-50 rounded-3xl text-xl leading-relaxed text-slate-700 italic border border-slate-200">
+                                "{getCompatibilityMessage(result.total_guna)}: {getMarriageStabilityMessage(result.total_guna)}"
+                            </div>
+                        </div>
+
+                        <div className="mt-12 grid grid-cols-2 gap-8">
+                             <div className={`p-6 rounded-2xl border-2 ${result.is_manglik_boy ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}>
+                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2">{t("boyManglikStatus")}</div>
+                                <div className={`text-lg font-black ${result.is_manglik_boy ? "text-red-600" : "text-green-600"}`}>
+                                    {result.is_manglik_boy ? t("manglikPresence") : t("doshMukt")}
+                                </div>
+                             </div>
+                             <div className={`p-6 rounded-2xl border-2 ${result.is_manglik_girl ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}>
+                                <div className="text-[10px] font-black uppercase text-slate-400 mb-2">{t("girlManglikStatus")}</div>
+                                <div className={`text-lg font-black ${result.is_manglik_girl ? "text-red-600" : "text-green-600"}`}>
+                                    {result.is_manglik_girl ? t("manglikPresence") : t("doshMukt")}
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    {/* Page 2: Ashtakoot & Panchang */}
+                    <div id="pdf-match-details" className="p-10 mb-20 bg-white min-h-[1100px]">
+                        <h2 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-4 mb-8">
+                            {locale === 'hi' ? "विस्तृत अष्टकूट मिलान" : "Detailed Koota Analysis"}
+                        </h2>
+                        
+                        <table className="w-full border-collapse mb-12">
+                            <thead>
+                                <tr className="bg-blue-600 text-white">
+                                    <th className="p-4 text-left border border-blue-500">Koota</th>
+                                    <th className="p-4 text-center border border-blue-500">Boy</th>
+                                    <th className="p-4 text-center border border-blue-500">Girl</th>
+                                    <th className="p-4 text-right border border-blue-500">Max</th>
+                                    <th className="p-4 text-right border border-blue-500">Obtained</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-lg">
+                                {Object.entries(result.ashtakoot).map(([key, val]: any, idx) => (
+                                    <tr key={key} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                                        <td className="p-4 border border-slate-200 font-bold">{(getTrans(locale).kootas as any)[key] || key}</td>
+                                        <td className="p-4 border border-slate-200 text-center">{val.boyVal || "-"}</td>
+                                        <td className="p-4 border border-slate-200 text-center">{val.girlVal || "-"}</td>
+                                        <td className="p-4 border border-slate-200 text-right text-slate-400">{val.total}</td>
+                                        <td className="p-4 border border-slate-200 text-right font-black text-blue-600">{val.score}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <h2 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-4 mb-8">
+                            {t("vedicPanchang")}
+                        </h2>
+                        <table className="w-full border-collapse text-lg">
+                            <thead className="bg-purple-600 text-white">
+                                <tr>
+                                    <th className="p-4 text-left border border-purple-500">{t("attribute")}</th>
+                                    <th className="p-4 text-left border border-purple-500">{t("boy")}</th>
+                                    <th className="p-4 text-left border border-purple-500">{t("girl")}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[
+                                    { label: t("label_nakshatra"), boy: getTrans(locale).nakshatras[result.boyPanchang.nakshatraId - 1] || "-", girl: getTrans(locale).nakshatras[result.girlPanchang.nakshatraId - 1] || "-" },
+                                    { label: t("label_tithi"), boy: getTrans(locale).panchang.tithi[result.boyPanchang.tithiId], girl: getTrans(locale).panchang.tithi[result.girlPanchang.tithiId] },
+                                    { label: t("label_yoga"), boy: getTrans(locale).panchang.yoga[result.boyPanchang.yogaId], girl: getTrans(locale).panchang.yoga[result.girlPanchang.yogaId] },
+                                    { label: t("label_karan"), boy: getTrans(locale).panchang.karan[result.boyPanchang.karanaId], girl: getTrans(locale).panchang.karan[result.girlPanchang.karanaId] },
+                                    { label: t("label_vara"), boy: getTrans(locale).panchang.vara[result.boyPanchang.vara], girl: getTrans(locale).panchang.vara[result.girlPanchang.vara] }
+                                ].map((row, idx) => (
+                                    <tr key={idx} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                                        <td className="p-4 border border-slate-200 font-bold">{row.label}</td>
+                                        <td className="p-4 border border-slate-200 font-black">{row.boy}</td>
+                                        <td className="p-4 border border-slate-200 font-black">{row.girl}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Page 3: Detailed Findings */}
+                    {detailedReport && (
+                        <div id="pdf-match-findings" className="p-10 bg-white min-h-[1100px]">
+                            <h2 className="text-3xl font-black text-emerald-600 border-b-4 border-emerald-500 pb-4 mb-8">
+                                {locale === 'hi' ? "विस्तृत विश्लेषण" : "Detailed Findings"}
+                            </h2>
+                            <div className="space-y-12">
+                                {[
+                                    detailedReport.marriage,
+                                    detailedReport.nature,
+                                    detailedReport.family,
+                                    detailedReport.finance,
+                                    detailedReport.forecast
+                                ].map((sec, idx) => (
+                                    <div key={idx} className="border-l-8 border-slate-100 pl-8">
+                                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-3">{sec.title}</h3>
+                                        <p className="text-lg text-slate-600 leading-relaxed text-justify">{sec.verdict}</p>
+                                    </div>
+                                ))}
+                                
+                                <div className="bg-emerald-50 p-8 rounded-[3rem] border-2 border-emerald-100">
+                                    <h3 className="text-2xl font-black text-emerald-700 mb-6 flex items-center gap-3">
+                                        ✨ {detailedReport.remedies.title}
+                                    </h3>
+                                    <ul className="space-y-4 text-lg text-emerald-900">
+                                        {detailedReport.remedies.list.map((r: string, i: number) => (
+                                            <li key={i} className="flex gap-4 items-start">
+                                                <span className="text-emerald-500 font-black mt-1">•</span> {r}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+        </main>
     );
 }

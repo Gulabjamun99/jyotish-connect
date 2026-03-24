@@ -4,11 +4,12 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Sparkles, Heart, User, FileText, CheckCircle2, AlertCircle, LayoutGrid, Zap, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
 import { getFullAstrologyData, performMatchMaking } from "@/lib/astrology/calculator";
 import { generateMatchVerdict, generateAshtakootAnalysis, generateDetailedMatchingReport, analyzeManglikCancellation } from "@/lib/astrology/prediction-engine";
@@ -20,6 +21,7 @@ export default function MatchingPage() {
     const t = useTranslations('Index');
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
+    const pdfContentRef = useRef<HTMLDivElement>(null);
 
     // Boy's Data
     const [boyData, setBoyData] = useState({
@@ -104,83 +106,53 @@ export default function MatchingPage() {
 
     const handleDownloadPDF = async () => {
         if (!result) return;
-        const doc = new jsPDF();
-        const lang = locale as string;
 
-        // Branding
-        try {
-            const logoUrl = "/logo.png";
-            const img = new Image();
-            img.src = logoUrl;
-            await new Promise((resolve) => {
-                img.onload = resolve;
-                img.onerror = resolve;
-            });
-            if (img.complete && img.naturalWidth > 0) {
-                doc.addImage(img, 'PNG', 165, 10, 35, 35);
+        toast.loading("Preparing your divine report...", { id: "pdf-match" });
+
+        const captureSection = async (elementId: string): Promise<string | null> => {
+            const element = document.getElementById(elementId);
+            if (!element) return null;
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                    logging: false
+                });
+                return canvas.toDataURL('image/jpeg', 0.85);
+            } catch (e) {
+                console.error(`Failed to capture section ${elementId}:`, e);
+                return null;
             }
-        } catch (e) { }
+        };
 
-        doc.setFillColor(30, 58, 138);
-        doc.rect(0, 0, 210, 50, "F");
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(26);
-        doc.setFont("helvetica", "bold");
-        doc.text("JyotishConnect", 15, 25);
-        doc.setFontSize(16);
-        doc.text("Premium Vedic Compatibility Report", 15, 38);
-
-        doc.setTextColor(50);
-        doc.setFontSize(20);
-        doc.text(`${result.boy.name}  &  ${result.girl.name}`, 105, 70, { align: "center" });
-
-        doc.setFillColor(243, 244, 246);
-        doc.roundedRect(60, 80, 90, 40, 5, 5, "F");
-        doc.setTextColor(219, 39, 119);
-        doc.setFontSize(48);
-        doc.text(`${result.milan.totalScore}`, 93, 108, { align: "center" });
-        doc.setFontSize(18);
-        doc.setTextColor(156, 163, 175);
-        doc.text("/ 36", 115, 108);
-
-        const verdict = generateMatchVerdict(result.milan.totalScore, result.boy.doshas.Manglik.present, result.girl.doshas.Manglik.present, lang);
-        const splitVerdict = doc.splitTextToSize(verdict, 180);
-        doc.setFontSize(11);
-        doc.text(splitVerdict, 15, 135);
-
-        const currentY = 135 + (splitVerdict.length * 6) + 10;
-        doc.setFontSize(14);
-        doc.text("Ashtakoot Guna Milan Summary", 15, currentY);
-
-        const tableData = Object.entries(result.milan.ashtakoot).map(([key, val]: [string, any]) => [
-            key.toUpperCase(),
-            val.total,
-            val.score,
-            generateAshtakootAnalysis(key, val.score, val.total, val.boyVal, val.girlVal, lang)
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // --- Capture Sections ---
+        const [overviewImg, detailsImg, findingsImg] = await Promise.all([
+            captureSection("pdf-match-overview"),
+            captureSection("pdf-match-details"),
+            captureSection("pdf-match-findings")
         ]);
-        autoTable(doc, {
-            startY: currentY + 5,
-            head: [['FACTOR', 'MAX', 'OBTAINED', 'VEDIC INTERPRETATION']],
-            body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [30, 58, 138] },
-        });
 
-        doc.addPage();
-        const report: any = generateDetailedMatchingReport(result, lang);
-        let detailY = 20;
-        ['marriage', 'nature', 'family', 'finance', 'bond', 'timing', 'forecast'].forEach(sec => {
-            const data = report[sec];
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text(data.title, 15, detailY);
-            detailY += 7;
-            doc.setFontSize(10);
-            const split = doc.splitTextToSize(data.verdict, 180);
-            doc.text(split, 15, detailY);
-            detailY += (split.length * 5) + 10;
-        });
+        // Page 1: Overview
+        if (overviewImg) {
+            doc.addImage(overviewImg, 'JPEG', 0, 0, 210, 297);
+        }
 
+        // Page 2: Details
+        if (detailsImg) {
+            doc.addPage();
+            doc.addImage(detailsImg, 'JPEG', 0, 0, 210, 297);
+        }
+
+        // Page 3: Findings
+        if (findingsImg) {
+            doc.addPage();
+            doc.addImage(findingsImg, 'JPEG', 0, 0, 210, 297);
+        }
+
+        toast.success("Match Report ready!", { id: "pdf-match" });
         doc.save(`JyotishConnect_MatchReport.pdf`);
     };
 
@@ -608,6 +580,133 @@ export default function MatchingPage() {
                 </div>
             </div>
             <Footer />
+
+            {/* Hidden PDF Export Content for Matching */}
+            {result && (
+                <div 
+                    ref={pdfContentRef}
+                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
+                >
+                    {/* Page 1: Overview & Score */}
+                    <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-blue-600/10">
+                        <div className="flex justify-between items-center border-b-4 border-blue-600 pb-6 mb-10">
+                            <h1 className="text-4xl font-black text-blue-600 uppercase tracking-tighter">
+                                {locale === 'hi' ? "विशेष कुंडली मिलान" : "Celestial Match"}
+                            </h1>
+                            <div className="text-right">
+                                <div className="text-5xl font-black text-blue-600">{result.milan.totalScore} / 36</div>
+                                <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">Guna Milan Score</div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-10 mb-12">
+                            <div className="bg-blue-50 p-6 rounded-3xl border-2 border-blue-100">
+                                <h3 className="text-sm font-black text-blue-600 uppercase mb-4 tracking-widest">{t("boyIdentityTitle")}</h3>
+                                <div className="text-2xl font-black text-slate-900 mb-1">{result.boy.name}</div>
+                                <div className="text-xs text-slate-500 font-bold uppercase">{boyData.dob} | {boyData.tob}</div>
+                            </div>
+                            <div className="bg-purple-50 p-6 rounded-3xl border-2 border-purple-100">
+                                <h3 className="text-sm font-black text-purple-600 uppercase mb-4 tracking-widest">{t("girlIdentityTitle")}</h3>
+                                <div className="text-2xl font-black text-slate-900 mb-1">{result.girl.name}</div>
+                                <div className="text-xs text-slate-500 font-bold uppercase">{girlData.dob} | {girlData.tob}</div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-black text-slate-800 border-l-4 border-blue-600 pl-4">Vedic Conclusion</h3>
+                            <div className="p-8 bg-slate-50 rounded-3xl text-xl leading-relaxed text-slate-700 italic border border-slate-200">
+                                "{generateMatchVerdict(result.milan.totalScore, result.boy.doshas.Manglik.present, result.girl.doshas.Manglik.present, locale)}"
+                            </div>
+                        </div>
+
+                        <div className="mt-12 p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl">
+                            <h4 className="font-black text-blue-400 text-[10px] uppercase tracking-[0.3em] mb-4 text-center">Dosha Consensus</h4>
+                            <p className="text-lg font-black text-center leading-snug">
+                                {analyzeManglikCancellation(result.boy, result.girl, locale)}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Page 2: Ashtakoot & Panchang */}
+                    <div id="pdf-match-details" className="p-10 mb-20 bg-white min-h-[1100px]">
+                        <h2 className="text-3xl font-black text-indigo-600 border-b-4 border-indigo-500 pb-4 mb-8">
+                            {locale === 'hi' ? "अष्टकूट मिलान विश्लेषण" : "Ashtakoot Guna Milan"}
+                        </h2>
+                        
+                        <table className="w-full border-collapse mb-12">
+                            <thead>
+                                <tr className="bg-indigo-600 text-white">
+                                    <th className="p-4 text-left border border-indigo-500 text-xs">FACTOR</th>
+                                    <th className="p-4 text-center border border-indigo-500 text-xs">BOY</th>
+                                    <th className="p-4 text-center border border-indigo-500 text-xs">GIRL</th>
+                                    <th className="p-4 text-right border border-indigo-500 text-xs text-white/60">MAX</th>
+                                    <th className="p-4 text-right border border-indigo-500 text-xs">GOT</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-md">
+                                {Object.entries(result.milan.ashtakoot).map(([key, val]: any, idx) => (
+                                    <tr key={key} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
+                                        <td className="p-4 border border-slate-200 font-bold uppercase text-slate-500">{key}</td>
+                                        <td className="p-4 border border-slate-200 text-center font-black">{val.boyVal || "-"}</td>
+                                        <td className="p-4 border border-slate-200 text-center font-black">{val.girlVal || "-"}</td>
+                                        <td className="p-4 border border-slate-200 text-right text-slate-300 font-bold">{val.total}</td>
+                                        <td className="p-4 border border-slate-200 text-right font-black text-indigo-600">{val.score}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <h2 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-4 mb-8">
+                            Interpretation
+                        </h2>
+                        <div className="grid grid-cols-1 gap-6">
+                            {Object.entries(result.milan.ashtakoot).map(([key, val]: any) => (
+                                <div key={key} className="p-4 border-l-4 border-slate-200 bg-slate-50">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{key}</span>
+                                    <p className="text-sm text-slate-700 italic font-serif">
+                                        {generateAshtakootAnalysis(key, val.score, val.total, val.boyVal, val.girlVal, locale)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Page 3: Detailed Forecasts */}
+                    <div id="pdf-match-findings" className="p-10 bg-white min-h-[1100px]">
+                        <h2 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-4 mb-8">
+                            Insights & Remedies
+                        </h2>
+                        <div className="space-y-10">
+                            {(() => {
+                                const report: any = generateDetailedMatchingReport(result, locale);
+                                return ['bond', 'timing', 'forecast', 'family', 'finance', 'nature'].map((sec) => {
+                                    const data = report[sec];
+                                    return (
+                                        <div key={sec} className="border-b border-slate-100 pb-6">
+                                            <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest mb-2">{data.title}</h3>
+                                            <p className="text-md text-slate-600 leading-relaxed italic">"{data.verdict}"</p>
+                                        </div>
+                                    );
+                                });
+                            })()}
+                            
+                            <div className="bg-indigo-50 p-8 rounded-[3.5rem] border-2 border-indigo-100">
+                                <h3 className="text-2xl font-black text-indigo-700 mb-6">Celestial Remedies</h3>
+                                <ul className="space-y-4 text-md text-indigo-900 italic font-serif">
+                                    {(() => {
+                                        const report: any = generateDetailedMatchingReport(result, locale);
+                                        return report.remedies.list.map((r: string, i: number) => (
+                                            <li key={i} className="flex gap-4 items-start">
+                                                <span className="w-6 h-6 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-[10px] font-black shrink-0">{i + 1}</span> {r}
+                                            </li>
+                                        ));
+                                    })()}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main >
     );
 }

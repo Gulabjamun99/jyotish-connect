@@ -230,66 +230,67 @@ export default function UserDashboard() {
                         </button>
                     </div>
 
-                    <div className="space-y-3 pt-2">
+                    <div className="space-y-2 pt-2">
                         {(() => {
-                            const filteredBookings = bookings.filter(b => activeTab === 'upcoming' ? (b.status !== 'completed' && b.status !== 'canceled') : (b.status === 'completed' || b.status === 'canceled'));
+                            const filteredBookings = bookings.filter(b => {
+                                const isDone = b.status === 'completed' || b.status === 'cancelled' || b.status === 'canceled';
+                                return activeTab === 'upcoming' ? !isDone : isDone;
+                            });
 
                             if (filteredBookings.length === 0) {
                                 return (
-                                    <div className="text-center py-16 glass border-dashed bg-zinc-900/50 border-white/5 rounded-[2rem] flex flex-col items-center">
-                                        <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-3">
-                                            <Calendar className="w-5 h-5 text-zinc-500" />
+                                    <div className="text-center py-12 glass border-dashed bg-zinc-900/50 border-white/5 rounded-2xl flex flex-col items-center">
+                                        <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center mb-2">
+                                            <Calendar className="w-4 h-4 text-zinc-500" />
                                         </div>
                                         <h3 className="text-sm font-bold text-zinc-300">No {activeTab} Sessions</h3>
-                                        <p className="text-[11px] text-zinc-500 mt-1 max-w-sm">
-                                            {activeTab === 'upcoming' ? "You don't have any pending astrology consultations." : "Your history is as clear as an empty sky."}
+                                        <p className="text-[10px] text-zinc-500 mt-1 max-w-sm font-medium italic">
+                                            {activeTab === 'upcoming' ? "Your cosmic schedule is clear." : "No previous sessions found."}
                                         </p>
                                     </div>
                                 );
                             }
 
                             return filteredBookings.map((session) => {
-                                const isCompleted = session.status === 'completed' || session.status === 'canceled';
+                                const isCompleted = session.status === 'completed' || session.status === 'cancelled' || session.status === 'canceled';
                                 const isActive = session.status === 'active';
                                 const sessionDate = new Date(session.createdAt);
 
                                 return (
-                                    <div key={session.id} className={`glass bg-zinc-900 border p-4 rounded-[1.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-zinc-800/50 transition-colors relative overflow-hidden ${isCompleted ? 'border-zinc-800/30 opacity-70' : isActive ? 'border-orange-500/30' : 'border-white/5 hover:border-zinc-700'}`}>
-                                        <div className="flex items-center gap-4 w-full md:w-auto relative z-10">
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${isActive ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700/50'}`}>
+                                    <div key={session.id} className={`glass bg-zinc-900 border p-3 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${isCompleted ? 'border-zinc-800/30 opacity-60' : isActive ? 'border-orange-500/30 ring-1 ring-orange-500/20' : 'border-white/5 hover:border-zinc-700'}`}>
+                                        <div className="flex items-center gap-3 w-full md:w-auto">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-md shrink-0 ${isActive ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30 shadow-lg shadow-orange-500/10' : 'bg-zinc-800 text-zinc-500 border border-zinc-700/50'}`}>
                                                 {session.astrologerName?.[0]}
                                             </div>
-                                            <div className="flex-1">
+                                            <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
-                                                    <h3 className="font-bold text-white max-w-[150px] md:max-w-xs truncate">{session.astrologerName}</h3>
-                                                    {(isActive && activeTab === 'upcoming') && <span className="px-1.5 py-0.5 bg-green-500/10 text-green-500 text-[8px] font-bold uppercase rounded animate-pulse">Live</span>}
-                                                    {(!isActive && !isCompleted && activeTab === 'upcoming') && <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[8px] font-bold uppercase rounded">Scheduled</span>}
+                                                    <h3 className="text-sm font-bold text-white truncate">{session.astrologerName}</h3>
+                                                    {(isActive && activeTab === 'upcoming') && <span className="px-1.5 py-0.5 bg-green-500/10 text-green-500 text-[7px] font-black uppercase rounded tracking-widest animate-pulse">Live</span>}
+                                                    {(!isActive && !isCompleted && activeTab === 'upcoming') && <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[7px] font-black uppercase rounded tracking-widest">Booked</span>}
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-600">
+                                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-tighter text-zinc-600">
                                                     <span>{sessionDate.toLocaleDateString()}</span>
-                                                    <span className="w-1 h-1 bg-zinc-700 rounded-full" />
+                                                    <span className="w-1 h-1 bg-zinc-800 rounded-full" />
                                                     <span className={session.type === 'video' ? 'text-orange-500' : 'text-blue-500'}>{session.type}</span>
-                                                    <span className="w-1 h-1 bg-zinc-700 rounded-full" />
-                                                    <span className={isCompleted ? 'text-zinc-500' : 'text-green-500'}>{session.status}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <div className="flex w-full md:w-auto gap-2 relative z-10 mt-2 md:mt-0">
+                                        <div className="flex w-full md:w-auto gap-2 mt-1 md:mt-0">
                                             {isActive && activeTab === 'upcoming' ? (
                                                 <Button
                                                     onClick={() => router.push(`/consult/${session.id}?type=${session.type}`)}
-                                                    className="h-9 flex-1 md:flex-none md:px-6 font-bold uppercase tracking-widest text-[9px] rounded-lg bg-green-500 hover:bg-green-600 text-white animate-pulse"
+                                                    className="h-8 flex-1 md:flex-none md:px-5 font-black uppercase tracking-widest text-[8px] rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-xl shadow-green-500/20 animate-pulse"
                                                 >
                                                     Join
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     variant="outline"
-                                                    className="h-9 flex-1 md:flex-none md:px-6 font-bold uppercase tracking-widest text-[9px] rounded-lg border-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                                                    className="h-8 flex-1 md:flex-none md:px-5 font-black uppercase tracking-widest text-[8px] rounded-lg border-zinc-800 text-zinc-400 hover:bg-zinc-700"
                                                     onClick={() => router.push(`/consultation-summary/${session.id}`)}
                                                 >
-                                                    Details
+                                                    Summary
                                                 </Button>
                                             )}
                                         </div>
