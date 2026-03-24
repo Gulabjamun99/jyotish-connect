@@ -1,627 +1,1444 @@
-
 export const INTERPRETATIONS = {
-    en: {
-        planets: {
-            Sun: "The Sun represents your soul, ego, and father figures.",
-            Moon: "The Moon governs your emotions, mind, and mother.",
-            Mars: "Mars drives your energy, ambition, and aggression.",
-            Mercury: "Mercury rules communication, intelligence, and business.",
-            Jupiter: "Jupiter brings wisdom, expansion, and luck.",
-            Venus: "Venus controls love, luxury, and artistic talent.",
-            Saturn: "Saturn imposes discipline, delay, and hard lessons.",
-            Rahu: "Rahu signifies obsession and foreign elements.",
-            Ketu: "Ketu signifies detachment and spirituality."
+    "en": {
+        "planets": {
+            "Sun": "The Sun represents your soul, ego, and father figures.",
+            "Moon": "The Moon governs your emotions, mind, and mother.",
+            "Mars": "Mars drives your energy, ambition, and aggression.",
+            "Mercury": "Mercury rules communication, intelligence, and business.",
+            "Jupiter": "Jupiter brings wisdom, expansion, and luck.",
+            "Venus": "Venus controls love, luxury, and artistic talent.",
+            "Saturn": "Saturn imposes discipline, delay, and hard lessons.",
+            "Rahu": "Rahu signifies obsession and foreign elements.",
+            "Ketu": "Ketu signifies detachment and spirituality."
         },
-        houses: {
-            1: "Self & Personality",
-            2: "Wealth & Family",
-            3: "Courage & Siblings",
-            4: "Home & Mother",
-            5: "Children & Intellect",
-            6: "Enemies & Health",
-            7: "Marriage & Partnership",
-            8: "Longevity & Transformation",
-            9: "Luck & Higher Learning",
-            10: "Career & Status",
-            11: "Gains & Network",
-            12: "Losses & Spirituality"
+        "houses": {
+            "1": "Self & Personality",
+            "2": "Wealth & Family",
+            "3": "Courage & Siblings",
+            "4": "Home & Mother",
+            "5": "Children & Intellect",
+            "6": "Enemies & Health",
+            "7": "Marriage & Partnership",
+            "8": "Longevity & Transformation",
+            "9": "Luck & Higher Learning",
+            "10": "Career & Status",
+            "11": "Gains & Network",
+            "12": "Losses & Spirituality"
         },
-        // [Planet][House] -> Effect
-                placements: {
-            Sun: {
-                1: "प्रभावशाली आणि अधिकृत व्यक्तिमत्व. नैसर्गिक नेतृत्व क्षमता आणि प्रबळ चैतन्यशक्ती.",
-                2: "प्रतिष्ठित कुटुंबातील आहात. सरकारी/अधिकृत लाभ, पण बोलणे कठोर असू शकते.",
-                3: "धाडसी आणि साधनसंपन्न. भावंडांशी मतभेद शक्य, पण विरोधकांवर विजय मिळवाल.",
-                4: "घरची काळजी. यश जन्मस्थानापासून दूर. आरामापेक्षा करिअरला प्राधान्य.",
-                5: "सर्जनशील आणि बुद्धिमान. कमी पण तेजस्वी मुले. सट्टा बाजारात रस असू शकतो.",
-                6: "शत्रूंवर विजय. प्रबळ रोगप्रतिकारशक्ती. सेवा किंवा प्रशासनात प्रगती.",
-                7: "विवाहात अहंकाराचा संघर्ष शक्य. जोडीदार उच्च दर्जाचा किंवा अधिकृत स्वभावाचा असेल.",
-                8: "गूढ शास्त्रात रस. डोळे किंवा हृदयाच्या आरोग्याची काळजी घ्या. दीर्घायुष्य चांगले.",
-                9: "धार्मिक स्वभाव. वडिलांशी मतभेद शक्य. आध्यात्मिक कार्यासाठी प्रवास.",
-                10: "करिअरसाठी उत्कृष्ट. उच्च स्थान, प्रसिद्धी आणि सरकारी लाभ मिळतील.",
-                11: "उच्च दर्जाचे मित्र आणि अपार लाभ. आकांक्षा पूर्ण होतील.",
-                12: "परदेश निवास शक्य. आध्यात्मिक पण डोळे/झोपेशी संबंधित समस्या."
+        "placements": {
+            "Sun": {
+                "1": "Charismatic and authoritative personality. You are a natural born leader with strong vitality.",
+                "2": "You come from a respectable family. Success through authority or government is likely.",
+                "3": "Courageous and resourceful. You may have sibling differences but will triumph over rivals.",
+                "4": "Success comes away from home. You prioritize career over domestic comfort.",
+                "5": "Creative and intelligent. You may have few children, but they will be brilliant.",
+                "6": "You conquer enemies easily. Strong immunity facilitates success in service or administration.",
+                "7": "Marriage may face ego clashes. Your partner is likely of high_status or authoritative nature.",
+                "8": "Interest in the occult. Take care of your eyesight and heart health. Longevity is good.",
+                "9": "Righteous nature. You will travel for noble causes, though fatherly relations may be strained.",
+                "10": "Excellent for career. You will achieve high status, fame, and government favors.",
+                "11": "high-status friends and immense gains. Your ambitions will see fulfillment.",
+                "12": "Foreign residence possible. deeply spiritual but may face sleep or eye issues."
             },
-            Moon: {
-                1: "भावूक, संवेदनशील आणि लहरी. प्रसन्न चेहरा आणि सर्वांचे लाडके.",
-                2: "गोड आवाज आणि श्रीमंत कुटुंब. पैसा भरती-ओहोटीसारखा कमी-जास्त होतो.",
-                3: "प्रवासाची आवड आणि उत्तम संवाद कौशल्य. बहिणींशी संबंध दृढ.",
-                4: "आई आणि घराशी जोडलेले. वाहने आणि मालमत्ता आनंद देतात.",
-                5: "सर्जनशील आणि रोमँटिक. मुले आणि कला आवडतात. मन सक्रिय राहते.",
-                6: "लहानपणी नाजूक आरोग्य. सेवेची वृत्ती, पण गुप्त शत्रूंचा सामना.",
-                7: "सुंदर आणि भावूक जोडीदार. लवकर विवाह होणे शक्य.",
-                8: "अंतर्ज्ञानी आणि गुप्त. आरोग्याची काळजी घ्या. वारसा हक्काने लाभ.",
-                9: "नशीबवान आणि धार्मिक. प्रवास नशीब उजळवतो. तात्विक मन.",
-                10: "करिअरमध्ये वारंवार बदल. जनसंपर्क (Public Dealing) योग्य.",
-                11: "अनेक मित्र आणि सामाजिक लाभ. आर्थिक यश सहज मिळते.",
-                12: "स्वप्नाळू आणि आध्यात्मिक. एकांत आवडते, परदेश प्रवास शक्य."
+            "Moon": {
+                "1": "Emotional, sensitive, and moody. You have a pleasant face and are loved by all.",
+                "2": "Sweet voice and wealthy family. Financial flow fluctuates like the tides.",
+                "3": "Fond of travel with good communication skills. Strong bond with sisters.",
+                "4": "Deeply attached to mother and home. Vehicles and property bring you happiness.",
+                "5": "Creative and romantic mind. You love children and arts; your mind is always active.",
+                "6": "Compassionate service to others. Health may be delicate; beware of secret hostility.",
+                "7": "Beautiful and emotional partner. Early marriage is a strong possibility.",
+                "8": "Intuitive and secretive. Health needs care; legacy gains are possible.",
+                "9": "Fortunate and religious. Travel brings luck; you possess a philosophical mind.",
+                "10": "Frequent career changes. Public dealing and social interaction suit you best.",
+                "11": "Many friends and social gains. Financial success comes easily to you.",
+                "12": "Dreamy and spiritual nature. You enjoy solitude and may travel via foreign lands."
             },
-            Mars: {
-                1: "तुम्ही ऊर्जावान आणि आवेगपूर्ण आहात. डोक्याच्या दुखापतींपासून सावध राहा.",
-                2: "कठोर बोलण्यामुळे कौटुंबिक तणाव निर्माण होऊ शकतो. साहस आणि जोखमीने धनप्राप्ती होईल. मालमत्ता व्यवसायात रस.",
-                3: "अत्यंत धाडसी आणि निडर. खेळ, लष्करी किंवा साहसी कार्यांसाठी उत्तम. प्रतिस्पर्ध्यांवर विजय निश्चित.",
-                4: "घरगुती अशांती आणि मालमत्ता विवाद शक्य. निवासस्थान वारंवार बदलू शकते. आईच्या आरोग्याची काळजी घ्या.",
-                5: "तीक्ष्ण बुद्धी आणि आक्रमक निर्णय घेण्याची क्षमता. मुले हट्टी असू शकतात. सट्टेबाजीतून लाभ.",
-                6: "शत्रूंवर विजय निश्चित. सर्जन, अभियंता आणि लष्करी व्यावसायिकांसाठी उत्तम. प्रबळ रोगप्रतिकारशक्ती.",
-                7: "मांगलिक प्रभाव. विवाहात संयम आणि गुण मिळवणे आवश्यक आहे.",
-                8: "संशोधन वृत्ती आणि गूढ शास्त्रात रस. अपघातांची शक्यता - सावधगिरी बाळगा. सासरकडून वारसाहक्क संभवतो.",
-                9: "तीर्थयात्रा आणि साहसी प्रवास. धर्म आणि न्यायासाठी लढा द्याल. वडील किंवा गुरूंशी मतभेद शक्य.",
-                10: "तांत्रिक करिअर आणि पोलीस/लष्करासाठी उत्कृष्ट.",
-                11: "मोठ्या आकांक्षा पूर्ण होतात. प्रभावशाली व्यक्तींशी चांगले संबंध. जमीन किंवा मालमत्तेतून उत्पन्न.",
-                12: "गुप्त शत्रू किंवा परदेशी गुंतागुंतीमुळे ऊर्जेचा ऱ्हास होऊ शकतो. मार्शल आर्ट्स किंवा आध्यात्मिक युद्धात रस."
+            "Mars": {
+                "1": "You are energetic, courageous, and physically strong. Leadership comes naturally, but temper needs control. Prone to head injuries or scars on face.",
+                "2": "Harsh speech may create family tension. Wealth comes through courage and risk-taking. Interest in property and real estate.",
+                "3": "Extremely courageous and daring. Excellent for sports, military, or adventure. Victory over competitors is assured. Strong bond with younger siblings.",
+                "4": "Domestic disturbances and property disputes possible. You may change residences frequently. Mother's health needs attention. Strong willpower.",
+                "5": "Sharp intellect with aggressive decision-making. Children may be headstrong. Speculative gains through calculated risks. Passionate in love affairs.",
+                "6": "Victory over enemies guaranteed. Excellent for surgeons, engineers, and military professionals. Strong immunity and competitive spirit.",
+                "7": "Manglik Dosha — marriage needs careful matching. Partner may be aggressive or independent. High physical attraction in relationships.",
+                "8": "Research-oriented mind with interest in occult sciences. Accident-prone — take precautions. Inheritance through spouse or in-laws possible.",
+                "9": "Pilgrimages and adventurous travels. You fight for dharma and justice. Differences with father or guru possible. Courageous in beliefs.",
+                "10": "Excellent for technical careers, engineering, police, army, and surgery. You achieve through sheer hard work and determination.",
+                "11": "High ambitions that get fulfilled. Strong network of influential contacts. Elder siblings are helpful. Income through property or land.",
+                "12": "Hospitalization possible. Energy may drain through hidden enemies or foreign complications. Interest in martial arts or spiritual warfare."
             },
-            Mercury: {
-                1: "तीक्ष्ण बुद्धी, तरुण दिसणे आणि उत्कृष्ट संवाद कौशल्य. तुम्ही वेगाने शिकता आणि कोणत्याही परिस्थितीत जुळवून घेता.",
-                2: "गोड आणि प्रभावशाली वाणी. बौद्धिक कार्ये, व्यवसाय किंवा संवादातून पैसा. शिक्षणाला महत्त्व.",
-                3: "उत्कृष्ट लेखक, वक्ता किंवा मीडिया प्रोफेशनल. भावंडांशी चांगले संबंध. लहान प्रवास फायदेशीर.",
-                4: "चांगले शिक्षण आणि अनेक विषयांचे ज्ञान. रिअल इस्टेटमध्ये कुशल. घरात पुस्तके आणि अभ्यासाचे साहित्य.",
-                5: "हुशार मन आणि तीक्ष्ण विश्लेषणात्मक क्षमता. स्पर्धा परीक्षेत यश. ज्योतिष आणि मंत्रशास्त्रात रस.",
-                6: "कायदेशीर, वैद्यकीय किंवा विश्लेषणात्मक क्षेत्रात उत्कृष्ट समस्या निवारक. बुद्धीने शत्रूंना मात द्याल.",
-                7: "जोडीदार बुद्धिमान आणि संवादशील. व्यावसायिक भागीदारी लाभदायक. विवाहापूर्वी अनेक संबंध शक्य.",
-                8: "संशोधन, शोधकार्य किंवा विम्यात रस. गुप्त ज्ञान प्राप्त होईल. कागदपत्रे किंवा कायदेशीर मार्गाने वारसा.",
-                9: "उच्च शिक्षण यश मिळवून देते. तुम्ही उपजत तत्वज्ञ आणि शिक्षक आहात. परदेशी शिक्षण किंवा बहुराष्ट्रीय करिअर संभवते.",
-                10: "व्यापार, लेखा, आयटी आणि संवाद क्षेत्रातील करिअरसाठी उत्तम. बुद्धिमत्ता आणि नेटवर्किंगमुळे प्रगती.",
-                11: "विविध क्षेत्रातील मित्र. अनेक स्त्रोतांकडून उत्पन्न. मोठे भावंडे बुद्धिमान आणि मदत करणारे.",
-                12: "अंतर्मुखी पण समृद्ध आंतरिक जग. शिक्षणासाठी परदेशात स्थायिक होण्याची शक्यता. ध्यान धारणा खूप उपयुक्त."
+            "Mercury": {
+                "1": "Quick-witted, youthful appearance, and excellent communication skills. You learn fast and adapt to any situation. Good for writing and trading.",
+                "2": "Sweet and persuasive speech. Wealth through intellectual pursuits, business, or communication. Family values education highly.",
+                "3": "Outstanding writer, speaker, or media professional. Excellent relations with siblings. Short travels are frequent and fruitful.",
+                "4": "Well-educated with knowledge of multiple subjects. Real estate acumen is strong. Home is filled with books and study materials.",
+                "5": "Brilliant mind with sharp analytical abilities. Success in competitive exams. Children are intelligent. Interest in astrology and mantra.",
+                "6": "Problem-solver who excels in legal, medical, or analytical fields. You outsmart enemies through wit. Nervous health issues possible.",
+                "7": "Partner is intelligent and communicative. Business partnerships are profitable. Multiple relationships before marriage are possible.",
+                "8": "Interest in research, detective work, or insurance. Secret knowledge acquisition. Inheritance through documentation or legal means.",
+                "9": "Higher education brings success. You're a natural philosopher and teacher. Foreign education or multinational career likely.",
+                "10": "Excellent for business, accounting, IT, and communication careers. You rise through intellectual competence and networking.",
+                "11": "Large friend circle across diverse backgrounds. Income through multiple sources. Elder siblings are intelligent and supportive.",
+                "12": "Introvert with a rich inner world. Foreign settlement through education. Expenses on education or treatment. Meditation aids greatly."
             },
-            Jupiter: {
-                1: "तुम्ही ज्ञानी, आशावादी आणि नशीबवान आहात. दीर्घायुष्य आणि सन्मान मिळेल.",
-                2: "संपन्न कुटुंब आणि मजबूत संस्कार. हळूहळू संपत्तीची साठवणूक. प्रभावी बोलण्याने लोकांची मने जिंकाल.",
-                3: "धार्मिक विचारांचे आणि धाडसी. लहान भावंडांना तुमच्या मार्गदर्शनाचा लाभ. आध्यात्मिक प्रवास.",
-                4: "मोठे कौटुंबिक सुख, मोठी मालमत्ता आणि विलासी वाहने. आईशी दृढ नाते. सुसंस्कृत जीवनशैली.",
-                5: "अत्यंत सर्जनशील आणि बुद्धिमान मुले. शिक्षण, सट्टा आणि राजकारणात यश. प्रेम जीवन आध्यात्मिकरित्या समृद्ध.",
-                6: "शत्रू आणि रोगांवर विजय. वैद्यकीय किंवा कायदेशीर क्षेत्रातून सेवा. पचन संस्थेच्या आरोग्याकडे लक्ष द्या.",
-                7: "ज्ञानी आणि मदत करणारा जोडीदार. व्यावसायिक भागीदारी नशीबवान ठरेल. जोडीदारामुळे प्रतिष्ठा वाढेल.",
-                8: "दीर्घायुष्य आणि तत्वमीमांसामध्ये रस. वारसाहक्क किंवा विम्याद्वारे अचानक लाभ. आध्यात्मिक अनुभव.",
-                9: "अत्यंत नशीबवान स्थिती. खोल आध्यात्मिक आणि दार्शनिक मन. वडील प्रभावशाली. परदेश प्रवासातून प्रगती.",
-                10: "सन्माननीय आणि प्रतिष्ठित करिअर. नैतिक नेतृत्व. सरकारी संबंध शक्य.",
-                11: "भरपूर संपत्ती आणि प्रभावशाली मित्र. सर्व इच्छा कालांतराने पूर्ण होतात. सामाजिक प्रतिष्ठा उत्तम.",
-                12: "आध्यात्मिक मुक्ती शोधणारे. दानधर्मामुळे चांगली कर्मे. आश्रमात किंवा आध्यात्मिक केंद्रात परदेश निवास."
+            "Jupiter": {
+                "1": "You are wise, optimistic, and naturally lucky. People respect and trust you. Good health and long life. A born teacher and counselor.",
+                "2": "Wealthy family with strong values. You accumulate wealth steadily. Eloquent speech wins people over. Knowledge of scriptures and law.",
+                "3": "Courageous with righteous intentions. Younger siblings benefit from your guidance. Travel for education or religious purposes.",
+                "4": "Great domestic happiness, large properties, and luxury vehicles. Deep bond with mother. Well-educated and cultured lifestyle.",
+                "5": "Highly creative and intelligent children. Success in education, speculation, and politics. Romantic life is spiritually enriching.",
+                "6": "Victory over enemies and diseases. You serve others through healing or law. Digestive health needs attention. Charitable nature.",
+                "7": "Blessed marriage with a wise and supportive partner. Business partnerships are lucky. Spouse brings fortune and respect.",
+                "8": "Long life and interest in metaphysics. Sudden gains through inheritance or insurance. Transformation through spiritual experiences.",
+                "9": "Extremely fortunate placement. You are deeply spiritual with a philosophical mind. Father is influential. Foreign travel brings growth.",
+                "10": "Honorable and respected career. You achieve high positions through merit. Government connections possible. Ethical leadership.",
+                "11": "Abundant wealth and influential friends. All desires get fulfilled over time. Social reputation is sterling. Elder siblings prosper.",
+                "12": "Spiritual liberation seeker. Charitable expenses bring good karma. Foreign residence in ashram or spiritual center. Final salvation assured."
             },
-            Venus: {
-                1: "नैसर्गिकरित्या आकर्षक व्यक्तिमत्व. सौंदर्य, फॅशन आणि विलासी जीवनाची आवड. मोहक आणि मुत्सद्दी स्वभाव.",
-                2: "विलासी जीवनशैली, उत्तम भोजन आणि कलांची आवड. गोड आवाज - गायन উভয় गायन किंवा भाषणासाठी उत्तम.",
-                3: "कलात्मक छंद आणि सर्जनशील संवाद. बहिणी जवळच्या आणि मदत करणाऱ्या. सतत लहान आनंददायी सहली.",
-                4: "सुंदर आणि आरामदायक घर. विलासी वाहने आणि मालमत्तेचे मालक. आईवर खूप प्रेम. इंटिरियर डिझाइनची प्रतिभा.",
-                5: "रोमँटिक आणि सर्जनशील प्रतिभा. प्रेमसंबंध भावूक आणि संस्मरणीय. मुले आनंद मिळवून देतात. कला, सिनेमात यश.",
-                6: "कामाच्या ठिकाणी सामंजस्यपूर्ण संबंध. सौंदर्य प्रसाधनांच्या दिनचर्येमुळे आरोग्य. महिला प्रतिस्पर्ध्यांवर विजय.",
-                7: "सुंदर आणि प्रेमळ जोडीदार. भौतिक सुखांसह आनंदी वैवाहिक जीवन. विवाहातून सामाजिक प्रतिष्ठा.",
-                8: "गुप्त सुख आणि गुप्त रोमान्स. जोडीदाराकडून वारसा. तंत्र किंवा गूढ सौंदर्य साधनांमध्ये रस.",
-                9: "आध्यात्मिक सौंदर्य आणि दार्शनिक रोमान्सची आवड. आनंदासाठी परदेश प्रवास. कलात्मक उपक्रमातून नशीब.",
-                10: "मनोरंजन, फॅशन किंवा मुत्सद्देगिरीत यश. तुमच्या आकर्षणामुळे शिखरावर पोहोचाल. सार्वजनिक प्रतिमा उत्कृष्ट.",
-                11: "श्रीमंत सामाजिक मंडळ आणि मदत करणाऱ्या महिला मैत्रिणी. आर्थिक लाभ स्थिर आणि सोपे. विलासी इच्छा पूर्ण.",
-                12: "आध्यात्मिक प्रेम आणि परदेशी सुख. विलासी वस्तू आणि आरामावर खर्च. गुप्त रोमँटिक संबंध शक्य."
+            "Venus": {
+                "1": "Naturally attractive personality with artistic sensibilities. Love for beauty, fashion, and luxury. Charming and diplomatic nature.",
+                "2": "Wealthy lifestyle with love for fine dining and luxury. Sweet voice — good for singing or public speaking. Harmonious family life.",
+                "3": "Artistic hobbies and creative communication. Sisters are close and supportive. Short pleasure trips are frequent.",
+                "4": "Beautiful and comfortable home. Luxury vehicles and property ownership. Deep love for mother. Interior design talent.",
+                "5": "Romantic and creative genius. Love affairs are passionate and memorable. Children bring joy. Success in arts, cinema, or entertainment.",
+                "6": "Harmonious work relationships. Health through beauty routines. Victory over female adversaries. Service in hospitality or fashion.",
+                "7": "Beautiful and loving spouse. Happy married life with material comforts. Partnership businesses thrive. Social status through marriage.",
+                "8": "Hidden pleasures and secret romances. Inheritance through spouse. Interest in tantra or occult beauty practices. Long-lived spouse.",
+                "9": "Love for spiritual beauty and philosophical romance. Foreign travel for pleasure. Lucky through women or artistic ventures.",
+                "10": "Success in entertainment, fashion, hospitality, or diplomacy. You charm your way to the top. Public image is excellent.",
+                "11": "Wealthy social circle with female friends who help. Financial gains are steady and easy. Desires related to luxury get fulfilled.",
+                "12": "Spiritual love and foreign pleasures. Expenses on luxury and comfort. Bed pleasures are enhanced. Hidden romantic affairs possible."
             },
-            Saturn: {
-                1: "शिस्तबद्ध आणि गंभीर. यश उशिरा मिळते.",
-                2: "पैशांच्या बाबतीत काटकसरी - बचतीतून हळूहळू संपत्ती निर्माण होते. कौटुंबिक जबाबदाऱ्या जड वाटू शकतात.",
-                3: "संयमी आणि शिस्तबद्ध धाडस. लहान भावंडांना अडचणी येऊ शकतात. तांत्रिक लेखनात यश.",
-                4: "घरगुती जबाबदाऱ्या आणि मालमत्तेच्या कामात विलंब. आईच्या आरोग्याची काळजी घ्या. ३० नंतर मालमत्ता लाभ.",
-                5: "संतती विलंबाने किंवा कमी मुले. प्रेमाच्या बाबतीत गंभीर दृष्टिकोन. बौद्धिक खोली उल्लेखनीय.",
-                6: "सर्व अडथळ्यांवर मात करणारे कष्टाळू. सुरुवातीच्या संघर्षानंतर मजबूत आरोग्य. कायद्याच्या कामासाठी उत्तम.",
-                7: "विवाहात विलंब होऊ शकतो पण तो स्थिर असेल.",
-                8: "कर्म धड्यांसह दीर्घायुष्य. प्राचीन विज्ञान आणि मृत्यू संबंधित रहस्यांमध्ये रस. जुने आजार शक्य.",
-                9: "पारंपारिक आणि धार्मिक मानसिकता. वडिलांना अडचणी येऊ शकतात. कर्तव्य किंवा कामासाठी आंतरराष्ट्रीय प्रवास.",
-                10: "पदासाठी कठोर परिश्रम करता. राजकीय यश शक्य.",
-                11: "हळू पण स्थिर उत्पन्न वाढ. निष्ठावान जुने मित्र. आयुष्याच्या उत्तरार्धात आकांक्षा पूर्ण.",
-                12: "आध्यात्मिक वैराग्य आणि संन्यासी प्रवृत्ती. कामासाठी परदेश निवास. कायदेशीर खर्च किंवा रुग्णालयातील मुक्काम शक्य."
+            "Saturn": {
+                "1": "Disciplined, serious, and responsible from a young age. Success comes later in life through persistent hard work. Lean physique.",
+                "2": "Frugal with money — wealth builds slowly through savings. Family responsibilities feel heavy. Speech is deliberate and measured.",
+                "3": "Patient and methodical courage. Younger siblings may face hardships. Success in technical writing or documentation work.",
+                "4": "Domestic responsibilities and possible property delays. Mother's health needs care. Happiness in later life. Strong real estate gains after 30.",
+                "5": "Delayed progeny or fewer children. Serious approach to romance. Intellectual depth is remarkable. Success in traditional education.",
+                "6": "Hard worker who conquers all obstacles. Health is strong after initial struggles. Excellent for law enforcement or labor-intensive careers.",
+                "7": "Marriage may be delayed but is stable and lasting. Mature and responsible partner. Business partnerships require patience.",
+                "8": "Long life with karmic lessons. Interest in ancient sciences and death-related mysteries. Chronic health issues need consistent care.",
+                "9": "Traditional and religious mindset. Father may face hardships. International travel for work or duty. Karma shapes your fortune.",
+                "10": "You work extremely hard for status and power. Political success is possible. Late but lasting career achievements. Authority figure.",
+                "11": "Gradual but steady income growth. Loyal older friends. Ambitions fulfilled in the second half of life. Social service inclination.",
+                "12": "Spiritual detachment and monastic tendencies. Foreign residence for work. Hospital stays possible. Expenses on health or legal matters."
             },
-            Rahu: {
-                1: "अपारंपारिक व्यक्तिमत्व आणि चुंबकीय आकर्षण. तुम्ही गर्दीपेक्षा वेगळा विचार करता. परदेशी संबंध आणि आधुनिक दृष्टिकोन.",
-                2: "अपारंपारिक मार्गाने संपत्ती. परदेशी खाद्यपदार्थांची आवड. कौटुंबिक गुपिते. बोलणे अत्यंत प्रभावशाली.",
-                3: "कमालीचे धाडस आणि संवाद कौशल्य. मीडिया, तंत्रज्ञान किंवा नाविन्यपूर्ण प्रयोगातून यश. भावंडे परदेशात राहू शकतात.",
-                4: "परदेशी मूळचे घर किंवा परदेशात मालमत्ता. आई वेगळ्या पार्श्वभूमीची असू शकते. असामान्य घरगुती जीवन.",
-                5: "असामान्य रोमँटिक आकर्षणे. मुले अपारंपारिक विचारांची. तंत्रज्ञान किंवा परदेशी गुंतवणुकीतून लाभ.",
-                6: "चतुर रणनीतीने शत्रूंवर विजय. प्रबळ रोगप्रतिकारशक्ती. परदेशी आरोग्य सेवा किंवा आयटीमध्ये यश.",
-                7: "आंतरजातीय किंवा आंतरधर्मीय विवाह संभवतो. जोडीदार वेगळ्या पार्श्वभूमीचा. परकीयांशी व्यापार लाभदायक.",
-                8: "गूढ, तंत्र आणि रहस्यांमध्ये खोल रस. जीवनात अचानक बदल. अनपेक्षित स्त्रोतांकडून वारसा.",
-                9: "अपारंपारिक आध्यात्मिक विश्वास. परदेशी तीर्थयात्रा. परदेशी उच्च शिक्षणातून यश.",
-                10: "अपारंपारिक मार्गांनी करिअरमध्ये झपाट्याने वाढ. तंत्रज्ञान, राजकारण किंवा परदेशी कंपन्या नशीबवान.",
-                11: "परदेशी संबंध आणि तंत्रज्ञानातून मोठा नफा. मित्र परिवार विविध અને आंतरराष्ट्रीय. मोठी स्वप्ने.",
-                12: "परदेशात स्थायिक होणे जवळजवळ निश्चित. परदेश प्रवासावर खर्च. अपारंपारिक मार्गाने आध्यात्मिक जागृती."
+            "Rahu": {
+                "1": "Unconventional personality with magnetic charm. You think differently from the crowd. Foreign connections and modern outlook. Skin issues possible.",
+                "2": "Wealth through unconventional means. Foreign food habits. Family secrets exist. Speech can be deceptive or exceptionally persuasive.",
+                "3": "Extraordinary courage and communication skills. Success through media, technology, or innovative ventures. Siblings may live abroad.",
+                "4": "Foreign-origin home or property abroad. Mother may be from a different background. Domestic life has unusual patterns.",
+                "5": "Unusual romantic attractions. Children may be unconventional. Success through speculation, technology, or foreign investments.",
+                "6": "Victory over enemies through clever tactics. Immunity is strong but unusual diseases possible. Success in foreign healthcare or IT.",
+                "7": "Inter-caste or inter-cultural marriage likely. Partner is from a different background. Business with foreigners is profitable.",
+                "8": "Deep interest in occult, tantra, and mysteries. Sudden transformations in life. Inheritance from unexpected sources.",
+                "9": "Unorthodox spiritual beliefs. Foreign pilgrimage. Father's life is unusual. Success through foreign higher education.",
+                "10": "Rapid career rise through unconventional paths. Technology, politics, or foreign companies are lucky. Fame comes suddenly.",
+                "11": "Massive gains through foreign connections and technology. Friend circle is diverse and international. Dreams are ambitious and achievable.",
+                "12": "Foreign settlement almost certain. Expenses on foreign travel. Spiritual awakening through unconventional methods. Past life karma active."
             },
-            Ketu: {
-                1: "आध्यात्मिक आणि अंतर्मुखी व्यक्तिमत्व. इतरांना गूढ वाटता. शारीरिक आरोग्याकडे लक्ष द्या. पूर्वजन्मीचे ज्ञान.",
-                2: "कौटुंबिक संपत्तीपासून अलिप्तता. बोलण्याची वेगळी धाटणी शक्य. प्राचीन भाषा किंवा शास्त्रांमध्ये रस.",
-                3: "असामान्य मार्गाने धाडसी. संवाद शैली अद्वितीय किंवा गूढ. भावंडे आध्यात्मिक प्रवृत्तीचे.",
-                4: "घरगुती सुखांपासून वैराग्य. आई आध्यात्मिक प्रवृत्तीची. वडिलोपार्जित संपत्ती किंवा प्राचीन घरांमध्ये रस.",
-                5: "भौतिक बुद्धीपेक्षा आध्यात्मिक बुद्धिमत्ता. कमी रोमँटिक आकर्षणे. मुलांचे पूर्वजन्मीचे संबंध. मंत्र ज्ञान.",
-                6: "शत्रूंविरुद्ध गुप्त शक्ती. असामान्य रोगप्रतिकारशक्ती. समर्पण आणि आध्यात्मिक शक्तीने विजय.",
-                7: "आध्यात्मिक प्रवृत्तीच्या व्यक्तीशी विवाह. जोडीदारामध्ये खोली आणि रहस्य असते. कर्मिक संबंध.",
-                8: "खोल गूढ ज्ञान असलेला नैसर्गिक रहस्यवादी. अचानक आध्यात्मिक बदल. मोक्षाची ओढ.",
-                9: "पूर्वजन्मीच्या धर्माधिष्ठित पुण्यामुळे आध्यात्मिक ओढ. प्राचीन स्थळांची तीर्थयात्रा. उपजात साधू.",
-                10: "अध्यात्म, संशोधन किंवा सामाजिक संस्थांमध्ये करिअर. अलिप्तता आणि सेवेमुळे यश.",
-                11: "आध्यात्मिक समुदायाकडून लाभ. भौतिक इच्छांबद्दल कमी ओढ. मानवतावादी ओढ.",
-                12: "मोक्षासाठी सर्वोत्तम स्थिती. परदेशी आध्यात्मिक आश्रमात निवास. पूर्ण वैराग्यातून ज्ञानप्राप्ती."
+            "Ketu": {
+                "1": "Spiritual and introspective personality. You seem mysterious to others. Health of the physical body needs attention. Past life wisdom present.",
+                "2": "Detachment from family wealth. Speech peculiarities possible. Interest in ancient languages or scriptures. Savings through renunciation.",
+                "3": "Courageous but in an unusual way. Communication style is unique or cryptic. Siblings may be spiritually inclined. Less interest in rivalry.",
+                "4": "Detachment from home comforts. Mother may be spiritually inclined. Interest in ancestral property or ancient homes.",
+                "5": "Spiritual intelligence over material intellect. Fewer romantic attachments. Children have past life connections. Deep mantra knowledge.",
+                "6": "Hidden strength against enemies. Unusual immune system. Victory through surrender and spiritual power. Good for healing professions.",
+                "7": "Marriage to a spiritually inclined person. Partner has depth and mystery. Past life karmic relationship highly likely.",
+                "8": "Natural mystic with deep occult knowledge. Sudden spiritual transformations. Moksha oriented. Past life regression possible.",
+                "9": "Deeply spiritual with past life dharma credits. Pilgrimage to ancient sites. Father may renounce worldly life. Natural sadhu.",
+                "10": "Career in spirituality, research, or non-profit organizations. Success through detachment and service. Past reputation carries forward.",
+                "11": "Gains through spiritual community. Less attachment to material desires. Elder siblings are spiritual. Humanitarian inclinations.",
+                "12": "Strongest placement for liberation. Foreign spiritual ashram residence. Complete detachment leads to enlightenment. Final salvation path."
             }
         },
-        transits: {
-            Sun: {
-                1: "स्वास्थ्य को देखभाल की जरूरत है। अहंकार का टकराव संभव है।",
-                2: "वित्तीय निगरानी की आवश्यकता है। अपनी वाणी पर ध्यान दें।",
-                3: "उच्च साहस और कार्यों में सफलता।",
-                4: "घर और परिवार की स्थिरता पर ध्यान दें। संपत्ति के सौदों से बचें।",
-                5: "सीखने के लिए अच्छा है। बच्चों को लेकर चिंता।",
-                6: "शत्रुओं पर विजय। स्वास्थ्य में सुधार।",
-                7: "यात्रा के संकेत हैं। जीवनसाथी के साथ तनाद।",
-                8: "सावधानी अपेक्षित है। स्वास्थ्य और धन जोखिम में।",
-                9: "भाग्य आपका साथ देता है। धार्मिक यात्रा संभव है।",
-                10: "करियर में सफलता और पदोन्नति के संकेत।",
-                11: "चारों तरफ से लाभ। दोस्त आपकी मदद करते हैं।",
-                12: "खर्च बढ़ते हैं। आंखों का ख्याल रखें।"
+        "transits": {
+            "Sun": {
+                "1": "Health needs care. Ego clashes possible.",
+                "2": "Financial watch needed. Watch your speech.",
+                "3": "High courage and success in initiatives.",
+                "4": "Focus on home and family stability. Avoid property deals.",
+                "5": "Good for learning. Worries about children.",
+                "6": "Victory over enemies. Health improves.",
+                "7": "Travel is indicated. Friction with partner.",
+                "8": "Caution required. Health and wealth at risk.",
+                "9": "Luck favors you. Religious travel possible.",
+                "10": "Career success and promotion indicated.",
+                "11": "Gains from all sides. Friends help you.",
+                "12": "Expenses increase. Take care of eyes."
             },
-            Moon: {
-                1: "मानसिक शांति और अच्छा भोजन। आनंद।",
-                2: "धन लाभ लेकिन कुछ मानसिक तनाव।",
-                3: "छोटी यात्रा और कार्यों में सफलता।",
-                4: "घर में अशांति। बहस से बचें।",
-                5: "रोमांस और रचनात्मकता के लिए अच्छा है।",
-                6: "विजय और लाभ। अच्छा स्वास्थ्य।",
-                7: "रोमांस और छोटी यात्राएं। अच्छी साझेदारी।",
-                8: "मानसिक चिंता और पाचन संबंधी समस्याएं। शांत रहें।",
-                9: "आज भाग्य की कमी। कड़ी मेहनत करें।",
-                10: "काम में सफलता। मान्यता।",
-                11: "दोस्तों से मुलाकात और अच्छी आय।",
-                12: "व्यय और शारीरिक थकान।"
+            "Moon": {
+                "1": "Mental peace and good food. Happiness.",
+                "2": "Financial gains but some mental stress.",
+                "3": "Short travel and success in tasks.",
+                "4": "Unrest at home. Avoid arguments.",
+                "5": "Good for romance and creativity.",
+                "6": "Victory and gains. Good health.",
+                "7": "Romance and short trips. Good partnerships.",
+                "8": "Mental worry and digestion issues. Be calm.",
+                "9": "Lack of luck today. Work hard.",
+                "10": "Success at work. Recognition.",
+                "11": "Meeting friends and good income.",
+                "12": "Expenditure and physical fatigue."
             },
-            Mars: {
-                1: "आक्रामक व्यवहार से बचें। शारीरिक ऊर्जा उच्च है; इसे व्यायाम से सही तरीके से लगाएं।",
-                2: "वित्तीय विवाद संभव हैं। आवेगपूर्ण खरीदारी पर नियंत्रण रखें।",
-                3: "साहस चरम पर है। साहसिक निर्णय और प्रतिस्पर्धी कार्यों के लिए उत्तम।",
-                4: "घरेलू तर्क संभव है। परिवार के सदस्यों के साथ धैर्य रखें।",
-                5: "रचनात्मक जुनून तीव्र है। रोमांस तीव्र लेकिन अस्थिर हो सकता है।",
-                6: "बाधाओं पर विजय। प्रतिस्पर्धी कार्यों और कानूनी मामलों में सफलता।",
-                7: "साझेदारी में तनाव। जीवनसाथी या व्यापार साझेदारों से टकराव से बचें।",
-                8: "गुप्त शत्रु सामने आते हैं। अपने रहस्य सुरक्षित रखें और जोखिम भरे निवेश से बचें।",
-                9: "साहसिक भावना सक्रिय। यात्रा में चुनौतियां हो सकती हैं लेकिन विकास आएगा।",
-                10: "करियर की महत्वाकांक्षाएं बढ़ती हैं। मान्यता के लिए कड़ी मेहनत करें लेकिन कार्यालय की राजनीति से बचें।",
-                11: "सामाजिक संघर्ष संभव हैं। दोस्तों के साथ अपनी लड़ाइयां सावधानी से चुनें।",
-                12: "ऊर्जा में कमी। अच्छे से आराम करें; अस्पताल की यात्राओं से बचें।"
+            "Mars": {
+                "1": "Avoid aggressive behavior. Physical energy is high; channel it wisely through exercise.",
+                "2": "Financial disputes possible. Control spending on impulsive purchases today.",
+                "3": "Courage peaks. Excellent for bold decisions and competitive tasks.",
+                "4": "Domestic arguments likely. Practice patience with family members.",
+                "5": "Creative passion runs high. Romance could be intense but volatile.",
+                "6": "Victory over hurdles. Success in competitive tasks and legal matters.",
+                "7": "Partnership friction. Avoid confrontations with spouse or business partners.",
+                "8": "Hidden enemies surface. Protect your secrets and avoid risky investments.",
+                "9": "Adventurous spirit activated. Travel may involve challenges but brings growth.",
+                "10": "Career ambitions soar. Push hard for recognition but avoid office politics.",
+                "11": "Social conflicts possible. Choose your battles with friends carefully.",
+                "12": "Energy dips. Rest well; avoid hospital visits and overseas complications."
             },
-            Venus: {
-                1: "रोमांस और सामाजिक जीवन के लिए उत्तम। उच्च आकर्षण सकारात्मक ध्यान आकर्षित करता है।",
-                2: "सौंदर्य या विलासिता के सामान से धन लाभ। मध्यमता से संतुष्ट रहें।",
-                3: "रचनात्मक संचार प्रवाहित होता है। छोटी यात्राएं सुखद मुलाकातें लाती हैं।",
-                4: "घर को सजाने की तीव्र इच्छा। पारिवारिक सद्भाव और आराम चरम पर।",
-                5: "चरम रोमांस और कलात्मक अभिव्यक्ति। प्रेम संबंध खूबसूरती से खिलते हैं।",
-                6: "स्वास्थ्य में सुधार। सेवा कार्य संतुष्टि और सौंदर्य सुख लाता है।",
-                7: "विवाह और साझेदारी में खुशी। प्रतिबद्धता के लिए आदर्श समय।",
-                8: "गुप्त आकर्षण या विरासत के मामले। गहरा भावनात्मक बंधन संभव है।",
-                9: "आध्यात्मिक प्रेम जागता है। लंबी यात्राएं रोमांटिक मुलाकातें लाती हैं।",
-                10: "पेशेवर आकर्षण चमत्कार करता है। सार्वजनिक छवि और करियर लाभ मजबूत।",
-                11: "सामाजिक लाभ और नेटवर्किंग सफलता। दोस्त खुशी और अवसर लाते हैं।",
-                12: "एकांत शांति लाता है। आध्यात्मिक पीछे हटना या शांत सुख अनुकूल।"
+            "Venus": {
+                "1": "Excellent for romance and social life. High charm attracts positive attention.",
+                "2": "Financial gains through beauty or luxury goods. Indulge moderately.",
+                "3": "Creative communication flows. Short trips bring pleasant encounters.",
+                "4": "Home beautification urges strong. Family harmony and comfort peak.",
+                "5": "Peak romance and artistic expression. Love affairs blossom beautifully.",
+                "6": "Health improves. Service work brings satisfaction and aesthetic pleasure.",
+                "7": "Happiness in marriage and partnership. Ideal time for commitment.",
+                "8": "Secret attractions or inheritance matters. Deep emotional bonding possible.",
+                "9": "Spiritual love awakens. Long journeys bring romantic encounters.",
+                "10": "Professional charm works wonders. Public image and career benefits strong.",
+                "11": "Social gains and networking success. Friends bring joy and opportunities.",
+                "12": "Solitude brings peace. Spiritual retreats or quiet pleasures favored."
             },
-            Mercury: {
-                1: "तीक्ष्ण बुद्धि और स्पष्ट संचार। आज खुद को आत्मविश्वास से व्यक्त करें।",
-                2: "व्यापार चर्चाएं आपके पक्ष में हैं। बातचीत वित्तीय स्पष्टता लाती है।",
-                3: "मानसिक चपलता चरम पर। लेखन, शिक्षण और छोटी यात्राएं अत्यधिक उत्पादक।",
-                4: "पारिवारिक बातचीत महत्वपूर्ण। रियल एस्टेट कागजी कार्रवाई या घर की योजना अच्छी तरह चलती है।",
-                5: "रचनात्मक विचार प्रवाहित होते हैं। बच्चों या कलात्मक परियोजनाओं में अपने विचार साझा करें।",
-                6: "काम की दक्षता उच्च। कार्यों को व्यवस्थित करें और लंबित स्वास्थ्य प्रश्नों को हल करें।",
-                7: "साझेदारी वार्ता उत्पादक। महत्वपूर्ण अनुबंध या समझौते अभी लाभदायक हैं।",
-                8: "अनुसंधान और जांच अनुकूल। रहस्यों या संयुक्त वित्त में गहराई से जाएं।",
-                9: "उच्च शिक्षा बुलाती है। दार्शनिक चर्चा या यात्रा योजनाएं साकार होती हैं।",
-                10: "करियर संचार महत्वपूर्ण। प्रस्तुतियां और नेटवर्किंग मान्यता लाते हैं।",
-                11: "मित्र मंडल विस्तारित होते हैं। समूह चर्चा और सोशल मीडिया जुड़ाव फलदायी।",
-                12: "आत्मनिरीक्षण स्पष्टता में सहायता करता है। शांत अध्ययन या आध्यात्मिक पठन अनुशंसित।"
+            "Mercury": {
+                "1": "Sharp intellect and clear communication. Express yourself confidently today.",
+                "2": "Business discussions favor you. Negotiations bring financial clarity.",
+                "3": "Mental agility peaks. Writing, teaching, and short travels highly productive.",
+                "4": "Family conversations important. Real estate paperwork or home planning go well.",
+                "5": "Creative ideas flow. Share your thoughts with children or in artistic projects.",
+                "6": "Work efficiency high. Organize tasks and resolve pending health queries.",
+                "7": "Partnership talks productive. Important contracts or agreements benefit now.",
+                "8": "Research and investigation favored. Dig deep into mysteries or joint finances.",
+                "9": "Higher learning calls. Philosophical discussions or travel plans materialize.",
+                "10": "Career communications crucial. Presentations and networking bring recognition.",
+                "11": "Friend circles expand. Group discussions and social media engagement fruitful.",
+                "12": "Introspection aids clarity. Quiet study or spiritual reading recommended."
             },
-            Jupiter: {
-                1: "आज ज्ञान और कृपा आपके साथ है। नई शुरुआत के लिए उच्च ऊर्जा।",
-                2: "वित्तीय विस्तार के संकेत हैं। परिवार का सहयोग बढ़ता है।",
-                3: "छोटी यात्राएं सीखने या नेटवर्किंग के महत्वपूर्ण अवसर लाती हैं।",
-                4: "घर पर शांति और आराम। पारिवारिक मेल-मिलाप के लिए आदर्श।",
-                5: "रचनात्मकता और निवेश में भाग्य। बच्चों के संबंध में अच्छी खबर।",
-                6: "स्वास्थ्य स्थिर होता है और शत्रु पीछे हटते हैं। दैनिक कार्य सार्थक होते हैं।",
-                7: "साझेदारी फलती-फूलती है। विवाह में सामंजस्य बना रहता है।",
-                8: "गहरी सहज अंतर्दृष्टि। संयुक्त संपत्ति या शोध के माध्यम से लाभ।",
-                9: "भाग्य आपकी आध्यात्मिक और दार्शनिक खोजों का पक्ष लेता है। यात्रा भाग्यशाली है।",
-                10: "करियर में वृद्धि और सामाजिक स्थिति बढ़ती है। कड़ी मेहनत से सम्मान।",
-                11: "सामाजिक हलकों से बड़े लाभ। इच्छाएं प्रकट होने लगती हैं।",
-                12: "आध्यात्मिक सुरक्षा और अच्छे कार्यों पर खर्च। शांतिपूर्ण एकांत।"
+            "Jupiter": {
+                "1": "Wisdom and grace follow you today. High energy for new beginnings.",
+                "2": "Financial expansion is indicated. Family support increases.",
+                "3": "Short travels bring significant learning or networking opportunities.",
+                "4": "Peace and comfort at home. Ideal for family gatherings.",
+                "5": "Creativity and luck in investments. Good news regarding children.",
+                "6": "Health stabilizes and enemies retreat. Daily work becomes meaningful.",
+                "7": "Partnerships flourish. Harmony in marriage persists.",
+                "8": "Deep intuitive insights. Gains through joint assets or research.",
+                "9": "Fortune favors your spiritual and philosophical quests. Travel is lucky.",
+                "10": "Career growth and social status rise. Honor through hard work.",
+                "11": "Major gains from social circles. Desires start manifesting.",
+                "12": "Spiritual protection and expenses on good deeds. Peaceful solitude."
             },
-            Saturn: {
-                1: "आज धैर्य आपकी ताकत है। जिम्मेदारियों को शांति से स्वीकार करें।",
-                2: "अपनी बचत को मजबूत करें। पारिवारिक मामलों में फालतू बात से बचें।",
-                3: "व्यवस्थित प्रयास सफलता दिलाते हैं। भाई की सलाह मददगार है।",
-                4: "घरेलू मरम्मत या दीर्घकालिक पारिवारिक स्थिरता पर ध्यान दें।",
-                5: "पढ़ाई में एकाग्रता बढ़ती है। रोमांस में व्यावहारिक रहें।",
-                6: "अनुशासन स्वास्थ्य समस्याओं और कार्यस्थल की बाधाओं को दूर करने में मदद करता है।",
-                7: "रिश्तों में प्रतिबद्धता की परीक्षा होती है। वफादार और धैर्यवान रहें।",
-                8: "दीर्घायु और धीमे परिवर्तन। जोखिम भरी शारीरिक गतिविधियों से बचें।",
-                9: "परंपरा और अधिकार का सम्मान करें। तीर्थयात्रा या इतिहास का अध्ययन अनुकूल है।",
-                10: "करियर में कर्म का फल। सार्वजनिक सेवा या तकनीकी कार्य सफल होते हैं।",
-                11: "धीमी लेकिन स्थिर आय वृद्धि। पुराने मित्र सार्थक सहयोग प्रदान करते हैं।",
-                12: "स्वास्थ्य सेवा या कानून पर खर्च। अलगाव और आराम की आवश्यकता।"
+            "Saturn": {
+                "1": "Patience is your strength today. Accept responsibilities calmly.",
+                "2": "Consolidate your savings. Avoid loose talk in family matters.",
+                "3": "Methodical efforts lead to success. Brotherly advice is helpful.",
+                "4": "Focus on household repairs or long-term family stability.",
+                "5": "Concentration in studies improves. Be practical in romance.",
+                "6": "Discipline helps overcome health issues and workplace hurdles.",
+                "7": "Commitment in relationships is tested. Stay loyal and patient.",
+                "8": "Longevity and slow transformations. Avoid risky physical activities.",
+                "9": "Respect tradition and authority. Pilgrimage or study of history favored.",
+                "10": "Karmic rewards in career. Public service or technical work succeeds.",
+                "11": "Slow but steady gains. Old friends provide meaningful support.",
+                "12": "Expenditure on healthcare or law. Need for isolation and rest."
             }
         },
-        lucky: {
-            colors: ["लाल", "नीला", "हरा", "पीला", "सफेদ", "नारंगी", "गुलाबी"],
-            numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        "lucky": {
+            "colors": [
+                "Red",
+                "Blue",
+                "Green",
+                "Yellow",
+                "White",
+                "Orange",
+                "Pink"
+            ],
+            "numbers": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "9",
+                "2",
+                "6"
+            ]
         },
-        defaults: {
-            positive: "बृहस्पति भाग्य लाता है।",
-            negative: "शनि विलंब का संकेत देता है।",
-            caution: "आज अनावश्यक जोखिमों से बचें। शांति के लिए ध्यान करें।",
-            planet_placed: "{planet} {house}वें भाव ({sign}) में स्थित है।"
+        "defaults": {
+            "positive": "Jupiter brings luck.",
+            "negative": "Saturn indicates delays.",
+            "caution": "Avoid unnecessary risks today. Meditate for peace.",
+            "planet_placed": "{planet} is placed in the {house}th House of {sign}."
         }
     },
-    mr: {
-        planets: {
-            Sun: "सूर्य तुमचा आत्मा, अहंकार आणि वडिलांचे प्रतिनिधित्व करतो.",
-            Moon: "चंद्र तुमच्या भावना, मन आणि आईवर नियंत्रण ठेवतो.",
-            Mars: "मंगळ तुमची ऊर्जा, महत्वाकांक्षा आणि आक्रमकता चालवतो.",
-            Mercury: "बुध संवाद, बुद्धिमत्ता आणि व्यवसायावर राज्य करतो.",
-            Jupiter: "गुरु ज्ञान, विस्तार आणि नशीब आणतो.",
-            Venus: "शुक्र प्रेम, विलासी जीवन आणि कलात्मक प्रतिभा नियंत्रित करतो.",
-            Saturn: "शनि शिस्त, विलंब आणि कठीण धडे देतो.",
-            Rahu: "राहू वेड आणि परदेशी घटकांचे प्रतीक आहे.",
-            Ketu: "केतू अलिप्तता आणि अध्यात्माचे प्रतीक आहे."
+    "hi": {
+        "planets": {
+            "Sun": "सूर्य आपकी आत्मा, अहंकार और पिता का प्रतिनिधित्व करता है।",
+            "Moon": "चंद्रमा आपकी भावनाओं, मन और माता को नियंत्रित करता है।",
+            "Mars": "मंगल आपकी ऊर्जा, महत्वाकांक्षा और आक्रामकता को चलाता है।",
+            "Mercury": "बुध संचार, बुद्धि और व्यवसाय पर शासन करता है।",
+            "Jupiter": "गुरु ज्ञान, विस्तार और भाग्य लाता है।",
+            "Venus": "शुक्र प्रेम, विलासिता और कलात्मक प्रतिभा को नियंत्रित करता है।",
+            "Saturn": "शनि अनुशासन, देरी और कठिन सबक देता है।",
+            "Rahu": "राहु जुनून और विदेशी तत्वों का प्रतीक है।",
+            "Ketu": "केतु वैराग्य और आध्यात्मिकता का प्रतीक है।"
         },
-        houses: {
-            1: "स्वयं आणि व्यक्तिमत्व",
-            2: "धन आणि कुटुंब",
-            3: "धाडस आणि भावंडे",
-            4: "घर आणि आई",
-            5: "संतती आणि बुद्धिमत्ता",
-            6: "शत्रू आणि आरोग्य",
-            7: "विवाह आणि भागीदारी",
-            8: "दीर्घायुष्य आणि परिवर्तन",
-            9: "नशीब आणि उच्च शिक्षण",
-            10: "करियर आणि प्रतिष्ठा",
-            11: "लाभ आणि नेटवर्क",
-            12: "तोटा आणि अध्यात्म"
+        "houses": {
+            "1": "स्वयं और व्यक्तित्व",
+            "2": "धन और परिवार",
+            "3": "साहस और भाई-बहन",
+            "4": "घर और माता",
+            "5": "संतान और बुद्धि",
+            "6": "शत्रु और स्वास्थ्य",
+            "7": "विवाह और साझेदारी",
+            "8": "आयु और परिवर्तन",
+            "9": "भाग्य और उच्च शिक्षा",
+            "10": "करियर और प्रतिष्ठा",
+            "11": "लाभ और नेटवर्क",
+            "12": "व्यय और मोक्ष"
         },
-        placements: {
-            Sun: {
-                1: "प्रभावशाली आणि अधिकृत व्यक्तिमत्व. नैसर्गिक नेतृत्व क्षमता आणि प्रबळ चैतन्यशक्ती.",
-                2: "प्रतिष्ठित कुटुंबातील आहात. सरकारी/अधिकृत लाभ, पण बोलणे कठोर असू शकते.",
-                3: "धाडसी आणि साधनसंपन्न. भावंडांशी मतभेद शक्य, पण विरोधकांवर विजय मिळवाल.",
-                4: "घरची काळजी. यश जन्मस्थानापासून दूर. आरामापेक्षा करिअरला प्राधान्य.",
-                5: "सर्जनशील आणि बुद्धिमान. कमी पण तेजस्वी मुले. सट्टा बाजारात रस असू शकतो.",
-                6: "शत्रूंवर विजय. प्रबळ रोगप्रतिकारशक्ती. सेवा किंवा प्रशासनात प्रगती.",
-                7: "विवाहात अहंकाराचा संघर्ष शक्य. जोडीदार उच्च दर्जाचा किंवा अधिकृत स्वभावाचा असेल.",
-                8: "गूढ शास्त्रात रस. डोळे किंवा हृदयाच्या आरोग्याची काळजी घ्या. दीर्घायुष्य चांगले.",
-                9: "धार्मिक स्वभाव. वडिलांशी मतभेद शक्य. आध्यात्मिक कार्यासाठी प्रवास.",
-                10: "करिअरसाठी उत्कृष्ट. उच्च स्थान, प्रसिद्धी आणि सरकारी लाभ मिळतील.",
-                11: "उच्च दर्जाचे मित्र आणि अपार लाभ. आकांक्षा पूर्ण होतील.",
-                12: "परदेश निवास शक्य. आध्यात्मिक पण डोळे/झोपेशी संबंधित समस्या."
+        "placements": {
+            "Sun": {
+                "1": "प्रभावशाली और आधिकारिक व्यक्तित्व। आप नैसर्गिक नेता हैं, जीवन शक्ति मजबूत है।",
+                "2": "प्रतिष्ठित परिवार से हैं। सरकारी/आधिकारिक कार्यों से धन लाभ, पर वाणी कठोर हो सकती है।",
+                "3": "साहसी और साधन संपन्न। भाई-बहनों से मतभेद संभव, पर शत्रुओं पर विजय मिलेगी।",
+                "4": "घर की चिंता हो सकती है। सफलता जन्मस्थान से दूर मिलेगी। आराम से अधिक काम को महत्व।",
+                "5": "रचनात्मक और बुद्धिमान। संतान सुख उत्तम, सट्टेबाजी में रुचि हो सकती है।",
+                "6": "शत्रु हंता। मजबूत रोग प्रतिरोधक क्षमता। सेना या प्रशासन में सफलता।",
+                "7": "विवाह में अहंकार का टकराव संभव। जीवनसाथी उच्च पद या आधिकारिक स्वभाव का होगा।",
+                "8": "गुप्त विद्या में रुचि। नेत्र या हृदय रोग से सावधान। आयु अच्छी है।",
+                "9": "धार्मिक स्वभाव। पिता से मतभेद संभव। आध्यात्मिक कार्यों के लिए यात्राएं।",
+                "10": "करियर के लिए उत्तम। उच्च पद, यश और सरकारी सम्मान की प्राप्ति।",
+                "11": "उच्च स्तरीय मित्र और भरपूर लाभ। आपकी बड़ी महत्वाकांक्षाएं पूरी होंगी।",
+                "12": "विदेश में निवास संभव। आध्यात्मिक रुचि, पर नेत्र/निद्रा विकार से कष्ट।"
             },
-            Moon: {
-                1: "भावूक, संवेदनशील आणि लहरी. प्रसन्न चेहरा आणि सर्वांचे लाडके.",
-                2: "गोड आवाज आणि श्रीमंत कुटुंब. पैसा भरती-ओहोटीसारखा कमी-जास्त होतो.",
-                3: "प्रवासाची आवड आणि उत्तम संवाद कौशल्य. बहिणींशी संबंध दृढ.",
-                4: "आई आणि घराशी जोडलेले. वाहने आणि मालमत्ता आनंद देतात.",
-                5: "सर्जनशील आणि रोमँटिक. मुले आणि कला आवडतात. मन सक्रिय राहते.",
-                6: "लहानपणी नाजूक आरोग्य. सेवेची वृत्ती, पण गुप्त शत्रूंचा सामना.",
-                7: "सुंदर आणि भावूक जोडीदार. लवकर विवाह होणे शक्य.",
-                8: "अंतर्ज्ञानी आणि गुप्त. आरोग्याची काळजी घ्या. वारसा हक्काने लाभ.",
-                9: "नशीबवान आणि धार्मिक. प्रवास नशीब उजळवतो. तात्विक मन.",
-                10: "करिअरमध्ये वारंवार बदल. जनसंपर्क (Public Dealing) योग्य.",
-                11: "अनेक मित्र आणि सामाजिक लाभ. आर्थिक यश सहज मिळते.",
-                12: "स्वप्नाळू आणि आध्यात्मिक. एकांत आवडते, परदेश प्रवास शक्य."
+            "Moon": {
+                "1": "भावुक और संवेदनशील। आपका चेहरा आकर्षक है और सब आपको पसंद करते हैं।",
+                "2": "मधुर वाणी और धनवान परिवार। धन का आवागमन ज्वार-भाटे की तरह रहेगा।",
+                "3": "यात्रा के शौकीन और अच्छी संचार कुशलता। बहनों से अच्छे संबंध।",
+                "4": "माँ और घर से गहरा लगाव। वाहन और संपत्ति से सुख मिलेगा।",
+                "5": "रचनात्मक और रोमांटिक। बच्चों और कला से प्रेम, मन हमेशा सक्रिय।",
+                "6": "बचपन में नाजुक सेहत। सेवा भाव प्रबल, पर गुप्त शत्रुओं से सावधान।",
+                "7": "सुंदर और भावुक जीवनसाथी। शीघ्र विवाह के योग।",
+                "8": "सहज ज्ञान और गोपनीयता। सेहत का ध्यान रखें। विरासत से लाभ संभव।",
+                "9": "भाग्यशाली और धार्मिक। यात्रा से लाभ। दार्शनिक विचार।",
+                "10": "करियर में बदलाव। जनसंपर्क (Public Dealing) के कार्यों में सफलता।",
+                "11": "अनेक मित्र और सामाजिक प्रतिष्ठा। आर्थिक सफलता सरलता से मिलती है।",
+                "12": "स्वप्नद्रष्टा और आध्यात्मिक। एकांत प्रिय, विदेश यात्रा के योग।"
             },
-            Mars: {
-                1: "तुम्ही ऊर्जावान आणि आवेगपूर्ण आहात. डोक्याच्या दुखापतींपासून सावध राहा.",
-                7: "मांगलिक प्रभाव. विवाहात संयम आणि गुणMilan आवश्यक आहे.",
-                10: "तांत्रिक करिअर आणि पोलीस/लष्करासाठी उत्कृष्ट."
+            "Mars": {
+                "1": "आप ऊर्जावान, साहसी और शारीरिक रूप से मजबूत हैं। नेतृत्व स्वाभाविक है, पर गुस्से पर नियंत्रण जरूरी। सिर पर चोट या निशान संभव।",
+                "2": "कठोर वाणी से पारिवारिक तनाव हो सकता है। साहस और जोखिम से धन लाभ। संपत्ति में रुचि।",
+                "3": "अत्यंत साहसी और निडर। खेल, सेना या साहसिक कार्यों के लिए उत्तम। प्रतिस्पर्धियों पर विजय निश्चित।",
+                "4": "घरेलू अशांति और संपत्ति विवाद संभव। बार-बार निवास बदल सकते हैं। माता के स्वास्थ्य का ध्यान रखें।",
+                "5": "तीक्ष्ण बुद्धि और आक्रामक निर्णय क्षमता। संतान हठी हो सकती है। सट्टे में सोच-समझकर लाभ। प्रेम में जोशीले।",
+                "6": "शत्रुओं पर विजय निश्चित। सर्जन, इंजीनियर और सैन्य पेशेवरों के लिए उत्तम। मजबूत रोग प्रतिरोधक क्षमता।",
+                "7": "मांगलिक दोष — विवाह में सावधानी से मिलान आवश्यक। जीवनसाथी आक्रामक या स्वतंत्र हो सकता है।",
+                "8": "शोध-उन्मुख मन, गूढ़ विद्या में रुचि। दुर्घटना-प्रवण — सावधानी बरतें। ससुराल से विरासत संभव।",
+                "9": "तीर्थयात्रा और साहसिक यात्राएं। धर्म और न्याय के लिए लड़ते हैं। पिता या गुरु से मतभेद संभव।",
+                "10": "तकनीकी करियर, इंजीनियरिंग, पुलिस, सेना और सर्जरी के लिए उत्तम। कड़ी मेहनत से सफलता।",
+                "11": "बड़ी महत्वाकांक्षाएं पूरी होती हैं। प्रभावशाली संपर्कों का मजबूत नेटवर्क। भूमि या संपत्ति से आय।",
+                "12": "अस्पताल में भर्ती संभव। गुप्त शत्रुओं या विदेशी जटिलताओं से ऊर्जा क्षीण। मार्शल आर्ट्स या आध्यात्मिक युद्ध में रुचि।"
             },
-            Jupiter: {
-                1: "तुम्ही ज्ञानी, निरोगी आणि नशीबवान आहात. एक नैसर्गिक शिक्षक.",
-                4: "महान कौटुंबिक आनंद आणि मोठी मालमत्ता.",
-                10: "सन्माननीय व्यवसाय आणि उच्च नैतिक दर्जा."
+            "Mercury": {
+                "1": "तीक्ष्ण बुद्धि, युवा दिखावट और उत्कृष्ट संचार कौशल। आप तेजी से सीखते हैं और किसी भी स्थिति में ढल जाते हैं।",
+                "2": "मधुर और प्रभावशाली वाणी। बौद्धिक कार्यों, व्यवसाय या संचार से धन। परिवार शिक्षा को महत्व देता है।",
+                "3": "उत्कृष्ट लेखक, वक्ता या मीडिया पेशेवर। भाई-बहनों से अच्छे संबंध। छोटी यात्राएं लाभदायक।",
+                "4": "अच्छी शिक्षा और अनेक विषयों का ज्ञान। रियल एस्टेट में कुशल। घर में किताबें और अध्ययन सामग्री।",
+                "5": "प्रतिभाशाली मन और तीक्ष्ण विश्लेषणात्मक क्षमता। प्रतियोगी परीक्षाओं में सफलता। ज्योतिष और मंत्र में रुचि।",
+                "6": "कानूनी, चिकित्सा या विश्लेषणात्मक क्षेत्रों में उत्कृष्ट समस्या-समाधानकर्ता। बुद्धि से शत्रुओं को मात।",
+                "7": "जीवनसाथी बुद्धिमान और संवादशील। व्यावसायिक साझेदारी लाभदायक। विवाह से पहले कई संबंध संभव।",
+                "8": "अनुसंधान, जासूसी कार्य या बीमा में रुचि। गुप्त ज्ञान प्राप्ति। दस्तावेज़ या कानूनी माध्यम से विरासत।",
+                "9": "उच्च शिक्षा सफलता लाती है। आप स्वाभाविक दार्शनिक और शिक्षक हैं। विदेशी शिक्षा या बहुराष्ट्रीय करियर संभव।",
+                "10": "व्यापार, लेखा, आईटी और संचार करियर के लिए उत्तम। बौद्धिक योग्यता और नेटवर्किंग से उन्नति।",
+                "11": "विविध पृष्ठभूमि के बड़े मित्र मंडल। अनेक स्रोतों से आय। बड़े भाई-बहन बुद्धिमान और सहायक।",
+                "12": "अंतर्मुखी लेकिन समृद्ध आंतरिक संसार। शिक्षा से विदेश बसना। शिक्षा या उपचार पर खर्च। ध्यान बहुत सहायक।"
             },
-            Saturn: {
-                1: "तुम्ही शिस्तबद्ध आणि गंभीर आहात. यश आयुष्यात उशिरा मिळते.",
-                7: "विवाहात विलंब होऊ शकतो पण तो स्थिर असेल.",
-                10: "तुम्ही तुमच्या पदासाठी कठोर परिश्रम करता. राजकीय यश मिळणे शक्य आहे."
+            "Jupiter": {
+                "1": "आप ज्ञानी, आशावादी और स्वाभाविक रूप से भाग्यशाली हैं। लोग आपका सम्मान करते हैं। अच्छा स्वास्थ्य और दीर्घ आयु।",
+                "2": "संपन्न परिवार और मजबूत मूल्य। धीरे-धीरे धन संचय। वाक्पटु वाणी लोगों को जीत लेती है।",
+                "3": "धार्मिक इरादों से साहसी। छोटे भाई-बहन आपके मार्गदर्शन से लाभान्वित। शिक्षा या धार्मिक यात्रा।",
+                "4": "महान घरेलू सुख, बड़ी संपत्ति और विलासिता वाहन। माता से गहरा बंधन। सुसंस्कृत जीवनशैली।",
+                "5": "अत्यंत रचनात्मक और बुद्धिमान संतान। शिक्षा, सट्टा और राजनीति में सफलता। प्रेम जीवन आध्यात्मिक रूप से समृद्ध।",
+                "6": "शत्रुओं और रोगों पर विजय। चिकित्सा या कानून के माध्यम से सेवा। पाचन स्वास्थ्य पर ध्यान दें। दानशील स्वभाव।",
+                "7": "ज्ञानी और सहयोगी जीवनसाथी से आशीर्वादित विवाह। व्यावसायिक साझेदारी भाग्यशाली। पत्नी सौभाग्य और सम्मान लाती है।",
+                "8": "दीर्घ आयु और तत्वमीमांसा में रुचि। विरासत या बीमा से अचानक लाभ। आध्यात्मिक अनुभवों से परिवर्तन।",
+                "9": "अत्यंत भाग्यशाली स्थिति। गहरे आध्यात्मिक और दार्शनिक मन। पिता प्रभावशाली। विदेश यात्रा से विकास।",
+                "10": "माननीय और सम्मानित करियर। योग्यता से उच्च पद प्राप्ति। सरकारी संबंध संभव। नैतिक नेतृत्व।",
+                "11": "प्रचुर धन और प्रभावशाली मित्र। सभी इच्छाएं समय के साथ पूरी होती हैं। सामाजिक प्रतिष्ठा उत्कृष्ट।",
+                "12": "आध्यात्मिक मुक्ति साधक। दान से अच्छा कर्म। आश्रम या आध्यात्मिक केंद्र में विदेश निवास। अंतिम मोक्ष निश्चित।"
+            },
+            "Venus": {
+                "1": "स्वाभाविक रूप से आकर्षक व्यक्तित्व। सौंदर्य, फैशन और विलासिता के प्रति प्रेम। मोहक और कूटनीतिक स्वभाव।",
+                "2": "विलासितापूर्ण जीवनशैली, बढ़िया भोजन और विलासिता का प्रेम। मधुर आवाज — गायन या सार्वजनिक भाषण के लिए अच्छा।",
+                "3": "कलात्मक शौक और रचनात्मक संचार। बहनें निकट और सहायक। छोटी आनंद यात्राएं लगातार।",
+                "4": "सुंदर और आरामदायक घर। विलासिता वाहन और संपत्ति स्वामित्व। माता से गहरा प्रेम। इंटीरियर डिज़ाइन प्रतिभा।",
+                "5": "रोमांटिक और रचनात्मक प्रतिभा। प्रेम संबंध भावुक और यादगार। संतान खुशी लाती है। कला, सिनेमा में सफलता।",
+                "6": "कार्यस्थल पर सामंजस्यपूर्ण संबंध। सौंदर्य दिनचर्या से स्वास्थ्य। महिला प्रतिद्वंद्वियों पर विजय।",
+                "7": "सुंदर और प्रेमिल जीवनसाथी। भौतिक सुखों के साथ सुखी वैवाहिक जीवन। विवाह से सामाजिक प्रतिष्ठा।",
+                "8": "गुप्त सुख और गुप्त रोमांस। जीवनसाथी से विरासत। तंत्र या गूढ़ सौंदर्य प्रथाओं में रुचि।",
+                "9": "आध्यात्मिक सौंदर्य और दार्शनिक रोमांस का प्रेम। विदेश यात्रा आनंद के लिए। कलात्मक उद्यमों से भाग्य।",
+                "10": "मनोरंजन, फैशन, आतिथ्य या कूटनीति में सफलता। आकर्षण से शीर्ष पर पहुंचते हैं। सार्वजनिक छवि उत्कृष्ट।",
+                "11": "धनी सामाजिक मंडल और सहायक महिला मित्र। वित्तीय लाभ स्थिर और आसान। विलासिता संबंधित इच्छाएं पूरी।",
+                "12": "आध्यात्मिक प्रेम और विदेशी सुख। विलासिता और आराम पर खर्च। गुप्त रोमांटिक संबंध संभव।"
+            },
+            "Saturn": {
+                "1": "कम उम्र से अनुशासित, गंभीर और जिम्मेदार। सफलता जीवन में बाद में आती है। दुबला शरीर।",
+                "2": "पैसों के मामले में मितव्ययी — बचत से धीरे-धीरे धन बनता है। पारिवारिक जिम्मेदारियां भारी। वाणी सोच-समझकर।",
+                "3": "धैर्यवान और व्यवस्थित साहस। छोटे भाई-बहन कठिनाइयों का सामना कर सकते हैं। तकनीकी लेखन में सफलता।",
+                "4": "घरेलू जिम्मेदारियां और संपत्ति में देरी संभव। माता के स्वास्थ्य का ध्यान। 30 के बाद संपत्ति लाभ।",
+                "5": "विलंबित संतान या कम बच्चे। प्रेम के प्रति गंभीर दृष्टिकोण। बौद्धिक गहराई उल्लेखनीय।",
+                "6": "सभी बाधाओं को जीतने वाला कर्मठ। प्रारंभिक संघर्षों के बाद मजबूत स्वास्थ्य। कानून प्रवर्तन के लिए उत्तम।",
+                "7": "विवाह में देरी हो सकती है लेकिन स्थिर और स्थायी। परिपक्व और जिम्मेदार जीवनसाथी। साझेदारी में धैर्य आवश्यक।",
+                "8": "कर्म पाठों के साथ दीर्घ आयु। प्राचीन विज्ञान और मृत्यु संबंधित रहस्यों में रुचि। पुरानी बीमारियां।",
+                "9": "पारंपरिक और धार्मिक मानसिकता। पिता को कठिनाइयां हो सकती हैं। कार्य या कर्तव्य के लिए अंतर्राष्ट्रीय यात्रा।",
+                "10": "पद और शक्ति के लिए अत्यधिक मेहनत। राजनीतिक सफलता संभव। देर से लेकिन स्थायी करियर उपलब्धियां।",
+                "11": "धीमी लेकिन स्थिर आय वृद्धि। वफादार पुराने मित्र। जीवन के दूसरे भाग में महत्वाकांक्षाएं पूरी।",
+                "12": "आध्यात्मिक वैराग्य और संन्यासी प्रवृत्ति। कार्य के लिए विदेश निवास। अस्पताल में रहना संभव। कानूनी खर्च।"
+            },
+            "Rahu": {
+                "1": "अपरंपरागत व्यक्तित्व और चुंबकीय आकर्षण। आप भीड़ से अलग सोचते हैं। विदेशी संबंध और आधुनिक दृष्टिकोण।",
+                "2": "अपरंपरागत तरीकों से धन। विदेशी भोजन की आदतें। पारिवारिक रहस्य। वाणी धोखेबाज या अत्यधिक प्रभावशाली।",
+                "3": "असाधारण साहस और संचार कौशल। मीडिया, प्रौद्योगिकी या नवाचार से सफलता। भाई-बहन विदेश में हो सकते हैं।",
+                "4": "विदेशी मूल का घर या विदेश में संपत्ति। माता अलग पृष्ठभूमि की हो सकती हैं। असामान्य घरेलू जीवन।",
+                "5": "असामान्य रोमांटिक आकर्षण। संतान अपरंपरागत। प्रौद्योगिकी या विदेशी निवेश से सट्टे में सफलता।",
+                "6": "चतुर रणनीति से शत्रुओं पर विजय। मजबूत प्रतिरक्षा। विदेशी स्वास्थ्य सेवा या आईटी में सफलता।",
+                "7": "अंतर-जातीय या अंतर-सांस्कृतिक विवाह संभव। जीवनसाथी अलग पृष्ठभूमि का। विदेशियों के साथ व्यापार लाभदायक।",
+                "8": "गूढ़, तंत्र और रहस्यों में गहरी रुचि। जीवन में अचानक परिवर्तन। अप्रत्याशित स्रोतों से विरासत।",
+                "9": "अपरंपरागत आध्यात्मिक विश्वास। विदेशी तीर्थयात्रा। विदेशी उच्च शिक्षा से सफलता।",
+                "10": "अपरंपरागत मार्गों से तेजी से करियर वृद्धि। प्रौद्योगिकी, राजनीति या विदेशी कंपनियां भाग्यशाली।",
+                "11": "विदेशी संबंधों और प्रौद्योगिकी से भारी लाभ। मित्र मंडल विविध और अंतर्राष्ट्रीय। सपने महत्वाकांक्षी।",
+                "12": "विदेश बसना लगभग निश्चित। विदेश यात्रा पर खर्च। अपरंपरागत तरीकों से आध्यात्मिक जागृति।"
+            },
+            "Ketu": {
+                "1": "आध्यात्मिक और आत्मनिरीक्षक व्यक्तित्व। दूसरों को रहस्यमय लगते हैं। शारीरिक स्वास्थ्य पर ध्यान दें। पूर्व जन्म का ज्ञान।",
+                "2": "पारिवारिक संपत्ति से वैराग्य। वाणी की विशेषताएं संभव। प्राचीन भाषाओं या शास्त्रों में रुचि।",
+                "3": "असामान्य तरीके से साहसी। संचार शैली अद्वितीय। भाई-बहन आध्यात्मिक रूप से झुकाव वाले।",
+                "4": "घरेलू सुखों से वैराग्य। माता आध्यात्मिक रूप से झुकाव वाली। पैतृक संपत्ति या प्राचीन घरों में रुचि।",
+                "5": "भौतिक बुद्धि पर आध्यात्मिक बुद्धि। कम रोमांटिक लगाव। संतान का पूर्व जन्म संबंध। मंत्र ज्ञान।",
+                "6": "शत्रुओं के विरुद्ध गुप्त शक्ति। असामान्य प्रतिरक्षा प्रणाली। समर्पण और आध्यात्मिक शक्ति से विजय।",
+                "7": "आध्यात्मिक रूप से झुकाव वाले व्यक्ति से विवाह। जीवनसाथी गहराई और रहस्य वाला। कर्मिक संबंध।",
+                "8": "गहरे गूढ़ ज्ञान वाला प्राकृतिक रहस्यवादी। अचानक आध्यात्मिक परिवर्तन। मोक्ष उन्मुख।",
+                "9": "पूर्व जन्म के धर्म श्रेय के साथ गहरा आध्यात्मिक। प्राचीन स्थलों की तीर्थयात्रा। प्राकृतिक साधु।",
+                "10": "आध्यात्मिकता, अनुसंधान या गैर-लाभकारी संगठनों में करियर। वैराग्य और सेवा से सफलता।",
+                "11": "आध्यात्मिक समुदाय से लाभ। भौतिक इच्छाओं से कम लगाव। मानवतावादी झुकाव।",
+                "12": "मोक्ष के लिए सबसे मजबूत स्थिति। विदेशी आध्यात्मिक आश्रम निवास। पूर्ण वैराग्य से ज्ञानोदय।"
             }
         },
-        transits: {
-            Sun: { 1: "आरोग्य विषयक काळजी घ्यावी. अहंकाराचे संघर्ष शक्य आहेत.", 2: "आर्थिक लक्ष देणे आवश्यक आहे. भाषेत संयम ठेवा.", 3: "उच्च धाडस आणि उपक्रमांमध्ये यश.", 4: "कौटुंबिक तणाव शक्य आहे. मालमत्तेचे व्यवहार टाळा.", 5: "शिक्षणासाठी चांगले. मुलांबद्दल चिंता असू शकते.", 6: "शत्रूंवर विजय. आरोग्य सुधारते.", 7: "प्रवासाचे संकेत आहेत. जोडीदाराशी मतभेद.", 8: "सावधगिरी आवश्यक आहे. आरोग्य आणि संपत्ती धोक्यात येऊ शकते.", 9: "नशीब तुमच्या बाजूने आहे. धार्मिक प्रवास होऊ शकतो.", 10: "करिअरमध्ये यश आणि बढतीचे संकेत आहेत.", 11: "सर्व बाजूंनी लाभ. मित्र तुम्हाला मदत करतील.", 12: "खर्च वाढतील. डोळ्यांची विशेष काळजी घ्या." },
-            Moon: { 1: "मानसिक शांती आणि चांगले अन्न. आनंद मिळेल.", 2: "आर्थिक लाभ होतील पण काही मानसिक तणाव जाणवेल.", 3: "लहान प्रवास आणि कामात यश.", 4: "घरात अशांती. वादविवाद टाळा.", 5: "रोमान्स आणि सर्जनशीलतेसाठी चांगला वेळ.", 6: "विजय आणि लाभ. चांगले आरोग्य.", 7: "रोमान्स आणि लहान सहली. भागीदारीसाठी चांगले.", 8: "मानसिक चिंता आणि पोटाचे आजार. शांत राहा.", 9: "आज नशिबाची साथ कमी आहे. कठोर परिश्रम करा.", 10: "कामात यश मिळेल. तुमची ओळख वाढेल.", 11: "मित्रांच्या भेटी आणि चांगले उत्पन्न.", 12: "खर्च वाढेल आणि शारीरिक थकवा जाणवेल." },
-            Mars: { 1: "आक्रमक वागणूक टाळा. शारीरिक उर्जा उच्च आहे; व्यायामातून ती योग्य दिशेने वापरा.", 2: "आर्थिक वाद शक्य आहेत. आज आवेगात केलेल्या खरेदीवर नियंत्रण ठेवा.", 3: "धाडस शिखरावर असेल. धाडसी निर्णय आणि स्पर्धात्मक कार्यांसाठी उत्कृष्ट.", 4: "घरात वाद होण्याची शक्यता आहे. कुटुंबातील सदस्यांशी संयमाने वागा.", 5: "सर्जनशील आवड तीव्र राहील. रोमान्स तीव्र पण अस्थिर असू शकतो.", 6: "अडथळ्यांवर विजय. स्पर्धात्मक कामे आणि कायदेशीर बाबींमध्ये यश.", 7: "भागीदारीत तणाव. जोडीदार किंवा व्यावसायिक भागीदारांशी संघर्ष टाळा.", 8: "लपलेले शत्रू समोर येतील. तुमचे रहस्य सुरक्षित ठेवा आणि धोकादायक गुंतवणूक टाळा.", 9: "साहसी वृत्ती जागृत होईल. प्रवासात आव्हाने येऊ शकतात पण त्यामुळे प्रगती होईल.", 10: "करिअरच्या आकांक्षा वाढतील. मान्यतेसाठी कठोर परिश्रम करा पण कार्यालयीन राजकारण टाळा.", 11: "सामाजिक संघर्ष शक्य आहेत. मित्रांशी वाद घालणे टाळा.", 12: "ऊर्जेत घट होईल. चांगली विश्रांती घ्या; रुग्णालयातील फेऱ्या आणि परदेशी गुंतागुंत टाळा." },
-            Venus: { 1: "रोमान्स आणि सामाजिक जीवनासाठी उत्कृष्ट वेळ. उच्च आकर्षण लोकांचे लक्ष वेधून घेईल.", 2: "सौंदर्य प्रसाधने किंवा लक्झरी वस्तूंमधून आर्थिक लाभ. माफक प्रमाणात खर्च करा.", 3: "सर्जनशील संवाद वाढेल. लहान सहली सुखद भेटी आणतील.", 4: "घर सजवण्याची प्रबळ इच्छा होईल. कौटुंबिक सामंजस्य आणि आराम शिखरावर असेल.", 5: "रोमान्स आणि कलात्मक अभिव्यक्तीसाठी उत्कृष्ट काळ. प्रेमसंबंध बहरतील.", 6: "आरोग्य सुधारेल. सेवाभावी कार्यातून समाधान आणि सौंदर्यपूर्ण आनंद मिळेल.", 7: "विवाह आणि भागीदारीत आनंद. वचनबद्धतेसाठी आदर्श वेळ.", 8: "गुप्त आकर्षण किंवा वारसा हक्काचे विषय समोर येतील. खोल भावनिक बंध शक्य आहेत.", 9: "आध्यात्मिक प्रेम जागृत होईल. लांबचे प्रवास रोमँटिक भेटी घडवून आणू शकतात.", 10: "व्यावसायिक आकर्षण चमत्कार करेल. सार्वजनिक प्रतिमा आणि करिअरमध्ये मजबूत लाभ.", 11: "सामाजिक लाभ आणि नेटवर्किंगमध्ये यश. मित्रांमुळे आनंद आणि संधी मिळतील.", 12: "एकांत शांती देईल. आध्यात्मिक चिंतन किंवा शांत आनंददायक गोष्टी अनुकूल राहतील." },
-            Mercury: { 1: "तीक्ष्ण बुद्धिमत्ता आणि स्पष्ट संवाद. आज आत्मविश्वासाने स्वतःला व्यक्त करा.", 2: "व्यावसायिक चर्चा तुमच्या बाजूने राहतील. वाटाघाटी आर्थिक स्पष्टता आणतील.", 3: "मानसिक चपळता सर्वोच्च पातळीवर. लेखन, शिक्षण आणि लहान प्रवास अत्यंत फलदायी ठरतील.", 4: "कौटुंबिक चर्चा महत्त्वाच्या ठरतील. रिअल इस्टेट कागदपत्रे किंवा घरातील नियोजन सुरळीत होईल.", 5: "सर्जनशील विचार प्रवाहित होतील. मुलांसोबत किंवा कलात्मक प्रकल्पांमध्ये तुमचे विचार शेअर करा.", 6: "कामाची कार्यक्षमता उच्च राहील. कामे व्यवस्थित करा आणि प्रलंबित आरोग्य समस्या सोडवा.", 7: "भागीदारीच्या चर्चा फलदायी ठरतील. महत्त्वाचे करार किंवा सौदे आता फायदेशीर राहतील.", 8: "संशोधन आणि अन्वेषणास अनुकूल वेळ. रहस्ये किंवा संयुक्त आर्थिक बाबींमध्ये खोलवर जा.", 9: "उच्च शिक्षणाची ओढ लागेल. तात्विक चर्चा किंवा प्रवासाच्या योजना साकार होतील.", 10: "करिअर विषयक संवाद महत्त्वपूर्ण ठरेल. सादरीकरणे आणि नेटवर्किंग ओळख निर्माण करतील.", 11: "मित्रपरिवारात वाढ होईल. गटचर्चा आणि सोशल मीडियावरील सक्रियता फलदायी ठरेल.", 12: "आत्मनिरीक्षणामुळे स्पष्टता येईल. शांत अभ्यास किंवा आध्यात्मिक वाचनाची शिफारस केली जाते." }
+        "transits": {
+            "Sun": {
+                "1": "स्वास्थ्य को देखभाल की जरूरत है। अहंकार का टकराव संभव है।",
+                "2": "वित्तीय निगरानी की आवश्यकता है। अपनी वाणी पर ध्यान दें।",
+                "3": "उच्च साहस और कार्यों में सफलता।",
+                "4": "घर और परिवार की स्थिरता पर ध्यान दें। संपत्ति के सौदों से बचें।",
+                "5": "सीखने के लिए अच्छा है। बच्चों को लेकर चिंता।",
+                "6": "शत्रुओं पर विजय। स्वास्थ्य में सुधार।",
+                "7": "यात्रा के संकेत हैं। जीवनसाथी के साथ तनाद।",
+                "8": "सावधानी अपेक्षित है। स्वास्थ्य और धन जोखिम में।",
+                "9": "भाग्य आपका साथ देता है। धार्मिक यात्रा संभव है।",
+                "10": "करियर में सफलता और पदोन्नति के संकेत।",
+                "11": "चारों तरफ से लाभ। दोस्त आपकी मदद करते हैं।",
+                "12": "खर्च बढ़ते हैं। आंखों का ख्याल रखें।"
+            },
+            "Moon": {
+                "1": "मानसिक शांति और अच्छा भोजन। आनंद।",
+                "2": "धन लाभ लेकिन कुछ मानसिक तनाव।",
+                "3": "छोटी यात्रा और कार्यों में सफलता।",
+                "4": "घर में अशांति। बहस से बचें।",
+                "5": "रोमांस और रचनात्मकता के लिए अच्छा है।",
+                "6": "विजय और लाभ। अच्छा स्वास्थ्य।",
+                "7": "रोमांस और छोटी यात्राएं। अच्छी साझेदारी।",
+                "8": "मानसिक चिंता और पाचन संबंधी समस्याएं। शांत रहें।",
+                "9": "आज भाग्य की कमी। कड़ी मेहनत करें।",
+                "10": "काम में सफलता। मान्यता।",
+                "11": "दोस्तों से मुलाकात और अच्छी आय।",
+                "12": "व्यय और शारीरिक थकान।"
+            },
+            "Mars": {
+                "1": "आक्रामक व्यवहार से बचें। शारीरिक ऊर्जा उच्च है; इसे व्यायाम से सही तरीके से लगाएं।",
+                "2": "वित्तीय विवाद संभव हैं। आवेगपूर्ण खरीदारी पर नियंत्रण रखें।",
+                "3": "साहस चरम पर है। साहसिक निर्णय और प्रतिस्पर्धी कार्यों के लिए उत्तम।",
+                "4": "घरेलू तर्क संभव है। परिवार के सदस्यों के साथ धैर्य रखें।",
+                "5": "रचनात्मक जुनून तीव्र है। रोमांस तीव्र लेकिन अस्थिर हो सकता है।",
+                "6": "बाधाओं पर विजय। प्रतिस्पर्धी कार्यों और कानूनी मामलों में सफलता।",
+                "7": "साझेदारी में तनाव। जीवनसाथी या व्यापार साझेदारों से टकराव से बचें।",
+                "8": "गुप्त शत्रु सामने आते हैं। अपने रहस्य सुरक्षित रखें और जोखिम भरे निवेश से बचें।",
+                "9": "साहसिक भावना सक्रिय। यात्रा में चुनौतियां हो सकती हैं लेकिन विकास आएगा।",
+                "10": "करियर की महत्वाकांक्षाएं बढ़ती हैं। मान्यता के लिए कड़ी मेहनत करें लेकिन कार्यालय की राजनीति से बचें।",
+                "11": "सामाजिक संघर्ष संभव हैं। दोस्तों के साथ अपनी लड़ाइयां सावधानी से चुनें।",
+                "12": "ऊर्जा में कमी। अच्छे से आराम करें; अस्पताल की यात्राओं से बचें।"
+            },
+            "Venus": {
+                "1": "रोमांस और सामाजिक जीवन के लिए उत्तम। उच्च आकर्षण सकारात्मक ध्यान आकर्षित करता है।",
+                "2": "सौंदर्य या विलासिता के सामान से धन लाभ। मध्यमता से संतुष्ट रहें।",
+                "3": "रचनात्मक संचार प्रवाहित होता है। छोटी यात्राएं सुखद मुलाकातें लाती हैं।",
+                "4": "घर को सजाने की तीव्र इच्छा। पारिवारिक सद्भाव और आराम चरम पर।",
+                "5": "चरम रोमांस और कलात्मक अभिव्यक्ति। प्रेम संबंध खूबसूरती से खिलते हैं।",
+                "6": "स्वास्थ्य में सुधार। सेवा कार्य संतुष्टि और सौंदर्य सुख लाता है।",
+                "7": "विवाह और साझेदारी में खुशी। प्रतिबद्धता के लिए आदर्श समय।",
+                "8": "गुप्त आकर्षण या विरासत के मामले। गहरा भावनात्मक बंधन संभव है।",
+                "9": "आध्यात्मिक प्रेम जागता है। लंबी यात्राएं रोमांटिक मुलाकातें लाती हैं।",
+                "10": "पेशेवर आकर्षण चमत्कार करता है। सार्वजनिक छवि और करियर लाभ मजबूत।",
+                "11": "सामाजिक लाभ और नेटवर्किंग सफलता। दोस्त खुशी और अवसर लाते हैं।",
+                "12": "एकांत शांति लाता है। आध्यात्मिक पीछे हटना या शांत सुख अनुकूल।"
+            },
+            "Mercury": {
+                "1": "तीक्ष्ण बुद्धि और स्पष्ट संचार। आज खुद को आत्मविश्वास से व्यक्त करें।",
+                "2": "व्यापार चर्चाएं आपके पक्ष में हैं। बातचीत वित्तीय स्पष्टता लाती है।",
+                "3": "मानसिक चपलता चरम पर। लेखन, शिक्षण और छोटी यात्राएं अत्यधिक उत्पादक।",
+                "4": "पारिवारिक बातचीत महत्वपूर्ण। रियल एस्टेट कागजी कार्रवाई या घर की योजना अच्छी तरह चलती है।",
+                "5": "रचनात्मक विचार प्रवाहित होते हैं। बच्चों या कलात्मक परियोजनाओं में अपने विचार साझा करें।",
+                "6": "काम की दक्षता उच्च। कार्यों को व्यवस्थित करें और लंबित स्वास्थ्य प्रश्नों को हल करें।",
+                "7": "साझेदारी वार्ता उत्पादक। महत्वपूर्ण अनुबंध या समझौते अभी लाभदायक हैं।",
+                "8": "अनुसंधान और जांच अनुकूल। रहस्यों या संयुक्त वित्त में गहराई से जाएं।",
+                "9": "उच्च शिक्षा बुलाती है। दार्शनिक चर्चा या यात्रा योजनाएं साकार होती हैं।",
+                "10": "करियर संचार महत्वपूर्ण। प्रस्तुतियां और नेटवर्किंग मान्यता लाते हैं।",
+                "11": "मित्र मंडल विस्तारित होते हैं। समूह चर्चा और सोशल मीडिया जुड़ाव फलदायी।",
+                "12": "आत्मनिरीक्षण स्पष्टता में सहायता करता है। शांत अध्ययन या आध्यात्मिक पठन अनुशंसित।"
+            },
+            "Jupiter": {
+                "1": "आज ज्ञान और कृपा आपके साथ है। नई शुरुआत के लिए उच्च ऊर्जा।",
+                "2": "वित्तीय विस्तार के संकेत हैं। परिवार का सहयोग बढ़ता है।",
+                "3": "छोटी यात्राएं सीखने या नेटवर्किंग के महत्वपूर्ण अवसर लाती हैं।",
+                "4": "घर पर शांति और आराम। पारिवारिक मेल-मिलाप के लिए आदर्श।",
+                "5": "रचनात्मकता और निवेश में भाग्य। बच्चों के संबंध में अच्छी खबर।",
+                "6": "स्वास्थ्य स्थिर होता है और शत्रु पीछे हटते हैं। दैनिक कार्य सार्थक होते हैं।",
+                "7": "साझेदारी फलती-फूलती है। विवाह में सामंजस्य बना रहता है।",
+                "8": "गहरी सहज अंतर्दृष्टि। संयुक्त संपत्ति या शोध के माध्यम से लाभ।",
+                "9": "भाग्य आपकी आध्यात्मिक और दार्शनिक खोजों का पक्ष लेता है। यात्रा भाग्यशाली है।",
+                "10": "करियर में वृद्धि और सामाजिक स्थिति बढ़ती है। कड़ी मेहनत से सम्मान।",
+                "11": "सामाजिक हलकों से बड़े लाभ। इच्छाएं प्रकट होने लगती हैं।",
+                "12": "आध्यात्मिक सुरक्षा और अच्छे कार्यों पर खर्च। शांतिपूर्ण एकांत।"
+            },
+            "Saturn": {
+                "1": "आज धैर्य आपकी ताकत है। जिम्मेदारियों को शांति से स्वीकार करें।",
+                "2": "अपनी बचत को मजबूत करें। पारिवारिक मामलों में फालतू बात से बचें।",
+                "3": "व्यवस्थित प्रयास सफलता दिलाते हैं। भाई की सलाह मददगार है।",
+                "4": "घरेलू मरम्मत या दीर्घकालिक पारिवारिक स्थिरता पर ध्यान दें।",
+                "5": "पढ़ाई में एकाग्रता बढ़ती है। रोमांस में व्यावहारिक रहें।",
+                "6": "अनुशासन स्वास्थ्य समस्याओं और कार्यस्थल की बाधाओं को दूर करने में मदद करता है।",
+                "7": "रिश्तों में प्रतिबद्धता की परीक्षा होती है। वफादार और धैर्यवान रहें।",
+                "8": "दीर्घायु और धीमे परिवर्तन। जोखिम भरी शारीरिक गतिविधियों से बचें।",
+                "9": "परंपरा और अधिकार का सम्मान करें। तीर्थयात्रा या इतिहास का अध्ययन अनुकूल है।",
+                "10": "करियर में कर्म का फल। सार्वजनिक सेवा या तकनीकी कार्य सफल होते हैं।",
+                "11": "धीमी लेकिन स्थिर आय वृद्धि। पुराने मित्र सार्थक सहयोग प्रदान करते हैं।",
+                "12": "स्वास्थ्य सेवा या कानून पर खर्च। अलगाव और आराम की आवश्यकता।"
+            }
         },
-        lucky: {
-            colors: ["लाल", "निळा", "हिरवा", "पिवळा", "पांढरा", "केशरी", "गुलाबी"],
-            numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        "lucky": {
+            "colors": [
+                "लाल",
+                "नीला",
+                "हरा",
+                "पीला",
+                "सफेদ",
+                "नारंगी",
+                "गुलाबी"
+            ],
+            "numbers": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "9",
+                "2",
+                "6"
+            ]
         },
-        defaults: {
-            positive: "गुरु नशीब आणतो.",
-            negative: "शनी विलंब दर्शवतो.",
-            caution: "आज अनावश्यक जोखीम टाळा. शांततेसाठी ध्यान करा.",
-            planet_placed: "{planet} {house}व्या घरात ({sign}) स्थित आहे."
+        "defaults": {
+            "positive": "बृहस्पति भाग्य लाता है।",
+            "negative": "शनि विलंब का संकेत देता है।",
+            "caution": "आज अनावश्यक जोखिमों से बचें। शांति के लिए ध्यान करें।",
+            "planet_placed": "{planet} {house}वें भाव ({sign}) में स्थित है।"
         }
     },
-    te: {
-        planets: {
-            Sun: "సూర్యుడు మీ ఆత్మ, అహంకారం మరియు తండ్రిని సూచిస్తాడు.",
-            Moon: "చంద్రుడు మీ భావోద్వేగాలు, మనస్సు మరియు తల్లిని నియంత్రిస్తాడు.",
-            Mars: "కుజుడు మీ శక్తి, ఆశయం మరియు దూకుడును నడిపిస్తాడు.",
-            Mercury: "బుధుడు కమ్యూనికేషన్, తెలివితేటలు మరియు వ్యాపారాన్ని శాసిస్తాడు.",
-            Jupiter: "గురువు జ్ఞానం, విస్తరణ మరియు అదృష్టాన్ని తెస్తాడు.",
-            Venus: "శుక్రుడు ప్రేమ, విలాసవంతమైన జీవితం మరియు కళాత్మక ప్రతిభను నియంత్రిస్తాడు.",
-            Saturn: "శని క్రమశిక్షణ, ఆలస్యం మరియు కఠినమైన పాఠాలను ఇస్తాడు.",
-            Rahu: "రాహువు వ్యామోహం మరియు విదేశీ అంశాలను సూచిస్తాడు.",
-            Ketu: "కేతువు వైరాగ్యం మరియు ఆధ్యాత్మికతను సూచిస్తాడు."
+    "mr": {
+        "planets": {
+            "Sun": "सूर्य तुमचा आत्मा, अहंकार आणि वडिलांचे प्रतिनिधित्व करतो.",
+            "Moon": "चंद्र तुमच्या भावना, मन आणि आईवर नियंत्रण ठेवतो.",
+            "Mars": "मंगळ तुमची ऊर्जा, महत्वाकांक्षा आणि आक्रमकता चालवतो.",
+            "Mercury": "बुध संवाद, बुद्धिमत्ता आणि व्यवसायावर राज्य करतो.",
+            "Jupiter": "गुरु ज्ञान, विस्तार आणि नशीब आणतो.",
+            "Venus": "शुक्र प्रेम, विलासी जीवन आणि कलात्मक प्रतिभा नियंत्रित करतो.",
+            "Saturn": "शनि शिस्त, विलंब आणि कठीण धडे देतो.",
+            "Rahu": "राहू वेड आणि परदेशी घटकांचे प्रतीक आहे.",
+            "Ketu": "केतू अलिप्तता आणि अध्यात्माचे प्रतीक आहे."
         },
-        houses: {
-            1: "స్వీయ మరియు వ్యక్తిత్వం",
-            2: "ధనం మరియు కుటుంబం",
-            3: "ధైర్యం మరియు తోబుట్టువులు",
-            4: "ఇల్లు మరియు తల్లి",
-            5: "సంతానం మరియు తెలివితేటలు",
-            6: "శత్రువులు మరియు ఆరోగ్యం",
-            7: "వివాహం మరియు భాగస్వామ్యం",
-            8: "దీర్ఘాయువు మరియు పరివర్తన",
-            9: "అదృష్టం మరియు ఉన్నత విద్య",
-            10: "కెరీర్ మరియు హోదా",
-            11: "లాభాలు మరియు నెట్‌వర్క్",
-            12: "నష్టాలు మరియు ఆధ్యాత్మికత"
+        "houses": {
+            "1": "स्वयं आणि व्यक्तिमत्व",
+            "2": "धन आणि कुटुंब",
+            "3": "धाडस आणि भावंडे",
+            "4": "घर आणि आई",
+            "5": "संतती आणि बुद्धिमत्ता",
+            "6": "शत्रू आणि आरोग्य",
+            "7": "विवाह आणि भागीदारी",
+            "8": "दीर्घायुष्य आणि परिवर्तन",
+            "9": "नशीब आणि उच्च शिक्षण",
+            "10": "करियर आणि प्रतिष्ठा",
+            "11": "लाभ आणि नेटवर्क",
+            "12": "तोटा आणि अध्यात्म"
         },
-        placements: {
-            Sun: {
-                1: "ఆకర్షణీయమైన మరియు అధికారిక వ్యక్తిత్వం. మీరు సహజ నాయకులు, బలమైన జీవశక్తి ఉంటుంది.",
-                2: "గౌరవప్రదమైన కుటుంబం. అధికారం ద్వారా సంపాదన, మాటలు కఠినంగా ఉండవచ్చు.",
-                3: "ధైర్యవంతులు మరియు వనరులు కలవారు. ప్రత్యర్థులపై విజయం, తోబుట్టువులతో విభేదాలు సాధ్యం.",
-                4: "ఇంటి విషయాలపై ఆందోళన. విజయం పుట్టిన ప్రదేశానికి దూరంగా. కెరీర్‌కే ప్రాధాన్యత.",
-                5: "సృజనాత్మక మరియు తెలివైనవారు. పిల్లలు తక్కువైనా అద్భుతంగా ఉంటారు.",
-                6: "శత్రువుల విజేత. బలమైన రోగనిరోధక శక్తి, సేవ లేదా పరిపాలనలో ఎదుగుదల.",
-                7: "వివాహంలో అహంకార విభేదాలు సాధ్యం. భాగస్వామి ఉన్నత హోదా కలిగి ఉంటారు.",
-                8: "నిగూఢ శాస్త్రాలపై ఆసక్తి. కంటి/గుండె ఆరోగ్యంపై శ్రద్ధ వహించాలి.",
-                9: "ధర్మబద్ధమైనవారు. తండ్రితో ఘర్షణలు సాధ్యం. ఆధ్యాత్మిక ప్రయాణాలు చేస్తారు.",
-                10: "కెరీర్‌కు అద్భుతం. ఉన్నత హోదా, ఖ్యాతి మరియు ప్రభుత్వ లాభాలు.",
-                11: "ఉన్నత హోదా కలిగిన స్నేహితులు. అపారమైన లాభాలు, ఆశయాల నెరవేర్పు.",
-                12: "విదేశాలలో నివాసం. ఆధ్యాత్మికత, కానీ కంటి/నిద్ర సమస్యలు ఉండవచ్చు."
+        "placements": {
+            "Sun": {
+                "1": "प्रभावशाली आणि अधिकृत व्यक्तिमत्व. नैसर्गिक नेतृत्व क्षमता आणि प्रबळ चैतन्यशक्ती.",
+                "2": "प्रतिष्ठित कुटुंबातील आहात. सरकारी/अधिकृत लाभ, पण बोलणे कठोर असू शकते.",
+                "3": "धाडसी आणि साधनसंपन्न. भावंडांशी मतभेद शक्य, पण विरोधकांवर विजय मिळवाल.",
+                "4": "घरची काळजी. यश जन्मस्थानापासून दूर. आरामापेक्षा करिअरला प्राधान्य.",
+                "5": "सर्जनशील आणि बुद्धिमान. कमी पण तेजस्वी मुले. सट्टा बाजारात रस असू शकतो.",
+                "6": "शत्रूंवर विजय. प्रबळ रोगप्रतिकारशक्ती. सेवा किंवा प्रशासनात प्रगती.",
+                "7": "विवाहात अहंकाराचा संघर्ष शक्य. जोडीदार उच्च दर्जाचा किंवा अधिकृत स्वभावाचा असेल.",
+                "8": "गूढ शास्त्रात रस. डोळे किंवा हृदयाच्या आरोग्याची काळजी घ्या. दीर्घायुष्य चांगले.",
+                "9": "धार्मिक स्वभाव. वडिलांशी मतभेद शक्य. आध्यात्मिक कार्यासाठी प्रवास.",
+                "10": "करिअरसाठी उत्कृष्ट. उच्च स्थान, प्रसिद्धी आणि सरकारी लाभ मिळतील.",
+                "11": "उच्च दर्जाचे मित्र आणि अपार लाभ. आकांक्षा पूर्ण होतील.",
+                "12": "परदेश निवास शक्य. आध्यात्मिक पण डोळे/झोपेशी संबंधित समस्या."
             },
-            Moon: {
-                1: "భావోద్వేగపూరితమైన మరియు సున్నితమైనవారు. ఆహ్లాదకరమైన ముఖం, అందరిచే ప్రేమించబడతారు.",
-                2: "మధురమైన స్వరం, సంపన్న కుటుంబం. ఆర్థిక పరిస్థితి మారుతూ ఉంటుంది.",
-                3: "ప్రయాణాల పట్ల మక్కువ, మంచి కమ్యూనికేషన్. సోదరీమణులతో బంధం బలమైనది.",
-                4: "తల్లి మరియు ఇంటికి అనుబంధం. వాహనాలు మరియు ఆస్తి సంతోషాన్నిస్తాయి.",
-                5: "సృజనాత్మక మరియు శృంగారభరితమైనవారు. పిల్లలు మరియు కళలను ప్రేమిస్తారు.",
-                6: "కరుణతో సేవ చేస్తారు. రహస్య శత్రువులు ఉండవచ్చు, ఆరోగ్యం జాగ్రత్త.",
-                7: "అందమైన మరియు భావోద్వేగపూరితమైన భాగస్వామి. త్వరగా వివాహం సాధ్యం.",
-                8: "సహజ జ్ఞానం మరియు రహస్య స్వభావం. ఆరోగ్యంపై శ్రద్ధ అవసరం.",
-                9: "అదృష్టవంతులు మరియు మతపరమైనవారు. ప్రయాణం అదృష్టాన్ని తెస్తుంది.",
-                10: "కెరీర్‌లో తరచుగా మార్పులు. పబ్లిక్ డీలింగ్ అనుకూలం.",
-                11: "చాలా మంది స్నేహితులు మరియు సామాజిక లాభాలు. ఆర్థిక విజయం లభిస్తుంది.",
-                12: "కలలు కనేవారు మరియు ఆధ్యాత్మికం. ఏకాంతం ఇష్టం, విదేశీ ప్రయాణం సాధ్యం."
+            "Moon": {
+                "1": "भावूक, संवेदनशील आणि लहरी. प्रसन्न चेहरा आणि सर्वांचे लाडके.",
+                "2": "गोड आवाज आणि श्रीमंत कुटुंब. पैसा भरती-ओहोटीसारखा कमी-जास्त होतो.",
+                "3": "प्रवासाची आवड आणि उत्तम संवाद कौशल्य. बहिणींशी संबंध दृढ.",
+                "4": "आई आणि घराशी जोडलेले. वाहने आणि मालमत्ता आनंद देतात.",
+                "5": "सर्जनशील आणि रोमँटिक. मुले आणि कला आवडतात. मन सक्रिय राहते.",
+                "6": "लहानपणी नाजूक आरोग्य. सेवेची वृत्ती, पण गुप्त शत्रूंचा सामना.",
+                "7": "सुंदर आणि भावूक जोडीदार. लवकर विवाह होणे शक्य.",
+                "8": "अंतर्ज्ञानी आणि गुप्त. आरोग्याची काळजी घ्या. वारसा हक्काने लाभ.",
+                "9": "नशीबवान आणि धार्मिक. प्रवास नशीब उजळवतो. तात्विक मन.",
+                "10": "करिअरमध्ये वारंवार बदल. जनसंपर्क (Public Dealing) योग्य.",
+                "11": "अनेक मित्र आणि सामाजिक लाभ. आर्थिक यश सहज मिळते.",
+                "12": "स्वप्नाळू आणि आध्यात्मिक. एकांत आवडते, परदेश प्रवास शक्य."
             },
-            Mars: {
-                1: "మీరు శక్తివంతులు మరియు ఆవేశపూరితమైనవారు. తలకు తగిలే గాయాల పట్ల జాగ్రత్తగా ఉండండి.",
-                7: "మాంగళిక ప్రభావం. వివాహానికి సహనం మరియు మిలనం అవసరం.",
-                10: "సాంకేతిక కెరీర్లు మరియు పోలీసు/సైన్యానికి అద్భుతమైనది."
+            "Mars": {
+                "1": "तुम्ही ऊर्जावान आणि आवेगपूर्ण आहात. डोक्याच्या दुखापतींपासून सावध राहा.",
+                "7": "मांगलिक प्रभाव. विवाहात संयम आणि गुणMilan आवश्यक आहे.",
+                "10": "तांत्रिक करिअर आणि पोलीस/लष्करासाठी उत्कृष्ट."
             },
-            Jupiter: {
-                1: "మీరు జ్ఞాని, ఆరోగ్యవంతులు మరియు అదృష్టవంతులు. సహజమైన ఉపాధ్యాయుడు.",
-                4: "గొప్ప గృహ సంతోషం మరియు పెద్ద ఆస్తులు.",
-                10: "గౌరవప్రదమైన వృత్తి మరియు ఉన్నత నైతిక విలువలు."
+            "Jupiter": {
+                "1": "तुम्ही ज्ञानी, निरोगी आणि नशीबवान आहात. एक नैसर्गिक शिक्षक.",
+                "4": "महान कौटुंबिक आनंद आणि मोठी मालमत्ता.",
+                "10": "सन्माननीय व्यवसाय आणि उच्च नैतिक दर्जा."
             },
-            Saturn: {
-                1: "మీరు క్రమశిక్షణతో మరియు గంభీరంగా ఉంటారు. జీవితంలో ఆలస్యంగా విజయం లభిస్తుంది.",
-                7: "వివాహం ఆలస్యం కావచ్చు కానీ స్థిరంగా ఉంటుంది.",
-                10: "మీరు మీ హోదా కోసం కష్టపడి పనిచేస్తారు. రాజకీయ విజయం సాధ్యమే."
+            "Saturn": {
+                "1": "तुम्ही शिस्तबद्ध आणि गंभीर आहात. यश आयुष्यात उशिरा मिळते.",
+                "7": "विवाहात विलंब होऊ शकतो पण तो स्थिर असेल.",
+                "10": "तुम्ही तुमच्या पदासाठी कठोर परिश्रम करता. राजकीय यश मिळणे शक्य आहे."
             }
         },
-        transits: {
-            Sun: { 1: "ఆరోగ్యం పట్ల శ్రద్ధ వహించాలి. అహంకార విభేదాలు సాధ్యమే.", 2: "ఆర్థిక పర్యవేక్షణ అవసరం. మీ మాటపై శ్రద్ధ వహించండి.", 3: "అధిక ధైర్యం మరియు కార్యక్రమాలలో విజయం.", 4: "గృహ ఒత్తిడి సాధ్యమే. ఆస్తి ఒప్పందాలను నివారించండి.", 5: "విద్యకు మంచిది. పిల్లల గురించి ఆందోళనలు.", 6: "శత్రువులపై విజయం. ఆరోగ్యం మెరుగుపడుతుంది.", 7: "ప్రయాణం సూచించబడింది. భాగస్వామితో ఘర్షణ.", 8: "జాగ్రత్త అవసరం. ఆరోగ్యం మరియు సంపద ప్రమాదంలో ఉన్నాయి.", 9: "అదృష్టం మీకు అనుకూలిస్తుంది. మతపరమైన ప్రయాణం సాధ్యమే.", 10: "కెరీర్ విజయం మరియు పదోన్నతి సూచించబడింది.", 11: "అన్ని వైపుల నుండి లాభాలు. స్నేహితులు మీకు సహాయం చేస్తారు.", 12: "ఖర్చులు పెరుగుతాయి. కళ్ల పట్ల జాగ్రత్త వహించండి." },
-            Moon: { 1: "మనశ్శాంతి మరియు మంచి ఆహారం. సంతోషం.", 2: "ఆర్థిక లాభాలు కానీ కొంత మానసిక ఒత్తిడి.", 3: "స్వల్ప ప్రయాణం మరియు పనులలో విజయం.", 4: "ఇంట్లో అశాంతి. వాదనలకు దూరంగా ఉండండి.", 5: "శృంగారం మరియు సృజనాత్మకతకు మంచిది.", 6: "విజయం మరియు లాభాలు. మంచి ఆరోగ్యం.", 7: "శృంగారం మరియు స్వల్ప పర్యటనలు. మంచి భాగస్వామ్యాలు.", 8: "మానసిక ఆందోళన మరియు జీర్ణక్రియ సమస్యలు. ప్రశాంతంగా ఉండండి.", 9: "ఈ రోజు అదృష్టం తక్కువగా ఉంది. కష్టపడి పనిచేయండి.", 10: "పనిలో విజయం. గుర్తింపు.", 11: "స్నేహితులను కలవడం మరియు మంచి ఆదాయం.", 12: "ఖర్చు మరియు శారీరక అలసట." },
-            Mars: { 1: "దూకుడు ప్రవర్తనను నివారించండి. శారీరక శక్తి ఎక్కువగా ఉంటుంది; వ్యాయామం ద్వారా దానిని సరిగ్గా ఉపయోగించండి.", 2: "ఆర్థిక వివాదాలకు ఆస్కారం ఉంది. ఈరోజు ఆవేశపూరిత కొనుగోళ్లపై ఖర్చును నియంత్రించండి.", 3: "ధైర్యం గరిష్ట స్థాయికి చేరుకుంటుంది. సాహసోపేత నిర్ణయాలు, పోటీ పనులకు అద్భుతమైన సమయం.", 4: "ఇంట్లో వివాదాలు వచ్చే అవకాశం ఉంది. కుటుంబ సభ్యులతో ఓపికగా ఉండండి.", 5: "సృజనాత్మక అభిరుచి బలంగా ఉంటుంది. రొమాన్స్ తీవ్రంగా ఉన్నప్పటికీ అస్థిరంగా ఉండవచ్చు.", 6: "అడ్డంకులను అధిగమిస్తారు. పోటీ పనులు, చట్టపరమైన విషయాల్లో విజయం.", 7: "భాగస్వామ్య సంబంధాల్లో ఘర్షణలకు దూరంగా ఉండండి.", 8: "దాగి ఉన్న శత్రువులు బయటపడతారు. మీ రహస్యాలను కాపాడుకోండి మరియు ప్రమాదకర పెట్టుబడులను నివారించండి.", 9: "సాహసోపేత స్ఫూర్తి మేల్కొంటుంది. ప్రయాణాలలో సవాళ్లు ఎదురైనా అవి ఎదుగుదలకు తోడ్పడతాయి.", 10: "కెరీర్ ఆశయాలు పెరుగుతాయి. గుర్తింపు కోసం కష్టపడండి కానీ ఆఫీస్ రాజకీయాలకు దూరంగా ఉండండి.", 11: "సామాజిక ఘర్షణలకు ఆస్కారం ఉంది. స్నేహితులతో వివాదాలకు దూరంగా ఉండండి.", 12: "శక్తి తగ్గుతుంది. బాగా విశ్రాంతి తీసుకోండి; ఆసుపత్రి సందర్శనలు మరియు విదేశీ ఇబ్బందులను నివారించండి." },
-            Venus: { 1: "రొమాన్స్ మరియు సామాజిక జీవితానికి అద్భుతమైన సమయం. మీ ఆకర్షణ ఇతరులను ఆకర్షిస్తుంది.", 2: "అందమైన వస్తువులు లేదా లగ్జరీ వస్తువుల ద్వారా ఆర్థిక లాభాలు. మితంగా ఖర్చు చేయండి.", 3: "సృజనాత్మక సంభాషణలు పెరుగుతాయి. చిన్న ప్రయాణాలు ఆనందాన్ని ఇస్తాయి.", 4: "ఇంటిని అందంగా మార్చుకునే ఆసక్తి కలుగుతుంది. కుటుంబంలో సామరస్యం మరియు సౌఖ్యం గరిష్టంగా ఉంటాయి.", 5: "రొమాన్స్ మరియు కళాత్మక వ్యక్తీకరణకు అత్యుత్తమ సమయం. ప్రేమ సంబంధాలు వికసిస్తాయి.", 6: "ఆరోగ్యం మెరుగుపడుతుంది. సేవా కార్యక్రమాలు సంతృప్తిని మరియు సౌందర్య ఆనందాన్ని ఇస్తాయి.", 7: "వివాహం మరియు భాగస్వామ్యంలో సంతోషం ఉంటుంది. కట్టుబడి ఉండటానికి అనువైన సమయం.", 8: "రహస్య ఆకర్షణలు లేదా వారసత్వ విషయాలు బయటపడతాయి. లోతైన భావోద్వేగ బంధం ఏర్పడుతుంది.", 9: "ఆధ్యాత్మిక ప్రేమ మేల్కొంటుంది. సుదూర ప్రయాణాలు రొమాంటిక్ కలయికలకు దారితీస్తాయి.", 10: "ప్రొఫెషనల్ ఆకర్షణ అద్భుతాలు చేస్తుంది. పబ్లిక్ ఇమేజ్ మరియు కెరీర్ ప్రయోజనాలు బలంగా ఉంటాయి.", 11: "సామాజిక లాభాలు మరియు నెట్‌వర్కింగ్‌లో విజయం. స్నేహితుల ద్వారా ఆనందం మరియు అవకాశాలు వస్తాయి.", 12: "ఏకాంతం ప్రశాంతతను ఇస్తుంది. ఆధ్యాత్మిక కార్యక్రమాలు లేదా ప్రశాంతమైన ఆనందాలు కలుగుతాయి." },
-            Mercury: { 1: "తీక్షణమైన మేధస్సు మరియు స్పష్టమైన సంభాషణ. ఈరోజు మీ భావాలను ఆత్మవిశ్వాసంతో వ్యక్తపరచండి.", 2: "వ్యాపార చర్చలు మీకు అనుకూలంగా ఉంటాయి. చర్చలు ఆర్థిక స్పష్టతను ఇస్తాయి.", 3: "మానసిక చురుకుదనం గరిష్ట స్థాయిలో ఉంటుంది. రాయడం, బోధించడం మరియు చిన్న ప్రయాణాలు లాభదాయకంగా ఉంటాయి.", 4: "కుటుంబంలో మాట్లాడుకోవడం ముఖ్యం. రియల్ ఎస్టేట్ రికార్డులు లేదా గృహ ప్రణాళికలు సజావుగా సాగుతాయి.", 5: "సృజనాత్మక ఆలోచనలు ప్రవహిస్తాయి. మీ ఆలోచనలను పిల్లలతో లేదా ఆర్ట్ ప్రాజెక్ట్‌లలో పంచుకోండి.", 6: "పని సామర్థ్యం ఎక్కువగా ఉంటుంది. పనులను క్రమబద్ధీకరించుకోండి మరియు పెండింగ్‌లో ఉన్న ఆరోగ్య సమస్యలను పరిష్కరించండి.", 7: "భాగస్వామ్య చర్చలు సత్ఫలితాలను ఇస్తాయి. ముఖ్యమైన ఒప్పందాలు లేదా నిర్ణయాలు ఇప్పుడు ఉపయోగపడతాయి.", 8: "పరిశోధనలు మరియు విచారణలకు అనుకూలం. రహస్యాలు లేదా ఉమ్మడి ఆర్థిక విషయాల్లో లోతుగా ఆలోచించండి.", 9: "ఉన్నత చదువుల పై ఆసక్తి కలుగుతుంది. తాత్విక చర్చలు లేదా ప్రయాణ ప్రణాళికలు నెరవేరుతాయి.", 10: "కెరీర్ సంబంధిత కమ్యూనికేషన్ కీలకం. ప్రజెంటేషన్‌లు మరియు నెట్‌వర్కింగ్ గుర్తింపు తెస్తాయి.", 11: "స్నేహితుల పరిధి పెరుగుతుంది. గ్రూప్ చర్చలు మరియు సోషల్ మీడియాలో యాక్టివ్‌గా ఉండటం లాభిస్తుంది.", 12: "ఆత్మశీలన స్పష్టతను ఇస్తుంది. ప్రశాంతమైన పఠనం లేదా ఆధ్యాత్మిక పుస్తకాలు చదవడం సూచించబడింది." }
+        "transits": {
+            "Sun": {
+                "1": "आरोग्य विषयक काळजी घ्यावी. अहंकाराचे संघर्ष शक्य आहेत.",
+                "2": "आर्थिक लक्ष देणे आवश्यक आहे. भाषेत संयम ठेवा.",
+                "3": "उच्च धाडस आणि उपक्रमांमध्ये यश.",
+                "4": "कौटुंबिक तणाव शक्य आहे. मालमत्तेचे व्यवहार टाळा.",
+                "5": "शिक्षणासाठी चांगले. मुलांबद्दल चिंता असू शकते.",
+                "6": "शत्रूंवर विजय. आरोग्य सुधारते.",
+                "7": "प्रवासाचे संकेत आहेत. जोडीदाराशी मतभेद.",
+                "8": "सावधगिरी आवश्यक आहे. आरोग्य आणि संपत्ती धोक्यात येऊ शकते.",
+                "9": "नशीब तुमच्या बाजूने आहे. धार्मिक प्रवास होऊ शकतो.",
+                "10": "करिअरमध्ये यश आणि बढतीचे संकेत आहेत.",
+                "11": "सर्व बाजूंनी लाभ. मित्र तुम्हाला मदत करतील.",
+                "12": "खर्च वाढतील. डोळ्यांची विशेष काळजी घ्या."
+            },
+            "Moon": {
+                "1": "मानसिक शांती आणि चांगले अन्न. आनंद मिळेल.",
+                "2": "आर्थिक लाभ होतील पण काही मानसिक तणाव जाणवेल.",
+                "3": "लहान प्रवास आणि कामात यश.",
+                "4": "घरात अशांती. वादविवाद टाळा.",
+                "5": "रोमान्स आणि सर्जनशीलतेसाठी चांगला वेळ.",
+                "6": "विजय आणि लाभ. चांगले आरोग्य.",
+                "7": "रोमान्स आणि लहान सहली. भागीदारीसाठी चांगले.",
+                "8": "मानसिक चिंता आणि पोटाचे आजार. शांत राहा.",
+                "9": "आज नशिबाची साथ कमी आहे. कठोर परिश्रम करा.",
+                "10": "कामात यश मिळेल. तुमची ओळख वाढेल.",
+                "11": "मित्रांच्या भेटी आणि चांगले उत्पन्न.",
+                "12": "खर्च वाढेल आणि शारीरिक थकवा जाणवेल."
+            },
+            "Mars": {
+                "1": "आक्रमक वागणूक टाळा. शारीरिक उर्जा उच्च आहे; व्यायामातून ती योग्य दिशेने वापरा.",
+                "2": "आर्थिक वाद शक्य आहेत. आज आवेगात केलेल्या खरेदीवर नियंत्रण ठेवा.",
+                "3": "धाडस शिखरावर असेल. धाडसी निर्णय आणि स्पर्धात्मक कार्यांसाठी उत्कृष्ट.",
+                "4": "घरात वाद होण्याची शक्यता आहे. कुटुंबातील सदस्यांशी संयमाने वागा.",
+                "5": "सर्जनशील आवड तीव्र राहील. रोमान्स तीव्र पण अस्थिर असू शकतो.",
+                "6": "अडथळ्यांवर विजय. स्पर्धात्मक कामे आणि कायदेशीर बाबींमध्ये यश.",
+                "7": "भागीदारीत तणाव. जोडीदार किंवा व्यावसायिक भागीदारांशी संघर्ष टाळा.",
+                "8": "लपलेले शत्रू समोर येतील. तुमचे रहस्य सुरक्षित ठेवा आणि धोकादायक गुंतवणूक टाळा.",
+                "9": "साहसी वृत्ती जागृत होईल. प्रवासात आव्हाने येऊ शकतात पण त्यामुळे प्रगती होईल.",
+                "10": "करिअरच्या आकांक्षा वाढतील. मान्यतेसाठी कठोर परिश्रम करा पण कार्यालयीन राजकारण टाळा.",
+                "11": "सामाजिक संघर्ष शक्य आहेत. मित्रांशी वाद घालणे टाळा.",
+                "12": "ऊर्जेत घट होईल. चांगली विश्रांती घ्या; रुग्णालयातील फेऱ्या आणि परदेशी गुंतागुंत टाळा."
+            },
+            "Venus": {
+                "1": "रोमान्स आणि सामाजिक जीवनासाठी उत्कृष्ट वेळ. उच्च आकर्षण लोकांचे लक्ष वेधून घेईल.",
+                "2": "सौंदर्य प्रसाधने किंवा लक्झरी वस्तूंमधून आर्थिक लाभ. माफक प्रमाणात खर्च करा.",
+                "3": "सर्जनशील संवाद वाढेल. लहान सहली सुखद भेटी आणतील.",
+                "4": "घर सजवण्याची प्रबळ इच्छा होईल. कौटुंबिक सामंजस्य आणि आराम शिखरावर असेल.",
+                "5": "रोमान्स आणि कलात्मक अभिव्यक्तीसाठी उत्कृष्ट काळ. प्रेमसंबंध बहरतील.",
+                "6": "आरोग्य सुधारेल. सेवाभावी कार्यातून समाधान आणि सौंदर्यपूर्ण आनंद मिळेल.",
+                "7": "विवाह आणि भागीदारीत आनंद. वचनबद्धतेसाठी आदर्श वेळ.",
+                "8": "गुप्त आकर्षण किंवा वारसा हक्काचे विषय समोर येतील. खोल भावनिक बंध शक्य आहेत.",
+                "9": "आध्यात्मिक प्रेम जागृत होईल. लांबचे प्रवास रोमँटिक भेटी घडवून आणू शकतात.",
+                "10": "व्यावसायिक आकर्षण चमत्कार करेल. सार्वजनिक प्रतिमा आणि करिअरमध्ये मजबूत लाभ.",
+                "11": "सामाजिक लाभ आणि नेटवर्किंगमध्ये यश. मित्रांमुळे आनंद आणि संधी मिळतील.",
+                "12": "एकांत शांती देईल. आध्यात्मिक चिंतन किंवा शांत आनंददायक गोष्टी अनुकूल राहतील."
+            },
+            "Mercury": {
+                "1": "तीक्ष्ण बुद्धिमत्ता आणि स्पष्ट संवाद. आज आत्मविश्वासाने स्वतःला व्यक्त करा.",
+                "2": "व्यावसायिक चर्चा तुमच्या बाजूने राहतील. वाटाघाटी आर्थिक स्पष्टता आणतील.",
+                "3": "मानसिक चपळता सर्वोच्च पातळीवर. लेखन, शिक्षण आणि लहान प्रवास अत्यंत फलदायी ठरतील.",
+                "4": "कौटुंबिक चर्चा महत्त्वाच्या ठरतील. रिअल इस्टेट कागदपत्रे किंवा घरातील नियोजन सुरळीत होईल.",
+                "5": "सर्जनशील विचार प्रवाहित होतील. मुलांसोबत किंवा कलात्मक प्रकल्पांमध्ये तुमचे विचार शेअर करा.",
+                "6": "कामाची कार्यक्षमता उच्च राहील. कामे व्यवस्थित करा आणि प्रलंबित आरोग्य समस्या सोडवा.",
+                "7": "भागीदारीच्या चर्चा फलदायी ठरतील. महत्त्वाचे करार किंवा सौदे आता फायदेशीर राहतील.",
+                "8": "संशोधन आणि अन्वेषणास अनुकूल वेळ. रहस्ये किंवा संयुक्त आर्थिक बाबींमध्ये खोलवर जा.",
+                "9": "उच्च शिक्षणाची ओढ लागेल. तात्विक चर्चा किंवा प्रवासाच्या योजना साकार होतील.",
+                "10": "करिअर विषयक संवाद महत्त्वपूर्ण ठरेल. सादरीकरणे आणि नेटवर्किंग ओळख निर्माण करतील.",
+                "11": "मित्रपरिवारात वाढ होईल. गटचर्चा आणि सोशल मीडियावरील सक्रियता फलदायी ठरेल.",
+                "12": "आत्मनिरीक्षणामुळे स्पष्टता येईल. शांत अभ्यास किंवा आध्यात्मिक वाचनाची शिफारस केली जाते."
+            }
         },
-        lucky: {
-            colors: ["ఎరుపు", "నీలం", "ఆకుపచ్చ", "పసుపు", "తెలుపు", "నారింజ", "గులాబీ"],
-            numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        "lucky": {
+            "colors": [
+                "लाल",
+                "निळा",
+                "हिरवा",
+                "पिवळा",
+                "पांढरा",
+                "केशरी",
+                "गुलाबी"
+            ],
+            "numbers": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "9",
+                "2",
+                "6"
+            ]
         },
-        defaults: {
-            positive: "గురు అదృష్టాన్ని తెస్తాడు.",
-            negative: "శని ఆలస్యాన్ని సూచిస్తాడు.",
-            caution: "ఈ రోజు అనవసరమైన రిస్క్ తీసుకోకండి. ప్రశాంతత కోసం ధ్యానం చేయండి.",
-            planet_placed: "{planet} {house}వ ఇంట్లో ({sign}) ఉంది."
+        "defaults": {
+            "positive": "गुरु नशीब आणतो.",
+            "negative": "शनी विलंब दर्शवतो.",
+            "caution": "आज अनावश्यक जोखीम टाळा. शांततेसाठी ध्यान करा.",
+            "planet_placed": "{planet} {house}व्या घरात ({sign}) स्थित आहे."
         }
     },
-    bn: {
-        planets: {
-            Sun: "সূর্য আপনার আত্মা, অহংকার এবং পিতৃব্যক্তির প্রতিনিধিত্ব করে।",
-            Moon: "চন্দ্র আপনার আবেগ, মন এবং মাতাকে নিয়ন্ত্রণ করে।",
-            Mars: "মঙ্গল আপনার শক্তি, উচ্চাকাঙ্ক্ষা এবং আগ্রাসী মনোভাবকে চালিত করে।",
-            Mercury: "বুধ যোগাযোগ, বুদ্ধি এবং ব্যবসার উপর শাসন করে।",
-            Jupiter: "বৃহস্পতি জ্ঞান, বিস্তার এবং ভাগ্য নিয়ে আসে।",
-            Venus: "শুক্র প্রেম, বিলাসিতা এবং শৈল্পিক প্রতিভাকে নিয়ন্ত্রণ করে।",
-            Saturn: "শনি শৃঙ্খলা, বিলম্ব এবং কঠিন শিক্ষা দেয়।",
-            Rahu: "রাহু মোহাচ্ছন্নতা এবং বিদেশী উপাদানের প্রতীক।",
-            Ketu: "কেতু বৈরাগ্য এবং আধ্যাত্মিকতার প্রতীক।"
+    "te": {
+        "planets": {
+            "Sun": "సూర్యుడు మీ ఆత్మ, అహంకారం మరియు తండ్రిని సూచిస్తాడు.",
+            "Moon": "చంద్రుడు మీ భావోద్వేగాలు, మనస్సు మరియు తల్లిని నియంత్రిస్తాడు.",
+            "Mars": "కుజుడు మీ శక్తి, ఆశయం మరియు దూకుడును నడిపిస్తాడు.",
+            "Mercury": "బుధుడు కమ్యూనికేషన్, తెలివితేటలు మరియు వ్యాపారాన్ని శాసిస్తాడు.",
+            "Jupiter": "గురువు జ్ఞానం, విస్తరణ మరియు అదృష్టాన్ని తెస్తాడు.",
+            "Venus": "శుక్రుడు ప్రేమ, విలాసవంతమైన జీవితం మరియు కళాత్మక ప్రతిభను నియంత్రిస్తాడు.",
+            "Saturn": "శని క్రమశిక్షణ, ఆలస్యం మరియు కఠినమైన పాఠాలను ఇస్తాడు.",
+            "Rahu": "రాహువు వ్యామోహం మరియు విదేశీ అంశాలను సూచిస్తాడు.",
+            "Ketu": "కేతువు వైరాగ్యం మరియు ఆధ్యాత్మికతను సూచిస్తాడు."
         },
-        houses: {
-            1: "স্বয়ং ও ব্যক্তিত্ব", 2: "ধন ও পরিবার", 3: "সাহস ও সহোদর", 4: "গৃহ ও মাতা",
-            5: "সন্তান ও বুদ্ধি", 6: "শত্রু ও স্বাস্থ্য", 7: "বিবাহ ও অংশীদারিত্ব", 8: "আয়ু ও রূপান্তর",
-            9: "ভাগ্য ও উচ্চশিক্ষা", 10: "পেশা ও মর্যাদা", 11: "লাভ ও নেটওয়ার্ক", 12: "ব্যয় ও আধ্যাত্মিকতা"
+        "houses": {
+            "1": "స్వీయ మరియు వ్యక్తిత్వం",
+            "2": "ధనం మరియు కుటుంబం",
+            "3": "ధైర్యం మరియు తోబుట్టువులు",
+            "4": "ఇల్లు మరియు తల్లి",
+            "5": "సంతానం మరియు తెలివితేటలు",
+            "6": "శత్రువులు మరియు ఆరోగ్యం",
+            "7": "వివాహం మరియు భాగస్వామ్యం",
+            "8": "దీర్ఘాయువు మరియు పరివర్తన",
+            "9": "అదృష్టం మరియు ఉన్నత విద్య",
+            "10": "కెరీర్ మరియు హోదా",
+            "11": "లాభాలు మరియు నెట్‌వర్క్",
+            "12": "నష్టాలు మరియు ఆధ్యాత్మికత"
         },
-        placements: {
-            Sun: {
-                1: "আপনার ব্যক্তিত্ব অত্যন্ত প্রভাবশালী। আপনি নেতৃত্বের জন্য জন্ম নিয়েছেন।",
-                10: "পেশার জন্য চমৎকার। আপনি উচ্চ মর্যাদা এবং সরকারি সুবিধা পাবেন।"
+        "placements": {
+            "Sun": {
+                "1": "ఆకర్షణీయమైన మరియు అధికారిక వ్యక్తిత్వం. మీరు సహజ నాయకులు, బలమైన జీవశక్తి ఉంటుంది.",
+                "2": "గౌరవప్రదమైన కుటుంబం. అధికారం ద్వారా సంపాదన, మాటలు కఠినంగా ఉండవచ్చు.",
+                "3": "ధైర్యవంతులు మరియు వనరులు కలవారు. ప్రత్యర్థులపై విజయం, తోబుట్టువులతో విభేదాలు సాధ్యం.",
+                "4": "ఇంటి విషయాలపై ఆందోళన. విజయం పుట్టిన ప్రదేశానికి దూరంగా. కెరీర్‌కే ప్రాధాన్యత.",
+                "5": "సృజనాత్మక మరియు తెలివైనవారు. పిల్లలు తక్కువైనా అద్భుతంగా ఉంటారు.",
+                "6": "శత్రువుల విజేత. బలమైన రోగనిరోధక శక్తి, సేవ లేదా పరిపాలనలో ఎదుగుదల.",
+                "7": "వివాహంలో అహంకార విభేదాలు సాధ్యం. భాగస్వామి ఉన్నత హోదా కలిగి ఉంటారు.",
+                "8": "నిగూఢ శాస్త్రాలపై ఆసక్తి. కంటి/గుండె ఆరోగ్యంపై శ్రద్ధ వహించాలి.",
+                "9": "ధర్మబద్ధమైనవారు. తండ్రితో ఘర్షణలు సాధ్యం. ఆధ్యాత్మిక ప్రయాణాలు చేస్తారు.",
+                "10": "కెరీర్‌కు అద్భుతం. ఉన్నత హోదా, ఖ్యాతి మరియు ప్రభుత్వ లాభాలు.",
+                "11": "ఉన్నత హోదా కలిగిన స్నేహితులు. అపారమైన లాభాలు, ఆశయాల నెరవేర్పు.",
+                "12": "విదేశాలలో నివాసం. ఆధ్యాత్మికత, కానీ కంటి/నిద్ర సమస్యలు ఉండవచ్చు."
             },
-            Moon: {
-                1: "আপনি আবেগপ্রবণ এবং সংবেদনশীল। সবাই আপনাকে ভালোবাসে।",
-                4: "আপনি মা এবং বাড়ির সাথে গভীরভাবে যুক্ত। গাড়ি ও সম্পত্তি আপনাকে সুখ দেয়।"
+            "Moon": {
+                "1": "భావోద్వేగపూరితమైన మరియు సున్నితమైనవారు. ఆహ్లాదకరమైన ముఖం, అందరిచే ప్రేమించబడతారు.",
+                "2": "మధురమైన స్వరం, సంపన్న కుటుంబం. ఆర్థిక పరిస్థితి మారుతూ ఉంటుంది.",
+                "3": "ప్రయాణాల పట్ల మక్కువ, మంచి కమ్యూనికేషన్. సోదరీమణులతో బంధం బలమైనది.",
+                "4": "తల్లి మరియు ఇంటికి అనుబంధం. వాహనాలు మరియు ఆస్తి సంతోషాన్నిస్తాయి.",
+                "5": "సృజనాత్మక మరియు శృంగారభరితమైనవారు. పిల్లలు మరియు కళలను ప్రేమిస్తారు.",
+                "6": "కరుణతో సేవ చేస్తారు. రహస్య శత్రువులు ఉండవచ్చు, ఆరోగ్యం జాగ్రత్త.",
+                "7": "అందమైన మరియు భావోద్వేగపూరితమైన భాగస్వామి. త్వరగా వివాహం సాధ్యం.",
+                "8": "సహజ జ్ఞానం మరియు రహస్య స్వభావం. ఆరోగ్యంపై శ్రద్ధ అవసరం.",
+                "9": "అదృష్టవంతులు మరియు మతపరమైనవారు. ప్రయాణం అదృష్టాన్ని తెస్తుంది.",
+                "10": "కెరీర్‌లో తరచుగా మార్పులు. పబ్లిక్ డీలింగ్ అనుకూలం.",
+                "11": "చాలా మంది స్నేహితులు మరియు సామాజిక లాభాలు. ఆర్థిక విజయం లభిస్తుంది.",
+                "12": "కలలు కనేవారు మరియు ఆధ్యాత్మికం. ఏకాంతం ఇష్టం, విదేశీ ప్రయాణం సాధ్యం."
+            },
+            "Mars": {
+                "1": "మీరు శక్తివంతులు మరియు ఆవేశపూరితమైనవారు. తలకు తగిలే గాయాల పట్ల జాగ్రత్తగా ఉండండి.",
+                "7": "మాంగళిక ప్రభావం. వివాహానికి సహనం మరియు మిలనం అవసరం.",
+                "10": "సాంకేతిక కెరీర్లు మరియు పోలీసు/సైన్యానికి అద్భుతమైనది."
+            },
+            "Jupiter": {
+                "1": "మీరు జ్ఞాని, ఆరోగ్యవంతులు మరియు అదృష్టవంతులు. సహజమైన ఉపాధ్యాయుడు.",
+                "4": "గొప్ప గృహ సంతోషం మరియు పెద్ద ఆస్తులు.",
+                "10": "గౌరవప్రదమైన వృత్తి మరియు ఉన్నత నైతిక విలువలు."
+            },
+            "Saturn": {
+                "1": "మీరు క్రమశిక్షణతో మరియు గంభీరంగా ఉంటారు. జీవితంలో ఆలస్యంగా విజయం లభిస్తుంది.",
+                "7": "వివాహం ఆలస్యం కావచ్చు కానీ స్థిరంగా ఉంటుంది.",
+                "10": "మీరు మీ హోదా కోసం కష్టపడి పనిచేస్తారు. రాజకీయ విజయం సాధ్యమే."
             }
         },
-        transits: {
-            Sun: { 1: "স্বাস্থ্যের যত্ন নিন। অহংকারের লড়াই হতে পারে।", 2: "আর্থিক বিষয়ে নজর রাখুন। কথার ওপর নিয়ন্ত্রণ রাখুন।", 3: "সাহস বাড়বে এবং কাজে সাফল্য আসবে।", 4: "পারিবারিক অশান্তি হতে পারে। সম্পত্তির কাজ এড়িয়ে চলুন।", 5: "শিক্ষার জন্য ভালো। সন্তানদের নিয়ে চিন্তা।", 6: "শত্রুদের ওপর বিজয়। স্বাস্থ্যের উন্নতি হবে।", 7: "ভ্রমণের যোগ আছে। সঙ্গীর সাথে মতভেদ।", 8: "সাবধানতা অবলম্বন করুন। স্বাস্থ্য ও ধনের ঝুঁকি।", 9: "ভাগ্য আপনার সাথে আছে। ধর্মীয় ভ্রমণ হতে পারে।", 10: "পেশায় সাফল্য এবং পদোন্নতির সম্ভাবনা।", 11: "সব দিক থেকে লাভ। বন্ধুরা সাহায্য করবে।", 12: "খরচ বাড়বে। চোখের যত্ন নিন।" },
-            Moon: { 1: "মানসিক শান্তি এবং ভালো খাবার। আনন্দ।", 2: "অর্থ লাভ কিন্তু মানসিক চাপ।", 3: "ছোট ভ্রমণ এবং কাজে সাফল্য।", 4: "বাড়িতে অশান্তি। তর্ক এড়িয়ে চলুন।", 5: "প্রেম এবং সৃজনশীলতার জন্য ভালো।", 6: "বিজয় এবং লাভ। ভালো স্বাস্থ্য।", 7: "রোমান্স এবং ছোট ভ্রমণ। ভালো অংশীদারিত্ব।", 8: "মানসিক চিন্তা এবং পেটের সমস্যা। শান্ত থাকুন।", 9: "আজ ভাগ্যের অভাব। পরিশ্রম করুন।", 10: "কাজে সাফল্য। স্বীকৃতি পাবেন।", 11: "বন্ধুদের সাথে সাক্ষাৎ এবং ভালো আয়।", 12: "খরচ এবং শারীরিক ক্লান্তি।" },
-            Mars: { 1: "অতিরিক্ত রাগ নিয়ন্ত্রণ করুন। শারীরিক শক্তি বেশি থাকবে; ব্যায়ামের মাধ্যমে সঠিকভাবে কাজে লাগান।", 2: "আর্থিক বিবাদ হতে পারে। আজ অকারণে কেনাকাটা করা থেকে বিরত থাকুন।", 3: "সাহস শীর্ষে থাকবে। সাহসী সিদ্ধান্ত এবং প্রতিযোগিতামূলক কাজের জন্য দারুণ সময়।", 4: "পারিবারিক বিবাদের সম্ভাবনা রয়েছে। পরিবারের সদস্যদের সাথে ধৈর্য ধরে আচরণ করুন।", 5: "সৃজনশীলতা বৃদ্ধি পাবে। রোমান্স গভীর হতে পারে, তবে তা পরিবর্তনশীল।", 6: "বাধা অতিক্রম করতে পারবেন। প্রতিযোগিতামূলক কাজ এবং আইনি ক্ষেত্রে সাফল্য।", 7: "অংশীদারি ব্যবসায় বিবাদ হতে পারে। জীবনসঙ্গী বা ব্যবসায়িক অংশীদারের সাথে ঝামেলা এড়িয়ে চলুন।", 8: "গোপন শত্রুরা সামনে আসতে পারে। নিজের গোপনীয়তা রক্ষা করুন এবং ঝুঁকিপূর্ণ বিনিয়োগ পরিহার করুন।", 9: "অ্যাডভেঞ্চারের ইচ্ছা বাড়বে। ভ্রমণে বাধা এলেও তা উন্নতির পথ প্রশস্ত করবে।", 10: "কর্মজীবনে উচ্চাকাঙ্ক্ষা বৃদ্ধি পাবে। সাফল্যের জন্য কঠোর পরিশ্রম করুন, তবে অফিসের রাজনীতি থেকে দূরে থাকুন।", 11: "সামাজিক বিবাদ হতে পারে। বন্ধুদের সাথে তর্ক-বিতর্ক এড়িয়ে চলুন।", 12: "শক্তি হ্রাস পেতে পারে। ভালোভাবে বিশ্রাম নিন; হাসপাতালে যাওয়া এবং বিদেশের ঝামেলা থেকে দূরে থাকুন।" },
-            Venus: { 1: "রোমান্স এবং সামাজিক জীবনের জন্য চমৎকার সময়। আপনার আকর্ষণ অন্যদের মনোযোগ কাড়বে।", 2: "সৌন্দর্যবর্ধক বা বিলাসবহুল জিনিসপত্র থেকে আর্থিক লাভ। পরিমিত খরচ করুন।", 3: "সৃজনশীল আলাপচারিতা বৃদ্ধি পাবে। সংক্ষিপ্ত ভ্রমণ আনন্দ বয়ে আনবে।", 4: "বাড়ি সাজানোর তীব্র ইচ্ছে হবে। পারিবারিক সম্প্রীতি এবং আরাম সর্বোচ্চ স্তরে থাকবে।", 5: "রোমান্স এবং শৈল্পিক প্রকাশ শিখরে থাকবে। প্রেমের সম্পর্ক সুন্দরভাবে ফুটে উঠবে।", 6: "স্বাস্থ্যের উন্নতি হবে। সেবামূলক কাজগুলি আত্মতৃপ্তি এবং নান্দনিক আনন্দ বয়ে আনবে।", 7: "বিবাহ এবং অংশীদারি সম্পর্কে সুখ থাকবে। প্রতিশ্রুতির জন্য আদর্শ সময়।", 8: "গোপন আকর্ষণ বা উত্তরাধিকার সংক্রান্ত বিষয় সামনে আসতে পারে। গভীর মানসিক বন্ধন সম্ভব।", 9: "আধ্যাত্মিক প্রেম জাগ্রত হবে। দীর্ঘ যাত্রা রোমান্টিক সাক্ষাতের সুযোগ করে দিতে পারে।", 10: "পেশাগত ক্ষেত্রে আকর্ষণ জাদুর মতো কাজ করবে। সামাজিক ভাবমূর্তি এবং ক্যারিয়ার লাভ শক্তিশালী হবে।", 11: "সামাজিক লাভ এবং নেটওয়ার্কিংয়ে সাফল্য আসবে। বন্ধুরা আনন্দ এবং সুযোগ নিয়ে আসবে।", 12: "একাকিত্ব শান্তি বয়ে আনবে। আধ্যাত্মিক চর্চা বা শান্তিময় কাজ অনুকূল হবে।" },
-            Mercury: { 1: "তীক্ষ্ণ বুদ্ধি এবং স্পষ্ট যোগাযোগ। আজ আত্মবিশ্বাসের সাথে নিজেকে প্রকাশ করুন।", 2: "ব্যবসায়িক আলোচনা আপনার পক্ষে থাকবে। আলাপ-আলোচনার মাধ্যমে আর্থিক দিক পরিষ্কার হবে।", 3: "মানসিক তত্পরতা শিখরে পৌঁছাবে। লেখালেখি, শিক্ষাদান এবং সংক্ষিপ্ত ভ্রমণ অত্যন্ত লাভজনক হবে।", 4: "পারিবারিক মতবিনিময় গুরুত্বপূর্ণ হবে। রিয়েল এস্টেটের কাগজপত্র বা বাড়ির পরিকল্পনা ঠিকভাবে এগোবে।", 5: "সৃজনশীল চিন্তার উদয় হবে। শিশুদের সাথে বা শিল্পমূলক প্রকল্পে নিজের ভাবনা শেয়ার করুন।", 6: "কাজের দক্ষতা বৃদ্ধি পাবে। কাজ গুছিয়ে নিন এবং অমীমাংসিত স্বাস্থ্য সংক্রান্ত বিষয়ে সমাধান খুঁজুন।", 7: "অংশীদারি আলোচনা ফলপ্রসূ হবে। গুরুত্বপূর্ণ চুক্তি বা সমঝোতা এখন লাভজনক।", 8: "গবেষণা এবং অনুসন্ধানের জন্য অনুকূল সময়। রহস্য বা যৌথ আর্থিক বিষয়ে গভীরে প্রবেশ করুন।", 9: "উচ্চশিক্ষার প্রতি আগ্রহ বাড়বে। দার্শনিক আলোচনা বা ভ্রমণের পরিকল্পনা বাস্তবায়িত হতে পারে।", 10: "কর্মজীবনের যোগাযোগ অত্যন্ত গুরুত্বপূর্ণ হবে। প্রেজেন্টেশন এবং নেটওয়ার্কিংয়ের মাধ্যমে স্বীকৃতি পাবেন।", 11: "বন্ধুমহল প্রসারিত হবে। গ্রুপ আলোচনা এবং সোশ্যাল মিডিয়ায় যুক্ত থাকা ফলপ্রসূ হবে।", 12: "আত্মবিশ্লেষণ স্পষ্টতা বয়ে আনবে। শান্তভাবে বই পড়া বা আধ্যাত্মিক চর্চা করার পরামর্শ দেওয়া হচ্ছে।" }
+        "transits": {
+            "Sun": {
+                "1": "ఆరోగ్యం పట్ల శ్రద్ధ వహించాలి. అహంకార విభేదాలు సాధ్యమే.",
+                "2": "ఆర్థిక పర్యవేక్షణ అవసరం. మీ మాటపై శ్రద్ధ వహించండి.",
+                "3": "అధిక ధైర్యం మరియు కార్యక్రమాలలో విజయం.",
+                "4": "గృహ ఒత్తిడి సాధ్యమే. ఆస్తి ఒప్పందాలను నివారించండి.",
+                "5": "విద్యకు మంచిది. పిల్లల గురించి ఆందోళనలు.",
+                "6": "శత్రువులపై విజయం. ఆరోగ్యం మెరుగుపడుతుంది.",
+                "7": "ప్రయాణం సూచించబడింది. భాగస్వామితో ఘర్షణ.",
+                "8": "జాగ్రత్త అవసరం. ఆరోగ్యం మరియు సంపద ప్రమాదంలో ఉన్నాయి.",
+                "9": "అదృష్టం మీకు అనుకూలిస్తుంది. మతపరమైన ప్రయాణం సాధ్యమే.",
+                "10": "కెరీర్ విజయం మరియు పదోన్నతి సూచించబడింది.",
+                "11": "అన్ని వైపుల నుండి లాభాలు. స్నేహితులు మీకు సహాయం చేస్తారు.",
+                "12": "ఖర్చులు పెరుగుతాయి. కళ్ల పట్ల జాగ్రత్త వహించండి."
+            },
+            "Moon": {
+                "1": "మనశ్శాంతి మరియు మంచి ఆహారం. సంతోషం.",
+                "2": "ఆర్థిక లాభాలు కానీ కొంత మానసిక ఒత్తిడి.",
+                "3": "స్వల్ప ప్రయాణం మరియు పనులలో విజయం.",
+                "4": "ఇంట్లో అశాంతి. వాదనలకు దూరంగా ఉండండి.",
+                "5": "శృంగారం మరియు సృజనాత్మకతకు మంచిది.",
+                "6": "విజయం మరియు లాభాలు. మంచి ఆరోగ్యం.",
+                "7": "శృంగారం మరియు స్వల్ప పర్యటనలు. మంచి భాగస్వామ్యాలు.",
+                "8": "మానసిక ఆందోళన మరియు జీర్ణక్రియ సమస్యలు. ప్రశాంతంగా ఉండండి.",
+                "9": "ఈ రోజు అదృష్టం తక్కువగా ఉంది. కష్టపడి పనిచేయండి.",
+                "10": "పనిలో విజయం. గుర్తింపు.",
+                "11": "స్నేహితులను కలవడం మరియు మంచి ఆదాయం.",
+                "12": "ఖర్చు మరియు శారీరక అలసట."
+            },
+            "Mars": {
+                "1": "దూకుడు ప్రవర్తనను నివారించండి. శారీరక శక్తి ఎక్కువగా ఉంటుంది; వ్యాయామం ద్వారా దానిని సరిగ్గా ఉపయోగించండి.",
+                "2": "ఆర్థిక వివాదాలకు ఆస్కారం ఉంది. ఈరోజు ఆవేశపూరిత కొనుగోళ్లపై ఖర్చును నియంత్రించండి.",
+                "3": "ధైర్యం గరిష్ట స్థాయికి చేరుకుంటుంది. సాహసోపేత నిర్ణయాలు, పోటీ పనులకు అద్భుతమైన సమయం.",
+                "4": "ఇంట్లో వివాదాలు వచ్చే అవకాశం ఉంది. కుటుంబ సభ్యులతో ఓపికగా ఉండండి.",
+                "5": "సృజనాత్మక అభిరుచి బలంగా ఉంటుంది. రొమాన్స్ తీవ్రంగా ఉన్నప్పటికీ అస్థిరంగా ఉండవచ్చు.",
+                "6": "అడ్డంకులను అధిగమిస్తారు. పోటీ పనులు, చట్టపరమైన విషయాల్లో విజయం.",
+                "7": "భాగస్వామ్య సంబంధాల్లో ఘర్షణలకు దూరంగా ఉండండి.",
+                "8": "దాగి ఉన్న శత్రువులు బయటపడతారు. మీ రహస్యాలను కాపాడుకోండి మరియు ప్రమాదకర పెట్టుబడులను నివారించండి.",
+                "9": "సాహసోపేత స్ఫూర్తి మేల్కొంటుంది. ప్రయాణాలలో సవాళ్లు ఎదురైనా అవి ఎదుగుదలకు తోడ్పడతాయి.",
+                "10": "కెరీర్ ఆశయాలు పెరుగుతాయి. గుర్తింపు కోసం కష్టపడండి కానీ ఆఫీస్ రాజకీయాలకు దూరంగా ఉండండి.",
+                "11": "సామాజిక ఘర్షణలకు ఆస్కారం ఉంది. స్నేహితులతో వివాదాలకు దూరంగా ఉండండి.",
+                "12": "శక్తి తగ్గుతుంది. బాగా విశ్రాంతి తీసుకోండి; ఆసుపత్రి సందర్శనలు మరియు విదేశీ ఇబ్బందులను నివారించండి."
+            },
+            "Venus": {
+                "1": "రొమాన్స్ మరియు సామాజిక జీవితానికి అద్భుతమైన సమయం. మీ ఆకర్షణ ఇతరులను ఆకర్షిస్తుంది.",
+                "2": "అందమైన వస్తువులు లేదా లగ్జరీ వస్తువుల ద్వారా ఆర్థిక లాభాలు. మితంగా ఖర్చు చేయండి.",
+                "3": "సృజనాత్మక సంభాషణలు పెరుగుతాయి. చిన్న ప్రయాణాలు ఆనందాన్ని ఇస్తాయి.",
+                "4": "ఇంటిని అందంగా మార్చుకునే ఆసక్తి కలుగుతుంది. కుటుంబంలో సామరస్యం మరియు సౌఖ్యం గరిష్టంగా ఉంటాయి.",
+                "5": "రొమాన్స్ మరియు కళాత్మక వ్యక్తీకరణకు అత్యుత్తమ సమయం. ప్రేమ సంబంధాలు వికసిస్తాయి.",
+                "6": "ఆరోగ్యం మెరుగుపడుతుంది. సేవా కార్యక్రమాలు సంతృప్తిని మరియు సౌందర్య ఆనందాన్ని ఇస్తాయి.",
+                "7": "వివాహం మరియు భాగస్వామ్యంలో సంతోషం ఉంటుంది. కట్టుబడి ఉండటానికి అనువైన సమయం.",
+                "8": "రహస్య ఆకర్షణలు లేదా వారసత్వ విషయాలు బయటపడతాయి. లోతైన భావోద్వేగ బంధం ఏర్పడుతుంది.",
+                "9": "ఆధ్యాత్మిక ప్రేమ మేల్కొంటుంది. సుదూర ప్రయాణాలు రొమాంటిక్ కలయికలకు దారితీస్తాయి.",
+                "10": "ప్రొఫెషనల్ ఆకర్షణ అద్భుతాలు చేస్తుంది. పబ్లిక్ ఇమేజ్ మరియు కెరీర్ ప్రయోజనాలు బలంగా ఉంటాయి.",
+                "11": "సామాజిక లాభాలు మరియు నెట్‌వర్కింగ్‌లో విజయం. స్నేహితుల ద్వారా ఆనందం మరియు అవకాశాలు వస్తాయి.",
+                "12": "ఏకాంతం ప్రశాంతతను ఇస్తుంది. ఆధ్యాత్మిక కార్యక్రమాలు లేదా ప్రశాంతమైన ఆనందాలు కలుగుతాయి."
+            },
+            "Mercury": {
+                "1": "తీక్షణమైన మేధస్సు మరియు స్పష్టమైన సంభాషణ. ఈరోజు మీ భావాలను ఆత్మవిశ్వాసంతో వ్యక్తపరచండి.",
+                "2": "వ్యాపార చర్చలు మీకు అనుకూలంగా ఉంటాయి. చర్చలు ఆర్థిక స్పష్టతను ఇస్తాయి.",
+                "3": "మానసిక చురుకుదనం గరిష్ట స్థాయిలో ఉంటుంది. రాయడం, బోధించడం మరియు చిన్న ప్రయాణాలు లాభదాయకంగా ఉంటాయి.",
+                "4": "కుటుంబంలో మాట్లాడుకోవడం ముఖ్యం. రియల్ ఎస్టేట్ రికార్డులు లేదా గృహ ప్రణాళికలు సజావుగా సాగుతాయి.",
+                "5": "సృజనాత్మక ఆలోచనలు ప్రవహిస్తాయి. మీ ఆలోచనలను పిల్లలతో లేదా ఆర్ట్ ప్రాజెక్ట్‌లలో పంచుకోండి.",
+                "6": "పని సామర్థ్యం ఎక్కువగా ఉంటుంది. పనులను క్రమబద్ధీకరించుకోండి మరియు పెండింగ్‌లో ఉన్న ఆరోగ్య సమస్యలను పరిష్కరించండి.",
+                "7": "భాగస్వామ్య చర్చలు సత్ఫలితాలను ఇస్తాయి. ముఖ్యమైన ఒప్పందాలు లేదా నిర్ణయాలు ఇప్పుడు ఉపయోగపడతాయి.",
+                "8": "పరిశోధనలు మరియు విచారణలకు అనుకూలం. రహస్యాలు లేదా ఉమ్మడి ఆర్థిక విషయాల్లో లోతుగా ఆలోచించండి.",
+                "9": "ఉన్నత చదువుల పై ఆసక్తి కలుగుతుంది. తాత్విక చర్చలు లేదా ప్రయాణ ప్రణాళికలు నెరవేరుతాయి.",
+                "10": "కెరీర్ సంబంధిత కమ్యూనికేషన్ కీలకం. ప్రజెంటేషన్‌లు మరియు నెట్‌వర్కింగ్ గుర్తింపు తెస్తాయి.",
+                "11": "స్నేహితుల పరిధి పెరుగుతుంది. గ్రూప్ చర్చలు మరియు సోషల్ మీడియాలో యాక్టివ్‌గా ఉండటం లాభిస్తుంది.",
+                "12": "ఆత్మశీలన స్పష్టతను ఇస్తుంది. ప్రశాంతమైన పఠనం లేదా ఆధ్యాత్మిక పుస్తకాలు చదవడం సూచించబడింది."
+            }
         },
-        lucky: {
-            colors: ["লাল", "নীল", "সবুজ", "হলুদ", "সাদা", "কমলা", "গোলাপী"],
-            numbers: ["১", "৩", "৫", "৭", "৯", "২", "৬"]
+        "lucky": {
+            "colors": [
+                "ఎరుపు",
+                "నీలం",
+                "ఆకుపచ్చ",
+                "పసుపు",
+                "తెలుపు",
+                "నారింజ",
+                "గులాబీ"
+            ],
+            "numbers": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "9",
+                "2",
+                "6"
+            ]
         },
-        defaults: {
-            positive: "বৃহস্পতি ভাগ্য নিয়ে আসে।",
-            negative: "শনি বিলম্বের ইঙ্গিত দেয়।",
-            caution: "আজ অপ্রয়োজনীয় ঝুঁকি এড়িয়ে চলুন। শান্তির জন্য ধ্যান করুন।",
-            planet_placed: "{planet} {house}তম ঘরে ({sign}) অবস্থিত।"
+        "defaults": {
+            "positive": "గురు అదృష్టాన్ని తెస్తాడు.",
+            "negative": "శని ఆలస్యాన్ని సూచిస్తాడు.",
+            "caution": "ఈ రోజు అనవసరమైన రిస్క్ తీసుకోకండి. ప్రశాంతత కోసం ధ్యానం చేయండి.",
+            "planet_placed": "{planet} {house}వ ఇంట్లో ({sign}) ఉంది."
         }
     },
-    gu: {
-        planets: {
-            Sun: "સૂર્ય તમારા આત્મા, અહંકાર અને પિતા સમાન વ્યક્તિઓનું પ્રતિનિધિત્વ કરે છે.",
-            Moon: "ચંદ્ર તમારી લાગણીઓ, મન અને માતા પર નિયંત્રણ રાખે છે.",
-            Mars: "મંગળ તમારી ઉર્જા, મહત્વાકાંક્ષા અને આક્રમકતાને ચલાવે છે.",
-            Mercury: "બુધ સંચાર, બુદ્ધિ અને વ્યવસાય પર શાસન કરે છે.",
-            Jupiter: "ગુરુ જ્ઞાન, વિસ્તરણ અને નસીબ લાવે છે.",
-            Venus: "શુક્ર પ્રેમ, લક્ઝરી અને કલાત્મક પ્રતિભાને નિયંત્રિત કરે છે.",
-            Saturn: "શનિ શિસ્ત, વિલંબ અને મુશ્કેલ પાઠ આપે છે.",
-            Rahu: "રાહુ જુસ્સા અને વિદેશી તત્વોનું પ્રતિક છે.",
-            Ketu: "કેતુ વૈરાગ્ય અને આધ્યાત્મિકતાનું પ્રતિક છે."
+    "bn": {
+        "planets": {
+            "Sun": "সূর্য আপনার আত্মা, অহংকার এবং পিতৃব্যক্তির প্রতিনিধিত্ব করে।",
+            "Moon": "চন্দ্র আপনার আবেগ, মন এবং মাতাকে নিয়ন্ত্রণ করে।",
+            "Mars": "মঙ্গল আপনার শক্তি, উচ্চাকাঙ্ক্ষা এবং আগ্রাসী মনোভাবকে চালিত করে।",
+            "Mercury": "বুধ যোগাযোগ, বুদ্ধি এবং ব্যবসার উপর শাসন করে।",
+            "Jupiter": "বৃহস্পতি জ্ঞান, বিস্তার এবং ভাগ্য নিয়ে আসে।",
+            "Venus": "শুক্র প্রেম, বিলাসিতা এবং শৈল্পিক প্রতিভাকে নিয়ন্ত্রণ করে।",
+            "Saturn": "শনি শৃঙ্খলা, বিলম্ব এবং কঠিন শিক্ষা দেয়।",
+            "Rahu": "রাহু মোহাচ্ছন্নতা এবং বিদেশী উপাদানের প্রতীক।",
+            "Ketu": "কেতু বৈরাগ্য এবং আধ্যাত্মিকতার প্রতীক।"
         },
-        houses: {
-            1: "સ્વયં અને વ્યક્તિત્વ", 2: "ધન અને પરિવાર", 3: "સાહસ અને ભાઈ-બહેન", 4: "ઘર અને માતા",
-            5: "સંતાન અને બુદ્ધિ", 6: "શત્રુ અને સ્વાસ્થ્ય", 7: "લગ્ન અને ભાગીદારી", 8: "આયુષ્ય અને પરિવર્તન",
-            9: "ભાગ્ય અને ઉચ્ચ શિક્ષણ", 10: "કરિયર અને પ્રતિષ્ઠા", 11: "લાભ અને નેટવર્ક", 12: "ખર્ચ અને આધ્યાત્મિકતા"
+        "houses": {
+            "1": "স্বয়ং ও ব্যক্তিত্ব",
+            "2": "ধন ও পরিবার",
+            "3": "সাহস ও সহোদর",
+            "4": "গৃহ ও মাতা",
+            "5": "সন্তান ও বুদ্ধি",
+            "6": "শত্রু ও স্বাস্থ্য",
+            "7": "বিবাহ ও অংশীদারিত্ব",
+            "8": "আয়ু ও রূপান্তর",
+            "9": "ভাগ্য ও উচ্চশিক্ষা",
+            "10": "পেশা ও মর্যাদা",
+            "11": "লাভ ও নেটওয়ার্ক",
+            "12": "ব্যয় ও আধ্যাত্মিকতা"
         },
-        placements: {
-            Sun: {
-                1: "તમારું વ્યક્તિત્વ પ્રભાવશાળી છે. તમે નેતૃત્વ કરવા માટે જન્મ્યા છો.",
-                10: "કરિયર માટે ઉત્તમ. તમને ઉચ્ચ પદ અને સરકારી લાભ મળશે."
+        "placements": {
+            "Sun": {
+                "1": "আপনার ব্যক্তিত্ব অত্যন্ত প্রভাবশালী। আপনি নেতৃত্বের জন্য জন্ম নিয়েছেন।",
+                "10": "পেশার জন্য চমৎকার। আপনি উচ্চ মর্যাদা এবং সরকারি সুবিধা পাবেন।"
             },
-            Moon: {
-                1: "તમે લાગણીશીલ અને સંવેદનશીલ છો. બધા તમને પ્રેમ કરે છે.",
-                4: "તમે માતા અને ઘર સાથે જોડાયેલા છો. વાહન અને મિલકત તમને ખુશી આપે છે."
+            "Moon": {
+                "1": "আপনি আবেগপ্রবণ এবং সংবেদনশীল। সবাই আপনাকে ভালোবাসে।",
+                "4": "আপনি মা এবং বাড়ির সাথে গভীরভাবে যুক্ত। গাড়ি ও সম্পত্তি আপনাকে সুখ দেয়।"
             }
         },
-        transits: {
-            Sun: { 1: "સ્વાસ્થ્યનું ધ્યાન રાખો. અહંકારનો સંઘર્ષ થઈ શકે છે.", 2: "આર્થિક બાબતો પર ધ્યાન આપો. વાણી પર નિયંત્રણ રાખો.", 3: "હિંમત વધશે અને કાર્યોમાં સફળતા મળશે.", 4: "ઘરેલું તણાવ શક્ય છે. મિલકતના સોદા ટાળો.", 5: "શિક્ષણ માટે સારું. બાળકો વિશે ચિંતા.", 6: "શત્રુઓ પર વિજય. સ્વાસ્થ્યમાં સુધારો થશે.", 7: "મુસાફરીના સંકેત છે. જીવનસાથી સાથે મતભેદ.", 8: "સાવચેતી જરૂરી છે. આરોગ્ય અને સંપત્તિ જોખમમાં.", 9: "નસીબ તમારી સાથે છે. ધાર્મિક યાત્રા શક્ય છે.", 10: "કરિયરમાં સફળતા અને પ્રમોશનના સંકેત.", 11: "બધી બાજુથી લાભ. મિત્રો મદદ કરશે.", 12: "ખર્ચ વધશે. આંખોની સંભાળ રાખો." },
-            Moon: { 1: "માનસિક શાંતિ અને સારું ભોજન. આનંદ.", 2: "આર્થિક લાભ પણ માનસિક તણાવ.", 3: "ટૂંકી મુસાફરી અને કાર્યમાં સફળતા.", 4: "ઘરમાં અશાંતિ. દલીલો ટાળો.", 5: "રોમાંસ અને સર્જનાત્મકતા માટે સારું.", 6: "વિજય અને લાભ. સારું સ્વાસ્થ્ય.", 7: "રોમાંસ અને ટૂંકી યાત્રાઓ. સારી ભાગીદારી.", 8: "માનસિક ચિંતા અને પાચન સમસ્યાઓ. શાંત રહો.", 9: "આજે નસીબનો અભાવ. સખત મહેનત કરો.", 10: "કામમાં સફળતા. માન્યતા મળશે.", 11: "મિત્રોને મળવાનું અને સારી આવક.", 12: "ખર્ચ અને શારીરિક થાક." },
-            Mars: { 1: "આક્રમક વર્તન ટાળો. શારીરિક ઉર્જા વધારે છે; કસરત દ્વારા તેનો યોગ્ય ઉપયોગ કરો.", 2: "આર્થિક વિવાદ શક્ય છે. આજે આવેશમાં આવીને ખરીદી કરવાનું ટાળો.", 3: "હિંમત ટોચ પર રહેશે. હિંમતભર્યા નિર્ણયો અને સ્પર્ધાત્મક કાર્યો માટે શ્રેષ્ઠ સમય.", 4: "ઘરમાં વાદ-વિવાદ થઈ શકે છે. પરિવારના સભ્યો સાથે ધીરજ રાખો.", 5: "સર્જનાત્મક જુસ્સો મજબૂત રહેશે. રોમાંસ તીવ્ર પરંતુ અસ્થિર રહી શકે છે.", 6: "અડચણો પર વિજય. સ્પર્ધાત્મક કાર્યો અને કાનૂની બાબતોમાં સફળતા.", 7: "ભાગીદારીમાં તણાવ. જીવનસાથી અથવા વ્યવસાયિક ભાગીદારો સાથે ક્લેશ ટાળો.", 8: "છુપાયેલા દુશ્મનો સામે આવી શકે છે. તમારા રહસ્યોને સુરક્ષિત રાખો અને જોખમી રોકાણો ટાળો.", 9: "સાહસિક ભાવના જાગૃત થશે. મુસાફરીમાં પડકારો આવી શકે છે પરંતુ તે વૃદ્ધિ લાવશે.", 10: "કરિયરની મહત્વાકાંક્ષાઓ વધશે. માન્યતા માટે સખત મહેનત કરો પરંતુ ઓફિસની રાજકારણથી બચો.", 11: "સામાજિક સંઘર્ષ શક્ય છે. મિત્રો સાથેની લડાઈઓ ટાળો.", 12: "ઉર્જા ઓછી થશે. સારી રીતે આરામ કરો; હોસ્પિટલની મુલાકાતો અને વિદેશી ગૂંચવણો ટાળો." },
-            Venus: { 1: "રોમાંસ અને સામાજિક જીવન માટે ઉત્તમ સમય. તમારું આકર્ષણ લોકોનું ધ્યાન ખેંચશે.", 2: "સૌંદર્ય અને વૈભવી વસ્તુઓ દ્વારા આર્થિક લાભ. મધ્યમ ખર્ચ કરો.", 3: "સર્જનાત્મક સંચાર વધશે. ટૂંકી મુસાફરી આનંદદાયક મુલાકાતો લાવશે.", 4: "ઘર સજાવવાની તીવ્ર ઈચ્છા થશે. કૌટુંબિક સંવાદિતા અને આરામ ઉચ્ચ સ્તરે રહેશે.", 5: "રોમાંસ અને કલાત્મક અભિવ્યક્તિ ચરમસીમાએ રહેશે. પ્રેમ સંબંધો ખીલી ઉઠશે.", 6: "સ્વાસ્થ્યમાં સુધારો થશે. સેવા કાર્યો સંતોષ અને સૌંદર્યલક્ષી આનંદ લાવશે.", 7: "લગ્ન અને ભાગીદારીમાં ખુશી. પ્રતિબદ્ધતા માટે આદર્શ સમય.", 8: "ગુપ્ત આકર્ષણો અથવા વારસાના મામલા સામે આવશે. ગાઢ ભાવનાત્મક બંધન બની શકે છે.", 9: "આધ્યાত্মિક પ્રેમ જાગૃત થશે. લાંબા અંતરની યાત્રાઓ રોમેન્ટિક અહેસાસ કરાવશે.", 10: "વ્યાવસાયિક આકર્ષણ અજાયબીઓ કરશે. જાહેર છબી અને કારકિર્દીનો મજબૂત લાભ.", 11: "સામાજિક લાભો અને નેટવર્કિંગમાં સફળતા. મિત્રો ખુશી અને તકો લાવશે.", 12: "એકાંત શાંતિ લાવશે. આધ્યાત્મિક વિરામ અથવા શાંત આનંદદાયક વસ્તુઓની પસંદગી થશે." },
-            Mercury: { 1: "તીક્ષ્ણ બુદ્ધિ અને સ્પષ્ટ સંચાર. આજે આત્મવિશ્વાસથી તમારી જાતને વ્યક્ત કરો.", 2: "વ્યાપારી ચર્ચાઓ તમારી તરફેણમાં રહેશે. વાતચીત આર્થિક સ્પષ્ટતા લાવશે.", 3: "માનસિક ચપળતા ટોચ પર રહેશે. લેખન, શિક્ષણ અને ટૂંકી મુસાફરી ખૂબ ફળદાયી રહેશે.", 4: "કૌટુંબિક વાર્તાલાપ મહત્વપૂર્ણ રહેશે. રિયલ એસ્ટેટ પેપરવર્ક અથવા ઘરનું આયોજન સારી રીતે ચાલશે.", 5: "સર્જનાત્મક વિચારો વહેશે. બાળકો અથવા કલાત્મક પ્રોજેક્ટ્સ સાથે તમારા વિચારો શેર કરો.", 6: "કાર્યક્ષમતા વધુ રહેશે. કાર્યોને ગોઠવો અને બાકી રહેલા પ્રશ્નોનું નિરાકરણ લાવો.", 7: "ભાગીદારી વાર્તાલાપ ફળદાયી રહેશે. મહત્વપૂર્ણ કરારો અથવા સોદાઓ હવે ફાયદાકારક છે.", 8: "સંશોધન અને તપાસ માટે અનુકૂળ. રહસ્યો અથવા સંયુક્ત નાણાકીય બાબતોમાં ઊંડા ઉતરો.", 9: "ઉચ્ચ શિક્ષણ આકર્ષિત કરશે. કલાત્મક ચર્ચાઓ અથવા મુસાફરી યોજનાઓ સાકાર થશે.", 10: "કારકિર્દી સંચાર મહત્વપૂર્ણ રહેશે. પ્રસ્તુતિઓ અને નેટવર્કિંગ માન્યતા લાવશે.", 11: "મિત્ર વર્તુળ વિસ્તરશે. જૂથ ચર્ચાઓ અને સોશિયલ મીડિયા સક્રિયતા ફળદાયી રહેશે.", 12: "આત્મનિરીક્ષણ સ્પષ્ટતા લાવશે. શાંત વાંચન અથવા આધ્યાત્મિક અભ્યાસની ભલામણ કરવામાં આવે છે." }
+        "transits": {
+            "Sun": {
+                "1": "স্বাস্থ্যের যত্ন নিন। অহংকারের লড়াই হতে পারে।",
+                "2": "আর্থিক বিষয়ে নজর রাখুন। কথার ওপর নিয়ন্ত্রণ রাখুন।",
+                "3": "সাহস বাড়বে এবং কাজে সাফল্য আসবে।",
+                "4": "পারিবারিক অশান্তি হতে পারে। সম্পত্তির কাজ এড়িয়ে চলুন।",
+                "5": "শিক্ষার জন্য ভালো। সন্তানদের নিয়ে চিন্তা।",
+                "6": "শত্রুদের ওপর বিজয়। স্বাস্থ্যের উন্নতি হবে।",
+                "7": "ভ্রমণের যোগ আছে। সঙ্গীর সাথে মতভেদ।",
+                "8": "সাবধানতা অবলম্বন করুন। স্বাস্থ্য ও ধনের ঝুঁকি।",
+                "9": "ভাগ্য আপনার সাথে আছে। ধর্মীয় ভ্রমণ হতে পারে।",
+                "10": "পেশায় সাফল্য এবং পদোন্নতির সম্ভাবনা।",
+                "11": "সব দিক থেকে লাভ। বন্ধুরা সাহায্য করবে।",
+                "12": "খরচ বাড়বে। চোখের যত্ন নিন।"
+            },
+            "Moon": {
+                "1": "মানসিক শান্তি এবং ভালো খাবার। আনন্দ।",
+                "2": "অর্থ লাভ কিন্তু মানসিক চাপ।",
+                "3": "ছোট ভ্রমণ এবং কাজে সাফল্য।",
+                "4": "বাড়িতে অশান্তি। তর্ক এড়িয়ে চলুন।",
+                "5": "প্রেম এবং সৃজনশীলতার জন্য ভালো।",
+                "6": "বিজয় এবং লাভ। ভালো স্বাস্থ্য।",
+                "7": "রোমান্স এবং ছোট ভ্রমণ। ভালো অংশীদারিত্ব।",
+                "8": "মানসিক চিন্তা এবং পেটের সমস্যা। শান্ত থাকুন।",
+                "9": "আজ ভাগ্যের অভাব। পরিশ্রম করুন।",
+                "10": "কাজে সাফল্য। স্বীকৃতি পাবেন।",
+                "11": "বন্ধুদের সাথে সাক্ষাৎ এবং ভালো আয়।",
+                "12": "খরচ এবং শারীরিক ক্লান্তি।"
+            },
+            "Mars": {
+                "1": "অতিরিক্ত রাগ নিয়ন্ত্রণ করুন। শারীরিক শক্তি বেশি থাকবে; ব্যায়ামের মাধ্যমে সঠিকভাবে কাজে লাগান।",
+                "2": "আর্থিক বিবাদ হতে পারে। আজ অকারণে কেনাকাটা করা থেকে বিরত থাকুন।",
+                "3": "সাহস শীর্ষে থাকবে। সাহসী সিদ্ধান্ত এবং প্রতিযোগিতামূলক কাজের জন্য দারুণ সময়।",
+                "4": "পারিবারিক বিবাদের সম্ভাবনা রয়েছে। পরিবারের সদস্যদের সাথে ধৈর্য ধরে আচরণ করুন।",
+                "5": "সৃজনশীলতা বৃদ্ধি পাবে। রোমান্স গভীর হতে পারে, তবে তা পরিবর্তনশীল।",
+                "6": "বাধা অতিক্রম করতে পারবেন। প্রতিযোগিতামূলক কাজ এবং আইনি ক্ষেত্রে সাফল্য।",
+                "7": "অংশীদারি ব্যবসায় বিবাদ হতে পারে। জীবনসঙ্গী বা ব্যবসায়িক অংশীদারের সাথে ঝামেলা এড়িয়ে চলুন।",
+                "8": "গোপন শত্রুরা সামনে আসতে পারে। নিজের গোপনীয়তা রক্ষা করুন এবং ঝুঁকিপূর্ণ বিনিয়োগ পরিহার করুন।",
+                "9": "অ্যাডভেঞ্চারের ইচ্ছা বাড়বে। ভ্রমণে বাধা এলেও তা উন্নতির পথ প্রশস্ত করবে।",
+                "10": "কর্মজীবনে উচ্চাকাঙ্ক্ষা বৃদ্ধি পাবে। সাফল্যের জন্য কঠোর পরিশ্রম করুন, তবে অফিসের রাজনীতি থেকে দূরে থাকুন।",
+                "11": "সামাজিক বিবাদ হতে পারে। বন্ধুদের সাথে তর্ক-বিতর্ক এড়িয়ে চলুন।",
+                "12": "শক্তি হ্রাস পেতে পারে। ভালোভাবে বিশ্রাম নিন; হাসপাতালে যাওয়া এবং বিদেশের ঝামেলা থেকে দূরে থাকুন।"
+            },
+            "Venus": {
+                "1": "রোমান্স এবং সামাজিক জীবনের জন্য চমৎকার সময়। আপনার আকর্ষণ অন্যদের মনোযোগ কাড়বে।",
+                "2": "সৌন্দর্যবর্ধক বা বিলাসবহুল জিনিসপত্র থেকে আর্থিক লাভ। পরিমিত খরচ করুন।",
+                "3": "সৃজনশীল আলাপচারিতা বৃদ্ধি পাবে। সংক্ষিপ্ত ভ্রমণ আনন্দ বয়ে আনবে।",
+                "4": "বাড়ি সাজানোর তীব্র ইচ্ছে হবে। পারিবারিক সম্প্রীতি এবং আরাম সর্বোচ্চ স্তরে থাকবে।",
+                "5": "রোমান্স এবং শৈল্পিক প্রকাশ শিখরে থাকবে। প্রেমের সম্পর্ক সুন্দরভাবে ফুটে উঠবে।",
+                "6": "স্বাস্থ্যের উন্নতি হবে। সেবামূলক কাজগুলি আত্মতৃপ্তি এবং নান্দনিক আনন্দ বয়ে আনবে।",
+                "7": "বিবাহ এবং অংশীদারি সম্পর্কে সুখ থাকবে। প্রতিশ্রুতির জন্য আদর্শ সময়।",
+                "8": "গোপন আকর্ষণ বা উত্তরাধিকার সংক্রান্ত বিষয় সামনে আসতে পারে। গভীর মানসিক বন্ধন সম্ভব।",
+                "9": "আধ্যাত্মিক প্রেম জাগ্রত হবে। দীর্ঘ যাত্রা রোমান্টিক সাক্ষাতের সুযোগ করে দিতে পারে।",
+                "10": "পেশাগত ক্ষেত্রে আকর্ষণ জাদুর মতো কাজ করবে। সামাজিক ভাবমূর্তি এবং ক্যারিয়ার লাভ শক্তিশালী হবে।",
+                "11": "সামাজিক লাভ এবং নেটওয়ার্কিংয়ে সাফল্য আসবে। বন্ধুরা আনন্দ এবং সুযোগ নিয়ে আসবে।",
+                "12": "একাকিত্ব শান্তি বয়ে আনবে। আধ্যাত্মিক চর্চা বা শান্তিময় কাজ অনুকূল হবে।"
+            },
+            "Mercury": {
+                "1": "তীক্ষ্ণ বুদ্ধি এবং স্পষ্ট যোগাযোগ। আজ আত্মবিশ্বাসের সাথে নিজেকে প্রকাশ করুন।",
+                "2": "ব্যবসায়িক আলোচনা আপনার পক্ষে থাকবে। আলাপ-আলোচনার মাধ্যমে আর্থিক দিক পরিষ্কার হবে।",
+                "3": "মানসিক তত্পরতা শিখরে পৌঁছাবে। লেখালেখি, শিক্ষাদান এবং সংক্ষিপ্ত ভ্রমণ অত্যন্ত লাভজনক হবে।",
+                "4": "পারিবারিক মতবিনিময় গুরুত্বপূর্ণ হবে। রিয়েল এস্টেটের কাগজপত্র বা বাড়ির পরিকল্পনা ঠিকভাবে এগোবে।",
+                "5": "সৃজনশীল চিন্তার উদয় হবে। শিশুদের সাথে বা শিল্পমূলক প্রকল্পে নিজের ভাবনা শেয়ার করুন।",
+                "6": "কাজের দক্ষতা বৃদ্ধি পাবে। কাজ গুছিয়ে নিন এবং অমীমাংসিত স্বাস্থ্য সংক্রান্ত বিষয়ে সমাধান খুঁজুন।",
+                "7": "অংশীদারি আলোচনা ফলপ্রসূ হবে। গুরুত্বপূর্ণ চুক্তি বা সমঝোতা এখন লাভজনক।",
+                "8": "গবেষণা এবং অনুসন্ধানের জন্য অনুকূল সময়। রহস্য বা যৌথ আর্থিক বিষয়ে গভীরে প্রবেশ করুন।",
+                "9": "উচ্চশিক্ষার প্রতি আগ্রহ বাড়বে। দার্শনিক আলোচনা বা ভ্রমণের পরিকল্পনা বাস্তবায়িত হতে পারে।",
+                "10": "কর্মজীবনের যোগাযোগ অত্যন্ত গুরুত্বপূর্ণ হবে। প্রেজেন্টেশন এবং নেটওয়ার্কিংয়ের মাধ্যমে স্বীকৃতি পাবেন।",
+                "11": "বন্ধুমহল প্রসারিত হবে। গ্রুপ আলোচনা এবং সোশ্যাল মিডিয়ায় যুক্ত থাকা ফলপ্রসূ হবে।",
+                "12": "আত্মবিশ্লেষণ স্পষ্টতা বয়ে আনবে। শান্তভাবে বই পড়া বা আধ্যাত্মিক চর্চা করার পরামর্শ দেওয়া হচ্ছে।"
+            }
         },
-        lucky: {
-            colors: ["લાલ", "વાદળી", "લીલો", "પીળો", "સફેદ", "કેસરી", "ગુલાબી"],
-            numbers: ["૧", "૩", "૫", "૭", "૯", "૨", "૬"]
+        "lucky": {
+            "colors": [
+                "লাল",
+                "নীল",
+                "সবুজ",
+                "হলুদ",
+                "সাদা",
+                "কমলা",
+                "গোলাপী"
+            ],
+            "numbers": [
+                "১",
+                "৩",
+                "৫",
+                "৭",
+                "৯",
+                "২",
+                "৬"
+            ]
         },
-        defaults: {
-            positive: "ગુરુ નસીબ લાવે છે.",
-            negative: "શનિ વિલંબ સૂચવે છે.",
-            caution: "આજે બિનજરૂરી જોખમો ટાળો. શાંતિ માટે ધ્યાન કરો.",
-            planet_placed: "{planet} {house}મા ભાવ ({sign}) માં સ્થિત છે."
+        "defaults": {
+            "positive": "বৃহস্পতি ভাগ্য নিয়ে আসে।",
+            "negative": "শনি বিলম্বের ইঙ্গিত দেয়।",
+            "caution": "আজ অপ্রয়োজনীয় ঝুঁকি এড়িয়ে চলুন। শান্তির জন্য ধ্যান করুন।",
+            "planet_placed": "{planet} {house}তম ঘরে ({sign}) অবস্থিত।"
         }
     },
-    ta: {
-        planets: {
-            Sun: "சூரியன் உங்கள் ஆன்மா, ஈகோ மற்றும் தந்தை வழி நபர்களைக் குறிக்கிறது.",
-            Moon: "சந்திரன் உங்கள் உணர்ச்சிகள், மனம் மற்றும் தாயைக் கட்டுப்படுத்துகிறது.",
-            Mars: "செவ்வாய் உங்கள் ஆற்றல், லட்சியம் மற்றும் ஆக்ரோஷத்தை இயக்குகிறது.",
-            Mercury: "புதன் தகவல் தொடர்பு, புத்திசாலித்தனம் மற்றும் வணிகத்தை ஆளுகிறது.",
-            Jupiter: "குரு ஞானம், விரிவாக்கம் மற்றும் அதிர்ஷ்டத்தைத் தருகிறது.",
-            Venus: "சுக்கிரன் காதல், ஆடம்பரம் மற்றும் கலைத் திறமையைக் கட்டுப்படுத்துகிறது.",
-            Saturn: "சனி ஒழுக்கம், தாமதம் மற்றும் கடினமான பாடங்களை அளிக்கிறது.",
-            Rahu: "ராகு ஆவேசம் மற்றும் வெளிநாட்டு கூறுகளைக் குறிக்கிறது.",
-            Ketu: "கேது பற்றற்ற நிலை மற்றும் ஆன்மீகத்தைக் குறிக்கிறது."
+    "gu": {
+        "planets": {
+            "Sun": "સૂર્ય તમારા આત્મા, અહંકાર અને પિતા સમાન વ્યક્તિઓનું પ્રતિનિધિત્વ કરે છે.",
+            "Moon": "ચંદ્ર તમારી લાગણીઓ, મન અને માતા પર નિયંત્રણ રાખે છે.",
+            "Mars": "મંગળ તમારી ઉર્જા, મહત્વાકાંક્ષા અને આક્રમકતાને ચલાવે છે.",
+            "Mercury": "બુધ સંચાર, બુદ્ધિ અને વ્યવસાય પર શાસન કરે છે.",
+            "Jupiter": "ગુરુ જ્ઞાન, વિસ્તરણ અને નસીબ લાવે છે.",
+            "Venus": "શુક્ર પ્રેમ, લક્ઝરી અને કલાત્મક પ્રતિભાને નિયંત્રિત કરે છે.",
+            "Saturn": "શનિ શિસ્ત, વિલંબ અને મુશ્કેલ પાઠ આપે છે.",
+            "Rahu": "રાહુ જુસ્સા અને વિદેશી તત્વોનું પ્રતિક છે.",
+            "Ketu": "કેતુ વૈરાગ્ય અને આધ્યાત્મિકતાનું પ્રતિક છે."
         },
-        houses: {
-            1: "சுயமும் ஆளுமையும்", 2: "தனமும் குடும்பமும்", 3: "தைரியமும் உடன்பிறப்புகளும்", 4: "வீடும் தாயும்",
-            5: "குழந்தைகளும் புத்தியும்", 6: "எதிரிகளும் ஆரோக்கியமும்", 7: "திருமணமும் கூட்டாண்மையும்", 8: "ஆயுளும் மாற்றமும்",
-            9: "பாக்யமும் உயர் கல்வியும்", 10: "தொழிலும் அந்தஸ்தும்", 11: "லாபமும் தொடர்புகளும்", 12: "விரயமும் மோட்சமும்"
+        "houses": {
+            "1": "સ્વયં અને વ્યક્તિત્વ",
+            "2": "ધન અને પરિવાર",
+            "3": "સાહસ અને ભાઈ-બહેન",
+            "4": "ઘર અને માતા",
+            "5": "સંતાન અને બુદ્ધિ",
+            "6": "શત્રુ અને સ્વાસ્થ્ય",
+            "7": "લગ્ન અને ભાગીદારી",
+            "8": "આયુષ્ય અને પરિવર્તન",
+            "9": "ભાગ્ય અને ઉચ્ચ શિક્ષણ",
+            "10": "કરિયર અને પ્રતિષ્ઠા",
+            "11": "લાભ અને નેટવર્ક",
+            "12": "ખર્ચ અને આધ્યાત્મિકતા"
         },
-        placements: {
-            Sun: {
-                1: "நீங்கள் கவர்ச்சியான மற்றும் அதிகாரமிக்க ஆளுமையைக் கொண்டவர். நீங்கள் வழிநடத்த பிறந்தவர்.",
-                10: "தொழிலுக்கு சிறந்தது. நீங்கள் உயர் அந்தஸ்து மற்றும் அரசாங்க உதவிகளைப் பெறுவீர்கள்."
+        "placements": {
+            "Sun": {
+                "1": "તમારું વ્યક્તિત્વ પ્રભાવશાળી છે. તમે નેતૃત્વ કરવા માટે જન્મ્યા છો.",
+                "10": "કરિયર માટે ઉત્તમ. તમને ઉચ્ચ પદ અને સરકારી લાભ મળશે."
             },
-            Moon: {
-                1: "நீங்கள் உணர்ச்சிகரமானவர் மற்றும் உணர்திறன் உடையவர். அனைவரும் உங்களை நேசிப்பார்கள்.",
-                4: "நீங்கள் உங்கள் தாய் மற்றும் வீட்டின் மீது பற்று கொண்டவர். வாகனங்கள் உங்களுக்கு மகிழ்ச்சி தரும்."
+            "Moon": {
+                "1": "તમે લાગણીશીલ અને સંવેદનશીલ છો. બધા તમને પ્રેમ કરે છે.",
+                "4": "તમે માતા અને ઘર સાથે જોડાયેલા છો. વાહન અને મિલકત તમને ખુશી આપે છે."
             }
         },
-        transits: {
-            Sun: { 1: "ஆரோக்கியத்தில் கவனம் தேவை. ஈகோ மோதல்கள் ஏற்படலாம்.", 2: "நிதி விஷயங்களில் கவனம் தேவை. பேச்சில் கட்டுப்பாடு வேண்டும்.", 3: "தைரியம் அதிகரிக்கும் மற்றும் முயற்சிகளில் வெற்றி.", 4: "குடும்பத்தில் மன அழுத்தம் ஏற்படலாம். சொத்து விவகாரங்களைத் தவிர்க்கவும்.", 5: "கல்விக்கு நல்லது. குழந்தைகள் பற்றிய கவலை.", 6: "எதிரிகளை வெல்வீர்கள். ஆரோக்கியம் மேம்படும்.", 7: "பயணம் செய்ய வாய்ப்பு உள்ளது. துணையுடன் கருத்து வேறுபாடு.", 8: "எச்சரிக்கை தேவை. ஆரோக்கியம் மற்றும் செல்வத்திற்கு ஆபத்து.", 9: "அதிர்ஷ்டம் உங்களுக்கு சாதகமாக உள்ளது. ஆன்மீக பயணம் சாத்தியம்.", 10: "தொழில் வெற்றி மற்றும் பதவி உயர்வுக்கான அறிகுறிகள்.", 11: "அனைத்து பக்கங்களிலிருந்தும் லாபம். நண்பர்கள் உதவுவார்கள்.", 12: "செலவுகள் அதிகரிக்கும். கண்களை கவனித்துக் கொள்ளுங்கள்." },
-            Moon: { 1: "மன நிம்மதி மற்றும் நல்ல உணவு. மகிழ்ச்சி.", 2: "நிதி ஆதாயம் ஆனால் சில மன அழுத்தம்.", 3: "சிறிய பயணம் மற்றும் பணிகளில் வெற்றி.", 4: "வீட்டில் அமைதியின்மை. விவாதங்களைத் தவிர்க்கவும்.", 5: "காதல் மற்றும் படைப்பாற்றலுக்கு நல்லது.", 6: "வெற்றி மற்றும் லாபம். நல்ல ஆரோக்கியம்.", 7: "காதல் மற்றும் சிறிய பயணங்கள். நல்ல கூட்டாண்மை.", 8: "மன கவலை மற்றும் செரிமான பிரச்சினைகள். அமைதியாக இருங்கள்.", 9: "இன்று அதிர்ஷ்டம் குறைவு. கடினமாக உழைக்கவும்.", 10: "வேலையில் வெற்றி. அங்கீகாரம் கிடைக்கும்.", 11: "நண்பர்களைச் சந்தித்தல் மற்றும் நல்ல வருமானம்.", 12: "செலவு மற்றும் உடல் சோர்வு." },
-            Mars: { 1: "கோபத்தை தவிர்க்கவும். உடல் ஆற்றல் அதிகமாக இருக்கும்; உடற்பயிற்சி மூலம் அதை முறையாக பயன்படுத்துங்கள்.", 2: "நிதி விவாதங்கள் ஏற்படலாம். இன்று தேவையற்ற செலவுகளை கட்டுப்படுத்துங்கள்.", 3: "தைரியம் உச்சத்தில் இருக்கும். துணிச்சலான முடிவுகள் மற்றும் போட்டிகளுக்கான சிறந்த நாள்.", 4: "குடும்பத்தில் வாக்குவாதங்கள் வரலாம். அனைவரிடமும் பொறுமைகாக்க வேண்டும்.", 5: "படைப்பாற்றல் அதிகரிக்கும். காதல் உறவுகளில் ஈர்ப்பு அதிகமாக இருந்தாலும் சச்சரவுகள் வரலாம்.", 6: "தடைகளை தகர்த்தெறிவீர்கள். போட்டிகள் மற்றும் சட்ட ரீதியான வழக்குகளில் வெற்றி.", 7: "கூட்டாண்மையில் விரிசல் வரலாம். வாழ்க்கைத் துணை அல்லது தொழில் கூட்டாளருடன் மோதல்களைத் தவிர்க்கவும்.", 8: "மறைமுகமான எதிரிகள் தோன்றுவார்கள். உங்களின் ரகசியங்களை பாதுகாக்கவும், ஆபத்தான முதலீடுகளைத் தவிர்க்கவும்.", 9: "சாகச உணர்வு அதிகரிக்கும். பயணத்தில் சவால்கள் வந்தாலும் அவை வளர்ச்சிக்கான வாய்ப்புகளாக அமையும்.", 10: "தொழில் இலக்குகள் உயரும். அங்கீகாரத்திற்காக கடினமாக உழையுங்கள் ஆனால் அலுவலக அரசியலைத் தவிர்க்கவும்.", 11: "சமூகத்தில் மோதல்கள் வரலாம். நண்பர்களிடம் வாக்குவாதங்களைத் தவிர்க்கவும்.", 12: "சக்தி குறையும். நன்றாக ஓய்வெடுங்கள்; மருத்துவமனைப் பயணங்கள் மற்றும் வெளிநாட்டு விவகாரங்களை தவிர்க்கவும்." },
-            Venus: { 1: "காதல் மற்றும் சமூக வாழ்க்கைக்கு மிகச் சிறந்த நாள். உங்கள் வசீகரம் மற்றவர்களை ஈர்க்கும்.", 2: "அழகுப் பொருட்கள் மற்றும் ஆடம்பர பொருட்களால் லாபம். செலவுகளில் நிதானம் தேவை.", 3: "படைப்பாற்றல்மிக்க பேச்சுத் திறன் வளரும். சிறு பயணங்கள் மூலம் மகிழ்ச்சி கிடைக்கும்.", 4: "வீட்டை அழகுபடுத்தும் ஆர்வம் ஏற்படும். வீட்டில் அமைதி மற்றும் வசதிகள் அதிகரிக்கும்.", 5: "காதல் மற்றும் கலைத்திறனுக்கு சிறப்பான நாள். காதல் உறவுகள் மலரும்.", 6: "ஆரோக்கியம் மேம்படும். சேவை சார்ந்த பணிகள் மனநிறைவையும் மகிழ்ச்சியையும் தரும்.", 7: "திருமணம் மற்றும் கூட்டாண்மையில் மகிழ்ச்சி இருக்கும். உறுதியான முடிவுகள் எடுக்க உகந்த நாள்.", 8: "மறைமுக இச்சைகள் அல்லது வாரிசு சொத்து விவகாரங்கள் வரலாம். ஆழமான உணர்வுப் பிணைப்பு ஏற்படும்.", 9: "ஆன்மீகப் பற்று அதிகரிக்கும். தூரப் பயணங்கள் புதிய காதல் சந்திப்புகளை உருவாக்கும்.", 10: "தொழிலில் வசீகரம் சிறப்பான பலன்களைத்தரும். பொது மதிப்பும் தொழில் சார்ந்த லாபங்களும் பெருகும்.", 11: "சமூகத்தில் லாபம் மற்றும் வலையமைப்பு வெற்றி পাবে. நண்பர்கள் மூலமாக மகிழ்ச்சியும் வாய்ப்புகளும் கிட்டும்.", 12: "தனிமை அமைதியைக் கொடுக்கும். ஆன்மீக பயணங்கள் மற்றும் மனதிற்கு இதமான விஷயங்கள் சாதகமாக இருக்கும்." },
-            Mercury: { 1: "கூர்மையான அறிவும் தெளிவான பேச்சும் இருக்கும். இன்று உங்கள் கருத்துக்களை நம்பிக்கையுடன் தெரிவியுங்கள்.", 2: "வியாபாரப் பேச்சுவார்த்தைகள் உங்களுக்குச் சாதகமாக அமையும். இது நிதி நிலையை தெளிவாக்கும்.", 3: "புத்திசாலித்தனம் உச்சத்தில் இருக்கும். எழுத்து, கற்பித்தல் மற்றும் சிறு பயணங்கள் மூலம் அதிகப் பலன்கள் கிடைக்கும்.", 4: "குடும்பத்துடனான உரையாடல்கள் முக்கியத்துவம் பெறும். ரியல் எஸ்டேட் ஆவணங்கள் மற்றும் வீட்டைப் பற்றிய திட்டங்கள் நல்ல முறையில் நடக்கும்.", 5: "படைப்பாற்றல் சிந்தனைகள் பெருகும். உங்கள் கருத்துக்களை குழந்தைகளிடம் அல்லது கலை சார்ந்த திட்டங்களில் பகிர்ந்துகொள்ளுங்கள்.", 6: "வேலைத்திறன் உயரும். வேலைகளைத் திட்டமிட்டு முடிக்கவும், நிலுவையில் உள்ள ஆரோக்கியப் பிரச்சனைகளைக் கவனிக்கவும்.", 7: "கூட்டாளியுடனான பேச்சுவார்த்தைகள் பயனுள்ளதாக இருக்கும். முக்கியமான ஒப்பந்தங்கள் இப்போது லாபம் தரும்.", 8: "ஆராய்ச்சி மற்றும் தேடல்களுக்குகந்த நாள். ரகசியங்கள் அல்லது கூட்டு நிதிகளில் ஆழமான புரிதல் கிடைக்கும்.", 9: "உயர்கல்வி பயில ஆர்வம் ஏற்படும். தத்துவார்த்தமான விவாதங்கள் மற்றும் பயணத் திட்டங்கள் நிறைவேறும்.", 10: "தொழில் சார்ந்த தகவல் பரிமாற்றம் முக்கியம். திட்டங்களை முன்வைப்பது மற்றும் புதிய வலையமைப்புகளை உருவாக்குவது அங்கீகாரத்தைப் பெற்றுத்தரும்.", 11: "நண்பர்கள் வட்டம் விரிவடையும். குழு விவாதங்கள் மற்றும் சமூக ஊடகங்களில்ச் செயல்படுவது லாபம் தரும்.", 12: "சுயபரிசோதனைத் தெளிவைக் கொடுக்கும். அமைதியான வாசிப்பு அல்லது ஆன்மீக நூல்களைப் படிப்பது நன்று." }
+        "transits": {
+            "Sun": {
+                "1": "સ્વાસ્થ્યનું ધ્યાન રાખો. અહંકારનો સંઘર્ષ થઈ શકે છે.",
+                "2": "આર્થિક બાબતો પર ધ્યાન આપો. વાણી પર નિયંત્રણ રાખો.",
+                "3": "હિંમત વધશે અને કાર્યોમાં સફળતા મળશે.",
+                "4": "ઘરેલું તણાવ શક્ય છે. મિલકતના સોદા ટાળો.",
+                "5": "શિક્ષણ માટે સારું. બાળકો વિશે ચિંતા.",
+                "6": "શત્રુઓ પર વિજય. સ્વાસ્થ્યમાં સુધારો થશે.",
+                "7": "મુસાફરીના સંકેત છે. જીવનસાથી સાથે મતભેદ.",
+                "8": "સાવચેતી જરૂરી છે. આરોગ્ય અને સંપત્તિ જોખમમાં.",
+                "9": "નસીબ તમારી સાથે છે. ધાર્મિક યાત્રા શક્ય છે.",
+                "10": "કરિયરમાં સફળતા અને પ્રમોશનના સંકેત.",
+                "11": "બધી બાજુથી લાભ. મિત્રો મદદ કરશે.",
+                "12": "ખર્ચ વધશે. આંખોની સંભાળ રાખો."
+            },
+            "Moon": {
+                "1": "માનસિક શાંતિ અને સારું ભોજન. આનંદ.",
+                "2": "આર્થિક લાભ પણ માનસિક તણાવ.",
+                "3": "ટૂંકી મુસાફરી અને કાર્યમાં સફળતા.",
+                "4": "ઘરમાં અશાંતિ. દલીલો ટાળો.",
+                "5": "રોમાંસ અને સર્જનાત્મકતા માટે સારું.",
+                "6": "વિજય અને લાભ. સારું સ્વાસ્થ્ય.",
+                "7": "રોમાંસ અને ટૂંકી યાત્રાઓ. સારી ભાગીદારી.",
+                "8": "માનસિક ચિંતા અને પાચન સમસ્યાઓ. શાંત રહો.",
+                "9": "આજે નસીબનો અભાવ. સખત મહેનત કરો.",
+                "10": "કામમાં સફળતા. માન્યતા મળશે.",
+                "11": "મિત્રોને મળવાનું અને સારી આવક.",
+                "12": "ખર્ચ અને શારીરિક થાક."
+            },
+            "Mars": {
+                "1": "આક્રમક વર્તન ટાળો. શારીરિક ઉર્જા વધારે છે; કસરત દ્વારા તેનો યોગ્ય ઉપયોગ કરો.",
+                "2": "આર્થિક વિવાદ શક્ય છે. આજે આવેશમાં આવીને ખરીદી કરવાનું ટાળો.",
+                "3": "હિંમત ટોચ પર રહેશે. હિંમતભર્યા નિર્ણયો અને સ્પર્ધાત્મક કાર્યો માટે શ્રેષ્ઠ સમય.",
+                "4": "ઘરમાં વાદ-વિવાદ થઈ શકે છે. પરિવારના સભ્યો સાથે ધીરજ રાખો.",
+                "5": "સર્જનાત્મક જુસ્સો મજબૂત રહેશે. રોમાંસ તીવ્ર પરંતુ અસ્થિર રહી શકે છે.",
+                "6": "અડચણો પર વિજય. સ્પર્ધાત્મક કાર્યો અને કાનૂની બાબતોમાં સફળતા.",
+                "7": "ભાગીદારીમાં તણાવ. જીવનસાથી અથવા વ્યવસાયિક ભાગીદારો સાથે ક્લેશ ટાળો.",
+                "8": "છુપાયેલા દુશ્મનો સામે આવી શકે છે. તમારા રહસ્યોને સુરક્ષિત રાખો અને જોખમી રોકાણો ટાળો.",
+                "9": "સાહસિક ભાવના જાગૃત થશે. મુસાફરીમાં પડકારો આવી શકે છે પરંતુ તે વૃદ્ધિ લાવશે.",
+                "10": "કરિયરની મહત્વાકાંક્ષાઓ વધશે. માન્યતા માટે સખત મહેનત કરો પરંતુ ઓફિસની રાજકારણથી બચો.",
+                "11": "સામાજિક સંઘર્ષ શક્ય છે. મિત્રો સાથેની લડાઈઓ ટાળો.",
+                "12": "ઉર્જા ઓછી થશે. સારી રીતે આરામ કરો; હોસ્પિટલની મુલાકાતો અને વિદેશી ગૂંચવણો ટાળો."
+            },
+            "Venus": {
+                "1": "રોમાંસ અને સામાજિક જીવન માટે ઉત્તમ સમય. તમારું આકર્ષણ લોકોનું ધ્યાન ખેંચશે.",
+                "2": "સૌંદર્ય અને વૈભવી વસ્તુઓ દ્વારા આર્થિક લાભ. મધ્યમ ખર્ચ કરો.",
+                "3": "સર્જનાત્મક સંચાર વધશે. ટૂંકી મુસાફરી આનંદદાયક મુલાકાતો લાવશે.",
+                "4": "ઘર સજાવવાની તીવ્ર ઈચ્છા થશે. કૌટુંબિક સંવાદિતા અને આરામ ઉચ્ચ સ્તરે રહેશે.",
+                "5": "રોમાંસ અને કલાત્મક અભિવ્યક્તિ ચરમસીમાએ રહેશે. પ્રેમ સંબંધો ખીલી ઉઠશે.",
+                "6": "સ્વાસ્થ્યમાં સુધારો થશે. સેવા કાર્યો સંતોષ અને સૌંદર્યલક્ષી આનંદ લાવશે.",
+                "7": "લગ્ન અને ભાગીદારીમાં ખુશી. પ્રતિબદ્ધતા માટે આદર્શ સમય.",
+                "8": "ગુપ્ત આકર્ષણો અથવા વારસાના મામલા સામે આવશે. ગાઢ ભાવનાત્મક બંધન બની શકે છે.",
+                "9": "આધ્યાত্মિક પ્રેમ જાગૃત થશે. લાંબા અંતરની યાત્રાઓ રોમેન્ટિક અહેસાસ કરાવશે.",
+                "10": "વ્યાવસાયિક આકર્ષણ અજાયબીઓ કરશે. જાહેર છબી અને કારકિર્દીનો મજબૂત લાભ.",
+                "11": "સામાજિક લાભો અને નેટવર્કિંગમાં સફળતા. મિત્રો ખુશી અને તકો લાવશે.",
+                "12": "એકાંત શાંતિ લાવશે. આધ્યાત્મિક વિરામ અથવા શાંત આનંદદાયક વસ્તુઓની પસંદગી થશે."
+            },
+            "Mercury": {
+                "1": "તીક્ષ્ણ બુદ્ધિ અને સ્પષ્ટ સંચાર. આજે આત્મવિશ્વાસથી તમારી જાતને વ્યક્ત કરો.",
+                "2": "વ્યાપારી ચર્ચાઓ તમારી તરફેણમાં રહેશે. વાતચીત આર્થિક સ્પષ્ટતા લાવશે.",
+                "3": "માનસિક ચપળતા ટોચ પર રહેશે. લેખન, શિક્ષણ અને ટૂંકી મુસાફરી ખૂબ ફળદાયી રહેશે.",
+                "4": "કૌટુંબિક વાર્તાલાપ મહત્વપૂર્ણ રહેશે. રિયલ એસ્ટેટ પેપરવર્ક અથવા ઘરનું આયોજન સારી રીતે ચાલશે.",
+                "5": "સર્જનાત્મક વિચારો વહેશે. બાળકો અથવા કલાત્મક પ્રોજેક્ટ્સ સાથે તમારા વિચારો શેર કરો.",
+                "6": "કાર્યક્ષમતા વધુ રહેશે. કાર્યોને ગોઠવો અને બાકી રહેલા પ્રશ્નોનું નિરાકરણ લાવો.",
+                "7": "ભાગીદારી વાર્તાલાપ ફળદાયી રહેશે. મહત્વપૂર્ણ કરારો અથવા સોદાઓ હવે ફાયદાકારક છે.",
+                "8": "સંશોધન અને તપાસ માટે અનુકૂળ. રહસ્યો અથવા સંયુક્ત નાણાકીય બાબતોમાં ઊંડા ઉતરો.",
+                "9": "ઉચ્ચ શિક્ષણ આકર્ષિત કરશે. કલાત્મક ચર્ચાઓ અથવા મુસાફરી યોજનાઓ સાકાર થશે.",
+                "10": "કારકિર્દી સંચાર મહત્વપૂર્ણ રહેશે. પ્રસ્તુતિઓ અને નેટવર્કિંગ માન્યતા લાવશે.",
+                "11": "મિત્ર વર્તુળ વિસ્તરશે. જૂથ ચર્ચાઓ અને સોશિયલ મીડિયા સક્રિયતા ફળદાયી રહેશે.",
+                "12": "આત્મનિરીક્ષણ સ્પષ્ટતા લાવશે. શાંત વાંચન અથવા આધ્યાત્મિક અભ્યાસની ભલામણ કરવામાં આવે છે."
+            }
         },
-        lucky: {
-            colors: ["சிகப்பு", "நீலம்", "பச்சை", "மஞ்சள்", "வெள்ளை", "ஆரஞ்சு", "இளஞ்சிவப்பு"],
-            numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        "lucky": {
+            "colors": [
+                "લાલ",
+                "વાદળી",
+                "લીલો",
+                "પીળો",
+                "સફેદ",
+                "કેસરી",
+                "ગુલાબી"
+            ],
+            "numbers": [
+                "૧",
+                "૩",
+                "૫",
+                "૭",
+                "૯",
+                "૨",
+                "૬"
+            ]
         },
-        defaults: {
-            positive: "குரு அதிர்ஷ்டத்தைத் தருகிறார்.",
-            negative: "சனி தாமதத்தைக் குறிக்கிறது.",
-            caution: "இன்று தேவையற்ற அபாயங்களைத் தவிர்க்கவும். அமைதிக்காக தியானம் செய்யுங்கள்.",
-            planet_placed: "{planet} {house}ஆம் வீட்டில் ({sign}) அமைந்துள்ளது."
+        "defaults": {
+            "positive": "ગુરુ નસીબ લાવે છે.",
+            "negative": "શનિ વિલંબ સૂચવે છે.",
+            "caution": "આજે બિનજરૂરી જોખમો ટાળો. શાંતિ માટે ધ્યાન કરો.",
+            "planet_placed": "{planet} {house}મા ભાવ ({sign}) માં સ્થિત છે."
         }
     },
-    kn: {
-        planets: {
-            Sun: "ಸೂರ್ಯ ನಿಮ್ಮ ಆತ್ಮ, ಅಹಂಕಾರ ಮತ್ತು ತಂದೆಯನ್ನು ಪ್ರತಿನಿಧಿಸುತ್ತಾನೆ.",
-            Moon: "ಚಂದ್ರನು ನಿಮ್ಮ ಭಾವನೆ, ಮನస్సు ಮತ್ತು ತಾಯಿಯನ್ನು ನಿಯಂತ್ರಿಸುತ್ತಾನೆ.",
-            Mars: "ಮಂಗಳವು ನಿಮ್ಮ ಶಕ್ತಿ, ಮಹತ್ವಾಕಾಂಕ್ಷೆ ಮತ್ತು ಧೈರ್ಯವನ್ನು ನಡೆಸುತ್ತದೆ.",
-            Mercury: "ಬುಧ ಸಂವಹನ, ಬುದ್ಧಿವಂತಿಕೆ ಮತ್ತು ವ್ಯವಹಾರವನ್ನು ಆಳುತ್ತಾನೆ.",
-            Jupiter: "ಗುರು ಜ್ಞಾನ, ವಿಸ್ತರಣೆ ಮತ್ತು ಅದೃಷ್ಟವನ್ನು ತರುತ್ತಾನೆ.",
-            Venus: "ಶುಕ್ರ ಪ್ರೀತಿ, ಐಷಾರಾಮಿ ಮತ್ತು ಕಲಾತ್ಮಕ ಪ್ರತಿಭೆಯನ್ನು ನಿಯಂತ್ರಿಸುತ್ತಾನೆ.",
-            Saturn: "ಶನಿ ಶಿಸ್ತು, ವಿಳಂಬ ಮತ್ತು ಕಠಿಣ ಪಾಠಗಳನ್ನು ನೀಡುತ್ತಾನೆ.",
-            Rahu: "ರಾಹು ಗೀಳು ಮತ್ತು ವಿದೇಶಿ ಅಂಶಗಳನ್ನು ಸೂಚಿಸುತ್ತಾನೆ.",
-            Ketu: "ಕೇತು ವೈರಾಗ್ಯ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕತೆಯನ್ನು ಸೂಚಿಸುತ್ತಾನೆ."
+    "ta": {
+        "planets": {
+            "Sun": "சூரியன் உங்கள் ஆன்மா, ஈகோ மற்றும் தந்தை வழி நபர்களைக் குறிக்கிறது.",
+            "Moon": "சந்திரன் உங்கள் உணர்ச்சிகள், மனம் மற்றும் தாயைக் கட்டுப்படுத்துகிறது.",
+            "Mars": "செவ்வாய் உங்கள் ஆற்றல், லட்சியம் மற்றும் ஆக்ரோஷத்தை இயக்குகிறது.",
+            "Mercury": "புதன் தகவல் தொடர்பு, புத்திசாலித்தனம் மற்றும் வணிகத்தை ஆளுகிறது.",
+            "Jupiter": "குரு ஞானம், விரிவாக்கம் மற்றும் அதிர்ஷ்டத்தைத் தருகிறது.",
+            "Venus": "சுக்கிரன் காதல், ஆடம்பரம் மற்றும் கலைத் திறமையைக் கட்டுப்படுத்துகிறது.",
+            "Saturn": "சனி ஒழுக்கம், தாமதம் மற்றும் கடினமான பாடங்களை அளிக்கிறது.",
+            "Rahu": "ராகு ஆவேசம் மற்றும் வெளிநாட்டு கூறுகளைக் குறிக்கிறது.",
+            "Ketu": "கேது பற்றற்ற நிலை மற்றும் ஆன்மீகத்தைக் குறிக்கிறது."
         },
-        houses: {
-            1: "ಸ್ವಯಂ ಮತ್ತು ವ್ಯಕ್ತಿತ್ವ", 2: "ಧನ ಮತ್ತು ಕುಟುಂಬ", 3: "ಧೈರ್ಯ ಮತ್ತು ಒಡಹುಟ್ಟಿದವರು", 4: "ಮನೆ ಮತ್ತು ತಾಯಿ",
-            5: "ಮಕ್ಕಳು ಮತ್ತು ಬುದ್ಧಿವಂತಿಕೆ", 6: "ಶತ್ರುಗಳು ಮತ್ತು ಆರೋಗ್ಯ", 7: "ವಿವಾಹ ಮತ್ತು ಪಾಲುದಾರಿಕೆ", 8: "ಆಯಸ್ಸು ಮತ್ತು ಪರಿವರ್ತನೆ",
-            9: "ಅದೃಷ್ಟ ಮತ್ತು ಉನ್ನತ ಶಿಕ್ಷಣ", 10: "ವೃತ್ತಿ ಮತ್ತು ಸ್ಥಾನಮಾನ", 11: "ಲಾಭ ಮತ್ತು ನೆಟ್‌ವರ್ಕ್", 12: "ನಷ್ಟ ಮತ್ತು ಮೋಕ್ಷ"
+        "houses": {
+            "1": "சுயமும் ஆளுமையும்",
+            "2": "தனமும் குடும்பமும்",
+            "3": "தைரியமும் உடன்பிறப்புகளும்",
+            "4": "வீடும் தாயும்",
+            "5": "குழந்தைகளும் புத்தியும்",
+            "6": "எதிரிகளும் ஆரோக்கியமும்",
+            "7": "திருமணமும் கூட்டாண்மையும்",
+            "8": "ஆயுளும் மாற்றமும்",
+            "9": "பாக்யமும் உயர் கல்வியும்",
+            "10": "தொழிலும் அந்தஸ்தும்",
+            "11": "லாபமும் தொடர்புகளும்",
+            "12": "விரயமும் மோட்சமும்"
         },
-        placements: {
-            Sun: {
-                1: "ಆಕರ್ಷಕ ಮತ್ತು ಅಧಿಕಾರಯುತ ವ್ಯಕ್ತಿತ್ವ. ನೀವು ನೈಸರ್ಗಿಕ ನಾಯಕರು.",
-                10: "ವೃತ್ತಿಜೀವನಕ್ಕೆ ಅತ್ಯುತ್ತಮ. ನೀವು ಉನ್ನತ ಸ್ಥಾನ ಮತ್ತು ಸರ್ಕಾರಿ ಲಾಭಗಳನ್ನು ಪಡೆಯುತ್ತೀರಿ."
+        "placements": {
+            "Sun": {
+                "1": "நீங்கள் கவர்ச்சியான மற்றும் அதிகாரமிக்க ஆளுமையைக் கொண்டவர். நீங்கள் வழிநடத்த பிறந்தவர்.",
+                "10": "தொழிலுக்கு சிறந்தது. நீங்கள் உயர் அந்தஸ்து மற்றும் அரசாங்க உதவிகளைப் பெறுவீர்கள்."
             },
-            Moon: {
-                1: "ನೀವು ಭಾವುಕ ಮತ್ತು ಸೂಕ್ಷ್ಮ ವ್ಯಕ್ತಿ. ಎಲ್ಲರೂ ನಿಮ್ಮನ್ನು ಪ್ರೀತಿಸುತ್ತಾರೆ.",
-                4: "ನೀವು ತಾಯಿ ಮತ್ತು ಮನೆಯ ಮೇಲೆ ಹೆಚ್ಚು ಪ್ರೀತಿ ಹೊಂದಿದ್ದೀರಿ. ವಾಹನಗಳು ನಿಮಗೆ ಸಂತೋಷ ನೀಡುತ್ತವೆ."
+            "Moon": {
+                "1": "நீங்கள் உணர்ச்சிகரமானவர் மற்றும் உணர்திறன் உடையவர். அனைவரும் உங்களை நேசிப்பார்கள்.",
+                "4": "நீங்கள் உங்கள் தாய் மற்றும் வீட்டின் மீது பற்று கொண்டவர். வாகனங்கள் உங்களுக்கு மகிழ்ச்சி தரும்."
             }
         },
-        transits: {
-            Sun: { 1: "ಆರೋಗ್ಯದ ಬಗ್ಗೆ ಎಚ್ಚರ ವಹಿಸಿ. ಅಹಂಕಾರದ ಸಂಘರ್ಷಗಳು ಸಾಧ್ಯ.", 2: "ಆರ್ಥಿಕ ವಿಷಯಗಳಲ್ಲಿ ಗಮನ ಹರಿಸಿ. ಮಾತಿನ ಮೇಲೆ ಹಿಡಿತವಿರಲಿ.", 3: "ಧೈರ್ಯ ಹೆಚ್ಚಾಗುತ್ತದೆ ಮತ್ತು ಕಾರ್ಯಗಳಲ್ಲಿ ಯಶಸ್ಸು.", 4: "ಕೌಟುಂಬಿಕ ಒತ್ತಡ ಸಾಧ್ಯ. ಆಸ್ತಿ ವ್ಯವಹಾರಗಳನ್ನು ತಪ್ಪಿಸಿ.", 5: "ಶಿಕ್ಷಣಕ್ಕೆ ಒಳ್ಳೆಯದು. ಮಕ್ಕಳ ಬಗ್ಗೆ ಚಿಂತೆ.", 6: "ಶತ್ರುಗಳ ಮೇಲೆ ವಿಜಯ. ಆರೋಗ್ಯ ಸುಧಾರಿಸುತ್ತದೆ.", 7: "ಪ್ರಯಾಣದ ಸಾಧ್ಯತೆ ಇದೆ. ಸಂಗಾತಿಯೊಂದಿಗೆ ಭಿನ್ನಾಭಿಪ್ರಾಯ.", 8: "ಎಚ್ಚರಿಕೆ ಅಗತ್ಯ. ಆರೋಗ್ಯ ಮತ್ತು ಸಂಪತ್ತಿಗೆ ಅಪಾಯ.", 9: "ಅದೃಷ್ಟ ನಿಮ್ಮ ಪರವಾಗಿದೆ. ಧಾರ್ಮಿಕ ಪ್ರವಾಸ ಸಾಧ್ಯ.", 10: "ವೃತ್ತಿಜೀವನದಲ್ಲಿ ಯಶಸ್ಸು ಮತ್ತು ಬಡ್ತಿಯ ಸೂಚನೆಗಳು.", 11: "ಎಲ್ಲಾ ಕಡೆಯಿಂದ ಲಾಭ. ಸ್ನೇಹಿತರು ಸಹಾಯ ಮಾಡುತ್ತಾರೆ.", 12: "ಖರ್ಚುಗಳು ಹೆಚ್ಚಾಗುತ್ತವೆ. ಕಣ್ಣುಗಳ ಬಗ್ಗೆ ಕಾಳಜಿ ವಹಿಸಿ." },
-            Moon: { 1: "ಮಾನಸಿಕ ಶಾಂತಿ ಮತ್ತು ಉತ್ತಮ ಆಹಾರ. ಸಂತೋಷ.", 2: "ಆರ್ಥಿಕ ಲಾಭ ಆದರೆ ಸ್ವಲ್ಪ ಮಾನಸಿಕ ಒತ್ತಡ.", 3: "ಸಣ್ಣ ಪ್ರವಾಸ ಮತ್ತು ಕಾರ್ಯಗಳಲ್ಲಿ ಯಶಸ್ಸು.", 4: "ಮನೆಯಲ್ಲಿ ಅಶಾಂತಿ. ವಾದಗಳನ್ನು ತಪ್ಪಿಸಿ.", 5: "ಪ್ರೀತಿ ಮತ್ತು ಸೃಜನಶೀಲತೆಗೆ ಒಳ್ಳೆಯದು.", 6: "ವಿಜಯ ಮತ್ತು ಲಾಭ. ಉತ್ತಮ ಆರೋಗ್ಯ.", 7: "ಪ್ರೀತಿ ಮತ್ತು ಸಣ್ಣ ಪ್ರವಾಸಗಳು. ಉತ್ತಮ ಪಾಲುದಾರಿಕೆ.", 8: "ಮಾನಸಿಕ ಚಿಂತೆ ಮತ್ತು ಜೀರ್ಣಕ್ರಿಯೆ ಸಮಸ್ಯೆಗಳು. ಶಾಂತವಾಗಿರಿ.", 9: "ಇಂದು ಅದೃಷ್ಟ ಕಡಿಮೆ. ಕಠಿಣ ಪರಿಶ್ರಮ ಪಡಿ.", 10: "ಕೆಲಸದಲ್ಲಿ ಯಶಸ್ಸು. ಮನ್ನಣೆ ಸಿಗುತ್ತದೆ.", 11: "ಸ್ನೇಹಿತರನ್ನು ಭೇಟಿಯಾಗುವುದು ಮತ್ತು ಉತ್ತಮ ಆದಾಯ.", 12: "ಖರ್ಚು ಮತ್ತು ದೈಹಿಕ ಆಯಾಸ." },
-            Mars: { 1: "ಕೋಪದ ವರ್ತನೆಯನ್ನು ತಪ್ಪಿಸಿ. ದೈಹಿಕ ಶಕ್ತಿ ಹೆಚ್ಚಾಗಿರುತ್ತದೆ; ವ್ಯಾಯಾಮದ ಮೂಲಕ ಅದನ್ನು ಸರಿಯಾಗಿ ಬಳಸಿ.", 2: "ಆರ್ಥಿಕ ವಿವಾದಗಳು ಸಾಧ್ಯ. ಇಂದು ಆತುರದ ಖರೀದಿಯನ್ನು ನಿಯಂತ್ರಿಸಿ.", 3: "ಧೈರ್ಯ ಗರಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿರುತ್ತದೆ. ದಿಟ್ಟ ನಿರ್ಧಾರಗಳು ಮತ್ತು ಸ್ಪರ್ಧಾತ್ಮಕ ಕಾರ್ಯಗಳಿಗೆ ಅತ್ಯುತ್ತಮ ಸಮಯ.", 4: "ಮನೆಯಲ್ಲಿ ವಾದಗಳು ನಡೆಯುವ ಸಾಧ್ಯತೆ ಇದೆ. ಕುಟುಂಬದ ಸದಸ್ಯರೊಂದಿಗೆ ತಾಳ್ಮೆಯಿಂದಿರಿ.", 5: "ಸೃಜನಶೀಲ ಆಸಕ್ತಿ ಪ್ರಬಲವಾಗಿರುತ್ತದೆ. ಪ್ರೇಮವು ತೀವ್ರವಾಗಿದ್ದರೂ ಅಸ್ಥಿರವಾಗಿರಬಹುದು.", 6: "ಅಡೆತಡೆಗಳನ್ನು ನಿವಾರಿಸುವಿರಿ. ಸ್ಪರ್ಧಾತ್ಮಕ ಕಾರ್ಯಗಳು ಮತ್ತು ಕಾನೂನು ವಿಷಯಗಳಲ್ಲಿ ಯಶಸ್ಸು.", 7: "ಪಾಲುದಾರರೊಂದಿಗೆ ಅಥವಾ ಉದ್ಯಮ ಪಾಲುದಾರರೊಂದಿಗೆ ಘರ್ಷಣೆಯನ್ನು ತಪ್ಪಿಸಿ.", 8: "ಅಡಗಿರುವ ಶತ್ರುಗಳು ಹೊರಬರುತ್ತಾರೆ. ನಿಮ್ಮ ರಹಸ್ಯಗಳನ್ನು ರಕ್ಷಿಸಿಕೊಳ್ಳಿ ಮತ್ತು ಅಪಾಯಕಾರಿ ಹೂಡಿಕೆಗಳನ್ನು ತಪ್ಪಿಸಿ.", 9: "ಸಾಹಸಮಯ ಉತ್ಸಾಹ ಮೂಡುತ್ತದೆ. ಪ್ರಯಾಣದಲ್ಲಿ ಸವಾಲುಗಳಿದ್ದರೂ ಅವು ಬೆಳವಣಿಗೆಗೆ ದಾರಿಯಾಗುತ್ತವೆ.", 10: "ವೃತ್ತಿಜೀವನದ ಮಹತ್ವಾಕಾಂಕ್ಷೆಗಳು ಹೆಚ್ಚಾಗುತ್ತವೆ. ಮಾನ್ಯತೆಗಾಗಿ ಶ್ರಮಿಸಿ ಆದರೆ ಕಚೇರಿ ರಾಜಕೀಯದಿಂದ ದೂರವಿರಿ.", 11: "ಸಾಮಾಜಿಕ ಘರ್ಷಣೆಗಳು ಸಾಧ್ಯ. ಸ್ನೇಹಿತರೊಂದಿಗೆ ವಾದ ವಿವಾದಗಳನ್ನು ತಪ್ಪಿಸಿ.", 12: "ಶಕ್ತಿ ಕುಗ್ಗುತ್ತದೆ. ಚೆನ್ನಾಗಿ ವಿಶ್ರಾಂತಿ ಪಡೆಯಿರಿ; ಆಸ್ಪತ್ರೆ ಭೇಟಿಗಳು ಮತ್ತು ವಿದೇಶಿ ತೊಡಕುಗಳನ್ನು ತಪ್ಪಿಸಿ." },
-            Venus: { 1: "ಪ್ರೀತಿ ಮತ್ತು ಸಾಮಾಜಿಕ ಜೀವನಕ್ಕೆ ಅತ್ಯುತ್ತಮ. ಆಕರ್ಷಣೆ ಹೆಚ್ಚಾಗುತ್ತದೆ.", 2: "ಸೌಂದರ್ಯ ಉತ್ಪನ್ನಗಳು ಅಥವಾ ಐಷಾರಾಮಿ ವಸ್ತುಗಳ ಮೂಲಕ ಆರ್ಥಿಕ ಲಾಭ. ಮಿತವಾಗಿ ಖರ್ಚು ಮಾಡಿ.", 3: "ಸೃಜನಶೀಲ ಸಂವಹನ ಹೆಚ್ಚುತ್ತದೆ. ಸಣ್ಣ ಪ್ರಯಾಣಗಳು ಆನಂದವನ್ನು ತರುತ್ತವೆ.", 4: "ಮನೆಯನ್ನು ಸುಂದರಗೊಳಿಸುವ ಆಸೆ ಹೆಚ್ಚಾಗುತ್ತದೆ. ಕುಟುಂಬದಲ್ಲಿ ಸಾಮರಸ್ಯ ಮತ್ತು ಸೌಕರ್ಯ ಗರಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿರುತ್ತದೆ.", 5: "ಪ್ರೇಮ ಮತ್ತು ಕಲಾತ್ಮಕ ಅಭಿವ್ಯಕ್ತಿಗೆ ಅತ್ಯುತ್ತಮ ಸಮಯ. ಪ್ರೇಮ ಸಂಬಂಧಗಳು ಅರಳುತ್ತವೆ.", 6: "ಆರೋಗ್ಯ ಸುಧಾರಿಸುತ್ತದೆ. ಸೇವಾ ಕಾರ್ಯಗಳು ತೃಪ್ತಿ ಮತ್ತು ಸೌಂದರ್ಯಯುತ ಆನಂದವನ್ನು ತರುತ್ತವೆ.", 7: "ವಿವಾಹ ಮತ್ತು ಪಾಲುದಾರಿಕೆಯಲ್ಲಿ ಸಂತೋಷ. ಬದ್ಧತೆಗೆ ಸೂಕ್ತ ಸಮಯ.", 8: "ರಹಸ್ಯ ಆಕರ್ಷಣೆಗಳು ಅಥವಾ ಆನುವಂಶಿಕ ವಿಷಯಗಳು ಹೊರಬರುತ್ತವೆ. ಆಳವಾದ ಭಾವನಾತ್ಮಕ ಬಂಧ ಸಾಧ್ಯ.", 9: "ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರೇಮ ಜಾಗೃತವಾಗುತ್ತದೆ. ದೂರದ ಪ್ರಯಾಣಗಳು ರೋಮ್ಯಾಂಟಿಕ್ ಭೇಟಿಗಳಿಗೆ ದಾರಿಯಾಗುತ್ತವೆ.", 10: "ವೃತ್ತಿಪರ ಆಕರ್ಷಣೆ ಅದ್ಭುತಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಸಾರ್ವಜನಿಕ ಇಮೇಜ್ ಮತ್ತು ವೃತ್ತಿಜೀವನದ ಲಾಭಗಳು ಪ್ರಬಲವಾಗಿರುತ್ತವೆ.", 11: "ಸಾಮಾಜಿಕ ಲಾಭಗಳು ಮತ್ತು ನೆಟ್‌ವರ್ಕಿಂಗ್‌ನಲ್ಲಿ ಯಶಸ್ಸು. ಸ್ನೇಹಿತರ ಮೂಲಕ ಆನಂದ ಮತ್ತು ಅವಕಾಶಗಳು ದೊರೆಯುತ್ತವೆ.", 12: "ಏಕಾಂತವು ಶಾಂತಿಯನ್ನು ತರುತ್ತದೆ. ಆಧ್ಯಾತ್ಮಿಕ ಕಾರ್ಯಗಳು ಅಥವಾ ಪ್ರಶಾಂತವಾದ ಆನಂದಗಳು ಲಭ್ಯ." },
-            Mercury: { 1: "ತೀಕ್ಷ್ಣ ಬುದ್ಧಿಮತ್ತೆ ಮತ್ತು ಸ್ಪಷ್ಟ ಸಂವಹನ. ಇಂದು ನಿಮ್ಮನ್ನು ವಿಶ್ವಾಸದಿಂದ ವ್ಯಕ್ತಪಡಿಸಿ.", 2: "ವ್ಯಾಪಾರ ಚರ್ಚೆಗಳು ನಿಮ್ಮ ಪರವಾಗಿರುತ್ತವೆ. ಮಾತುಕತೆಗಳು ಆರ್ಥಿಕ ಸ್ಪಷ್ಟತೆಯನ್ನು ತರುತ್ತವೆ.", 3: "ಮಾನಸಿಕ ಚುರುಕುತನ ಗರಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿರುತ್ತದೆ. ಬರವಣಿಗೆ, ಬೋಧನೆ ಮತ್ತು ಸಣ್ಣ ಪ್ರಯಾಣಗಳು ಹೆಚ್ಚು ಲಾಭದಾಯಕ.", 4: "ಕೌಟುಂಬಿಕ ಮಾತುಕತೆಗಳು ಮುಖ್ಯವಾಗುತ್ತವೆ. ರಿಯಲ್ ಎಸ್ಟೇಟ್ ದಾಖಲೆಗಳು ಅಥವಾ ಮನೆ ಯೋಜನೆ ಸುಗಮವಾಗಿ ಸಾಗುತ್ತದೆ.", 5: "ಸೃಜನಶೀಲ ಆಲೋಚನೆಗಳು ಹರಿಯುತ್ತವೆ. ನಿಮ್ಮ ವಿಚಾರಗಳನ್ನು ಮಕ್ಕಳೊಂದಿಗೆ ಅಥವಾ ಕಲಾತ್ಮಕ ಕಾರ್ಯಗಳಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ.", 6: "ಕೆಲಸದ ದಕ್ಷತೆ ಹೆಚ್ಚಾಗಿರುತ್ತದೆ. ಕಾರ್ಯಗಳನ್ನು ಆಯೋಜಿಸಿ ಮತ್ತು ಬಾಕಿ ಇರುವ ಆರೋಗ್ಯ ಸಮಸ್ಯೆಗಳನ್ನು ಪರಿಹರಿಸಿ.", 7: "ಪಾಲುದಾರಿಕೆ ಮಾತುಕತೆಗಳು ಫಲಪ್ರದವಾಗುತ್ತವೆ. ಪ್ರಮುಖ ಒಪ್ಪಂದಗಳು ಅಥವಾ ಕರಾರುಗಳು ಈಗ ಪ್ರಯೋಜನಕಾರಿ.", 8: "ಸಂಶೋಧನೆ ಮತ್ತು ವಿಚಾರಣೆಗಳಿಗೆ ಅನುಕೂಲಕರ ಸಮಯ. ರಹಸ್ಯಗಳು ಅಥವಾ ಜಂಟಿ ಹಣಕಾಸು ವಿಚಾರಗಳಲ್ಲಿ ಆಳವಾಗಿ ಅಧ್ಯಯನ ಮಾಡಿ.", 9: "ಉನ್ನತ ಶಿಕ್ಷಣದ ಬಗ್ಗೆ ಆಸಕ್ತಿ ಮೂಡುತ್ತದೆ. ತಾತ್ವಿಕ ಚರ್ಚೆಗಳು ಅಥವಾ ಪ್ರಯಾಣ ಯೋಜನೆಗಳು ನನಸಾಗುತ್ತವೆ.", 10: "ವೃತ್ತಿಜೀವನದ ಸಂವಹನ ನಿರ್ಣಾಯಕವಾಗಿರುತ್ತದೆ. ಪ್ರಸ್ತುತಿಗಳು ಮತ್ತು ನೆಟ್‌ವರ್ಕಿಂಗ್ ಮಾನ್ಯತೆ ತರುತ್ತವೆ.", 11: "ಸ್ನೇಹಿತರ ವಲಯ ವಿಸ್ತರಿಸುತ್ತದೆ. ಗುಂಪು ಚರ್ಚೆಗಳು ಮತ್ತು ಸಾಮಾಜಿಕ ಮಾಧ್ಯಮದಲ್ಲಿ ಸಕ್ರಿಯವಾಗಿರುವುದು ಫಲದಾಯಕ.", 12: "ಆತ್ಮಾವಲೋಕನ ಸ್ಪಷ್ಟತೆಯನ್ನು ತರುತ್ತದೆ. ಶಾಂತವಾದ ಓದು ಅಥವಾ ಆಧ್ಯಾತ್ಮಿಕ ಅಧ್ಯಯನವನ್ನು ಸೂಚಿಸಲಾಗಿದೆ." }
+        "transits": {
+            "Sun": {
+                "1": "ஆரோக்கியத்தில் கவனம் தேவை. ஈகோ மோதல்கள் ஏற்படலாம்.",
+                "2": "நிதி விஷயங்களில் கவனம் தேவை. பேச்சில் கட்டுப்பாடு வேண்டும்.",
+                "3": "தைரியம் அதிகரிக்கும் மற்றும் முயற்சிகளில் வெற்றி.",
+                "4": "குடும்பத்தில் மன அழுத்தம் ஏற்படலாம். சொத்து விவகாரங்களைத் தவிர்க்கவும்.",
+                "5": "கல்விக்கு நல்லது. குழந்தைகள் பற்றிய கவலை.",
+                "6": "எதிரிகளை வெல்வீர்கள். ஆரோக்கியம் மேம்படும்.",
+                "7": "பயணம் செய்ய வாய்ப்பு உள்ளது. துணையுடன் கருத்து வேறுபாடு.",
+                "8": "எச்சரிக்கை தேவை. ஆரோக்கியம் மற்றும் செல்வத்திற்கு ஆபத்து.",
+                "9": "அதிர்ஷ்டம் உங்களுக்கு சாதகமாக உள்ளது. ஆன்மீக பயணம் சாத்தியம்.",
+                "10": "தொழில் வெற்றி மற்றும் பதவி உயர்வுக்கான அறிகுறிகள்.",
+                "11": "அனைத்து பக்கங்களிலிருந்தும் லாபம். நண்பர்கள் உதவுவார்கள்.",
+                "12": "செலவுகள் அதிகரிக்கும். கண்களை கவனித்துக் கொள்ளுங்கள்."
+            },
+            "Moon": {
+                "1": "மன நிம்மதி மற்றும் நல்ல உணவு. மகிழ்ச்சி.",
+                "2": "நிதி ஆதாயம் ஆனால் சில மன அழுத்தம்.",
+                "3": "சிறிய பயணம் மற்றும் பணிகளில் வெற்றி.",
+                "4": "வீட்டில் அமைதியின்மை. விவாதங்களைத் தவிர்க்கவும்.",
+                "5": "காதல் மற்றும் படைப்பாற்றலுக்கு நல்லது.",
+                "6": "வெற்றி மற்றும் லாபம். நல்ல ஆரோக்கியம்.",
+                "7": "காதல் மற்றும் சிறிய பயணங்கள். நல்ல கூட்டாண்மை.",
+                "8": "மன கவலை மற்றும் செரிமான பிரச்சினைகள். அமைதியாக இருங்கள்.",
+                "9": "இன்று அதிர்ஷ்டம் குறைவு. கடினமாக உழைக்கவும்.",
+                "10": "வேலையில் வெற்றி. அங்கீகாரம் கிடைக்கும்.",
+                "11": "நண்பர்களைச் சந்தித்தல் மற்றும் நல்ல வருமானம்.",
+                "12": "செலவு மற்றும் உடல் சோர்வு."
+            },
+            "Mars": {
+                "1": "கோபத்தை தவிர்க்கவும். உடல் ஆற்றல் அதிகமாக இருக்கும்; உடற்பயிற்சி மூலம் அதை முறையாக பயன்படுத்துங்கள்.",
+                "2": "நிதி விவாதங்கள் ஏற்படலாம். இன்று தேவையற்ற செலவுகளை கட்டுப்படுத்துங்கள்.",
+                "3": "தைரியம் உச்சத்தில் இருக்கும். துணிச்சலான முடிவுகள் மற்றும் போட்டிகளுக்கான சிறந்த நாள்.",
+                "4": "குடும்பத்தில் வாக்குவாதங்கள் வரலாம். அனைவரிடமும் பொறுமைகாக்க வேண்டும்.",
+                "5": "படைப்பாற்றல் அதிகரிக்கும். காதல் உறவுகளில் ஈர்ப்பு அதிகமாக இருந்தாலும் சச்சரவுகள் வரலாம்.",
+                "6": "தடைகளை தகர்த்தெறிவீர்கள். போட்டிகள் மற்றும் சட்ட ரீதியான வழக்குகளில் வெற்றி.",
+                "7": "கூட்டாண்மையில் விரிசல் வரலாம். வாழ்க்கைத் துணை அல்லது தொழில் கூட்டாளருடன் மோதல்களைத் தவிர்க்கவும்.",
+                "8": "மறைமுகமான எதிரிகள் தோன்றுவார்கள். உங்களின் ரகசியங்களை பாதுகாக்கவும், ஆபத்தான முதலீடுகளைத் தவிர்க்கவும்.",
+                "9": "சாகச உணர்வு அதிகரிக்கும். பயணத்தில் சவால்கள் வந்தாலும் அவை வளர்ச்சிக்கான வாய்ப்புகளாக அமையும்.",
+                "10": "தொழில் இலக்குகள் உயரும். அங்கீகாரத்திற்காக கடினமாக உழையுங்கள் ஆனால் அலுவலக அரசியலைத் தவிர்க்கவும்.",
+                "11": "சமூகத்தில் மோதல்கள் வரலாம். நண்பர்களிடம் வாக்குவாதங்களைத் தவிர்க்கவும்.",
+                "12": "சக்தி குறையும். நன்றாக ஓய்வெடுங்கள்; மருத்துவமனைப் பயணங்கள் மற்றும் வெளிநாட்டு விவகாரங்களை தவிர்க்கவும்."
+            },
+            "Venus": {
+                "1": "காதல் மற்றும் சமூக வாழ்க்கைக்கு மிகச் சிறந்த நாள். உங்கள் வசீகரம் மற்றவர்களை ஈர்க்கும்.",
+                "2": "அழகுப் பொருட்கள் மற்றும் ஆடம்பர பொருட்களால் லாபம். செலவுகளில் நிதானம் தேவை.",
+                "3": "படைப்பாற்றல்மிக்க பேச்சுத் திறன் வளரும். சிறு பயணங்கள் மூலம் மகிழ்ச்சி கிடைக்கும்.",
+                "4": "வீட்டை அழகுபடுத்தும் ஆர்வம் ஏற்படும். வீட்டில் அமைதி மற்றும் வசதிகள் அதிகரிக்கும்.",
+                "5": "காதல் மற்றும் கலைத்திறனுக்கு சிறப்பான நாள். காதல் உறவுகள் மலரும்.",
+                "6": "ஆரோக்கியம் மேம்படும். சேவை சார்ந்த பணிகள் மனநிறைவையும் மகிழ்ச்சியையும் தரும்.",
+                "7": "திருமணம் மற்றும் கூட்டாண்மையில் மகிழ்ச்சி இருக்கும். உறுதியான முடிவுகள் எடுக்க உகந்த நாள்.",
+                "8": "மறைமுக இச்சைகள் அல்லது வாரிசு சொத்து விவகாரங்கள் வரலாம். ஆழமான உணர்வுப் பிணைப்பு ஏற்படும்.",
+                "9": "ஆன்மீகப் பற்று அதிகரிக்கும். தூரப் பயணங்கள் புதிய காதல் சந்திப்புகளை உருவாக்கும்.",
+                "10": "தொழிலில் வசீகரம் சிறப்பான பலன்களைத்தரும். பொது மதிப்பும் தொழில் சார்ந்த லாபங்களும் பெருகும்.",
+                "11": "சமூகத்தில் லாபம் மற்றும் வலையமைப்பு வெற்றி পাবে. நண்பர்கள் மூலமாக மகிழ்ச்சியும் வாய்ப்புகளும் கிட்டும்.",
+                "12": "தனிமை அமைதியைக் கொடுக்கும். ஆன்மீக பயணங்கள் மற்றும் மனதிற்கு இதமான விஷயங்கள் சாதகமாக இருக்கும்."
+            },
+            "Mercury": {
+                "1": "கூர்மையான அறிவும் தெளிவான பேச்சும் இருக்கும். இன்று உங்கள் கருத்துக்களை நம்பிக்கையுடன் தெரிவியுங்கள்.",
+                "2": "வியாபாரப் பேச்சுவார்த்தைகள் உங்களுக்குச் சாதகமாக அமையும். இது நிதி நிலையை தெளிவாக்கும்.",
+                "3": "புத்திசாலித்தனம் உச்சத்தில் இருக்கும். எழுத்து, கற்பித்தல் மற்றும் சிறு பயணங்கள் மூலம் அதிகப் பலன்கள் கிடைக்கும்.",
+                "4": "குடும்பத்துடனான உரையாடல்கள் முக்கியத்துவம் பெறும். ரியல் எஸ்டேட் ஆவணங்கள் மற்றும் வீட்டைப் பற்றிய திட்டங்கள் நல்ல முறையில் நடக்கும்.",
+                "5": "படைப்பாற்றல் சிந்தனைகள் பெருகும். உங்கள் கருத்துக்களை குழந்தைகளிடம் அல்லது கலை சார்ந்த திட்டங்களில் பகிர்ந்துகொள்ளுங்கள்.",
+                "6": "வேலைத்திறன் உயரும். வேலைகளைத் திட்டமிட்டு முடிக்கவும், நிலுவையில் உள்ள ஆரோக்கியப் பிரச்சனைகளைக் கவனிக்கவும்.",
+                "7": "கூட்டாளியுடனான பேச்சுவார்த்தைகள் பயனுள்ளதாக இருக்கும். முக்கியமான ஒப்பந்தங்கள் இப்போது லாபம் தரும்.",
+                "8": "ஆராய்ச்சி மற்றும் தேடல்களுக்குகந்த நாள். ரகசியங்கள் அல்லது கூட்டு நிதிகளில் ஆழமான புரிதல் கிடைக்கும்.",
+                "9": "உயர்கல்வி பயில ஆர்வம் ஏற்படும். தத்துவார்த்தமான விவாதங்கள் மற்றும் பயணத் திட்டங்கள் நிறைவேறும்.",
+                "10": "தொழில் சார்ந்த தகவல் பரிமாற்றம் முக்கியம். திட்டங்களை முன்வைப்பது மற்றும் புதிய வலையமைப்புகளை உருவாக்குவது அங்கீகாரத்தைப் பெற்றுத்தரும்.",
+                "11": "நண்பர்கள் வட்டம் விரிவடையும். குழு விவாதங்கள் மற்றும் சமூக ஊடகங்களில்ச் செயல்படுவது லாபம் தரும்.",
+                "12": "சுயபரிசோதனைத் தெளிவைக் கொடுக்கும். அமைதியான வாசிப்பு அல்லது ஆன்மீக நூல்களைப் படிப்பது நன்று."
+            }
         },
-        lucky: {
-            colors: ["ಕೆಂಪು", "ನೀಲಿ", "ಹಸಿರು", "ಹಳದಿ", "ಬಿಳಿ", "ಕಿತ್ತಳೆ", "ಗುಲಾಬಿ"],
-            numbers: ["1", "3", "5", "7", "9", "2", "6"]
+        "lucky": {
+            "colors": [
+                "சிகப்பு",
+                "நீலம்",
+                "பச்சை",
+                "மஞ்சள்",
+                "வெள்ளை",
+                "ஆரஞ்சு",
+                "இளஞ்சிவப்பு"
+            ],
+            "numbers": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "9",
+                "2",
+                "6"
+            ]
         },
-        defaults: {
-            positive: "ಗುರು ಅದೃಷ್ಟವನ್ನು ತರುತ್ತಾನೆ.",
-            negative: "ಶನಿ ತಡವನ್ನು ಸೂಚಿಸುತ್ತಾನೆ.",
-            caution: "ಇಂದು ಅನಗತ್ಯ ಅಪಾಯಗಳನ್ನು ತಪ್ಪಿಸಿ. ಶಾಂತಿಗಾಗಿ ಧ್ಯಾನ ಮಾಡಿ.",
-            planet_placed: "{planet} {house}ನೇ ಮನೆಯಲ್ಲಿ ({sign}) ಇದೆ."
+        "defaults": {
+            "positive": "குரு அதிர்ஷ்டத்தைத் தருகிறார்.",
+            "negative": "சனி தாமதத்தைக் குறிக்கிறது.",
+            "caution": "இன்று தேவையற்ற அபாயங்களைத் தவிர்க்கவும். அமைதிக்காக தியானம் செய்யுங்கள்.",
+            "planet_placed": "{planet} {house}ஆம் வீட்டில் ({sign}) அமைந்துள்ளது."
+        }
+    },
+    "kn": {
+        "planets": {
+            "Sun": "ಸೂರ್ಯ ನಿಮ್ಮ ಆತ್ಮ, ಅಹಂಕಾರ ಮತ್ತು ತಂದೆಯನ್ನು ಪ್ರತಿನಿಧಿಸುತ್ತಾನೆ.",
+            "Moon": "ಚಂದ್ರನು ನಿಮ್ಮ ಭಾವನೆ, ಮನస్సు ಮತ್ತು ತಾಯಿಯನ್ನು ನಿಯಂತ್ರಿಸುತ್ತಾನೆ.",
+            "Mars": "ಮಂಗಳವು ನಿಮ್ಮ ಶಕ್ತಿ, ಮಹತ್ವಾಕಾಂಕ್ಷೆ ಮತ್ತು ಧೈರ್ಯವನ್ನು ನಡೆಸುತ್ತದೆ.",
+            "Mercury": "ಬುಧ ಸಂವಹನ, ಬುದ್ಧಿವಂತಿಕೆ ಮತ್ತು ವ್ಯವಹಾರವನ್ನು ಆಳುತ್ತಾನೆ.",
+            "Jupiter": "ಗುರು ಜ್ಞಾನ, ವಿಸ್ತರಣೆ ಮತ್ತು ಅದೃಷ್ಟವನ್ನು ತರುತ್ತಾನೆ.",
+            "Venus": "ಶುಕ್ರ ಪ್ರೀತಿ, ಐಷಾರಾಮಿ ಮತ್ತು ಕಲಾತ್ಮಕ ಪ್ರತಿಭೆಯನ್ನು ನಿಯಂತ್ರಿಸುತ್ತಾನೆ.",
+            "Saturn": "ಶನಿ ಶಿಸ್ತು, ವಿಳಂಬ ಮತ್ತು ಕಠಿಣ ಪಾಠಗಳನ್ನು ನೀಡುತ್ತಾನೆ.",
+            "Rahu": "ರಾಹು ಗೀಳು ಮತ್ತು ವಿದೇಶಿ ಅಂಶಗಳನ್ನು ಸೂಚಿಸುತ್ತಾನೆ.",
+            "Ketu": "ಕೇತು ವೈರಾಗ್ಯ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕತೆಯನ್ನು ಸೂಚಿಸುತ್ತಾನೆ."
+        },
+        "houses": {
+            "1": "ಸ್ವಯಂ ಮತ್ತು ವ್ಯಕ್ತಿತ್ವ",
+            "2": "ಧನ ಮತ್ತು ಕುಟುಂಬ",
+            "3": "ಧೈರ್ಯ ಮತ್ತು ಒಡಹುಟ್ಟಿದವರು",
+            "4": "ಮನೆ ಮತ್ತು ತಾಯಿ",
+            "5": "ಮಕ್ಕಳು ಮತ್ತು ಬುದ್ಧಿವಂತಿಕೆ",
+            "6": "ಶತ್ರುಗಳು ಮತ್ತು ಆರೋಗ್ಯ",
+            "7": "ವಿವಾಹ ಮತ್ತು ಪಾಲುದಾರಿಕೆ",
+            "8": "ಆಯಸ್ಸು ಮತ್ತು ಪರಿವರ್ತನೆ",
+            "9": "ಅದೃಷ್ಟ ಮತ್ತು ಉನ್ನತ ಶಿಕ್ಷಣ",
+            "10": "ವೃತ್ತಿ ಮತ್ತು ಸ್ಥಾನಮಾನ",
+            "11": "ಲಾಭ ಮತ್ತು ನೆಟ್‌ವರ್ಕ್",
+            "12": "ನಷ್ಟ ಮತ್ತು ಮೋಕ್ಷ"
+        },
+        "placements": {
+            "Sun": {
+                "1": "ಆಕರ್ಷಕ ಮತ್ತು ಅಧಿಕಾರಯುತ ವ್ಯಕ್ತಿತ್ವ. ನೀವು ನೈಸರ್ಗಿಕ ನಾಯಕರು.",
+                "10": "ವೃತ್ತಿಜೀವನಕ್ಕೆ ಅತ್ಯುತ್ತಮ. ನೀವು ಉನ್ನತ ಸ್ಥಾನ ಮತ್ತು ಸರ್ಕಾರಿ ಲಾಭಗಳನ್ನು ಪಡೆಯುತ್ತೀರಿ."
+            },
+            "Moon": {
+                "1": "ನೀವು ಭಾವುಕ ಮತ್ತು ಸೂಕ್ಷ್ಮ ವ್ಯಕ್ತಿ. ಎಲ್ಲರೂ ನಿಮ್ಮನ್ನು ಪ್ರೀತಿಸುತ್ತಾರೆ.",
+                "4": "ನೀವು ತಾಯಿ ಮತ್ತು ಮನೆಯ ಮೇಲೆ ಹೆಚ್ಚು ಪ್ರೀತಿ ಹೊಂದಿದ್ದೀರಿ. ವಾಹನಗಳು ನಿಮಗೆ ಸಂತೋಷ ನೀಡುತ್ತವೆ."
+            }
+        },
+        "transits": {
+            "Sun": {
+                "1": "ಆರೋಗ್ಯದ ಬಗ್ಗೆ ಎಚ್ಚರ ವಹಿಸಿ. ಅಹಂಕಾರದ ಸಂಘರ್ಷಗಳು ಸಾಧ್ಯ.",
+                "2": "ಆರ್ಥಿಕ ವಿಷಯಗಳಲ್ಲಿ ಗಮನ ಹರಿಸಿ. ಮಾತಿನ ಮೇಲೆ ಹಿಡಿತವಿರಲಿ.",
+                "3": "ಧೈರ್ಯ ಹೆಚ್ಚಾಗುತ್ತದೆ ಮತ್ತು ಕಾರ್ಯಗಳಲ್ಲಿ ಯಶಸ್ಸು.",
+                "4": "ಕೌಟುಂಬಿಕ ಒತ್ತಡ ಸಾಧ್ಯ. ಆಸ್ತಿ ವ್ಯವಹಾರಗಳನ್ನು ತಪ್ಪಿಸಿ.",
+                "5": "ಶಿಕ್ಷಣಕ್ಕೆ ಒಳ್ಳೆಯದು. ಮಕ್ಕಳ ಬಗ್ಗೆ ಚಿಂತೆ.",
+                "6": "ಶತ್ರುಗಳ ಮೇಲೆ ವಿಜಯ. ಆರೋಗ್ಯ ಸುಧಾರಿಸುತ್ತದೆ.",
+                "7": "ಪ್ರಯಾಣದ ಸಾಧ್ಯತೆ ಇದೆ. ಸಂಗಾತಿಯೊಂದಿಗೆ ಭಿನ್ನಾಭಿಪ್ರಾಯ.",
+                "8": "ಎಚ್ಚರಿಕೆ ಅಗತ್ಯ. ಆರೋಗ್ಯ ಮತ್ತು ಸಂಪತ್ತಿಗೆ ಅಪಾಯ.",
+                "9": "ಅದೃಷ್ಟ ನಿಮ್ಮ ಪರವಾಗಿದೆ. ಧಾರ್ಮಿಕ ಪ್ರವಾಸ ಸಾಧ್ಯ.",
+                "10": "ವೃತ್ತಿಜೀವನದಲ್ಲಿ ಯಶಸ್ಸು ಮತ್ತು ಬಡ್ತಿಯ ಸೂಚನೆಗಳು.",
+                "11": "ಎಲ್ಲಾ ಕಡೆಯಿಂದ ಲಾಭ. ಸ್ನೇಹಿತರು ಸಹಾಯ ಮಾಡುತ್ತಾರೆ.",
+                "12": "ಖರ್ಚುಗಳು ಹೆಚ್ಚಾಗುತ್ತವೆ. ಕಣ್ಣುಗಳ ಬಗ್ಗೆ ಕಾಳಜಿ ವಹಿಸಿ."
+            },
+            "Moon": {
+                "1": "ಮಾನಸಿಕ ಶಾಂತಿ ಮತ್ತು ಉತ್ತಮ ಆಹಾರ. ಸಂತೋಷ.",
+                "2": "ಆರ್ಥಿಕ ಲಾಭ ಆದರೆ ಸ್ವಲ್ಪ ಮಾನಸಿಕ ಒತ್ತಡ.",
+                "3": "ಸಣ್ಣ ಪ್ರವಾಸ ಮತ್ತು ಕಾರ್ಯಗಳಲ್ಲಿ ಯಶಸ್ಸು.",
+                "4": "ಮನೆಯಲ್ಲಿ ಅಶಾಂತಿ. ವಾದಗಳನ್ನು ತಪ್ಪಿಸಿ.",
+                "5": "ಪ್ರೀತಿ ಮತ್ತು ಸೃಜನಶೀಲತೆಗೆ ಒಳ್ಳೆಯದು.",
+                "6": "ವಿಜಯ ಮತ್ತು ಲಾಭ. ಉತ್ತಮ ಆರೋಗ್ಯ.",
+                "7": "ಪ್ರೀತಿ ಮತ್ತು ಸಣ್ಣ ಪ್ರವಾಸಗಳು. ಉತ್ತಮ ಪಾಲುದಾರಿಕೆ.",
+                "8": "ಮಾನಸಿಕ ಚಿಂತೆ ಮತ್ತು ಜೀರ್ಣಕ್ರಿಯೆ ಸಮಸ್ಯೆಗಳು. ಶಾಂತವಾಗಿರಿ.",
+                "9": "ಇಂದು ಅದೃಷ್ಟ ಕಡಿಮೆ. ಕಠಿಣ ಪರಿಶ್ರಮ ಪಡಿ.",
+                "10": "ಕೆಲಸದಲ್ಲಿ ಯಶಸ್ಸು. ಮನ್ನಣೆ ಸಿಗುತ್ತದೆ.",
+                "11": "ಸ್ನೇಹಿತರನ್ನು ಭೇಟಿಯಾಗುವುದು ಮತ್ತು ಉತ್ತಮ ಆದಾಯ.",
+                "12": "ಖರ್ಚು ಮತ್ತು ದೈಹಿಕ ಆಯಾಸ."
+            },
+            "Mars": {
+                "1": "ಕೋಪದ ವರ್ತನೆಯನ್ನು ತಪ್ಪಿಸಿ. ದೈಹಿಕ ಶಕ್ತಿ ಹೆಚ್ಚಾಗಿರುತ್ತದೆ; ವ್ಯಾಯಾಮದ ಮೂಲಕ ಅದನ್ನು ಸರಿಯಾಗಿ ಬಳಸಿ.",
+                "2": "ಆರ್ಥಿಕ ವಿವಾದಗಳು ಸಾಧ್ಯ. ಇಂದು ಆತುರದ ಖರೀದಿಯನ್ನು ನಿಯಂತ್ರಿಸಿ.",
+                "3": "ಧೈರ್ಯ ಗರಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿರುತ್ತದೆ. ದಿಟ್ಟ ನಿರ್ಧಾರಗಳು ಮತ್ತು ಸ್ಪರ್ಧಾತ್ಮಕ ಕಾರ್ಯಗಳಿಗೆ ಅತ್ಯುತ್ತಮ ಸಮಯ.",
+                "4": "ಮನೆಯಲ್ಲಿ ವಾದಗಳು ನಡೆಯುವ ಸಾಧ್ಯತೆ ಇದೆ. ಕುಟುಂಬದ ಸದಸ್ಯರೊಂದಿಗೆ ತಾಳ್ಮೆಯಿಂದಿರಿ.",
+                "5": "ಸೃಜನಶೀಲ ಆಸಕ್ತಿ ಪ್ರಬಲವಾಗಿರುತ್ತದೆ. ಪ್ರೇಮವು ತೀವ್ರವಾಗಿದ್ದರೂ ಅಸ್ಥಿರವಾಗಿರಬಹುದು.",
+                "6": "ಅಡೆತಡೆಗಳನ್ನು ನಿವಾರಿಸುವಿರಿ. ಸ್ಪರ್ಧಾತ್ಮಕ ಕಾರ್ಯಗಳು ಮತ್ತು ಕಾನೂನು ವಿಷಯಗಳಲ್ಲಿ ಯಶಸ್ಸು.",
+                "7": "ಪಾಲುದಾರರೊಂದಿಗೆ ಅಥವಾ ಉದ್ಯಮ ಪಾಲುದಾರರೊಂದಿಗೆ ಘರ್ಷಣೆಯನ್ನು ತಪ್ಪಿಸಿ.",
+                "8": "ಅಡಗಿರುವ ಶತ್ರುಗಳು ಹೊರಬರುತ್ತಾರೆ. ನಿಮ್ಮ ರಹಸ್ಯಗಳನ್ನು ರಕ್ಷಿಸಿಕೊಳ್ಳಿ ಮತ್ತು ಅಪಾಯಕಾರಿ ಹೂಡಿಕೆಗಳನ್ನು ತಪ್ಪಿಸಿ.",
+                "9": "ಸಾಹಸಮಯ ಉತ್ಸಾಹ ಮೂಡುತ್ತದೆ. ಪ್ರಯಾಣದಲ್ಲಿ ಸವಾಲುಗಳಿದ್ದರೂ ಅವು ಬೆಳವಣಿಗೆಗೆ ದಾರಿಯಾಗುತ್ತವೆ.",
+                "10": "ವೃತ್ತಿಜೀವನದ ಮಹತ್ವಾಕಾಂಕ್ಷೆಗಳು ಹೆಚ್ಚಾಗುತ್ತವೆ. ಮಾನ್ಯತೆಗಾಗಿ ಶ್ರಮಿಸಿ ಆದರೆ ಕಚೇರಿ ರಾಜಕೀಯದಿಂದ ದೂರವಿರಿ.",
+                "11": "ಸಾಮಾಜಿಕ ಘರ್ಷಣೆಗಳು ಸಾಧ್ಯ. ಸ್ನೇಹಿತರೊಂದಿಗೆ ವಾದ ವಿವಾದಗಳನ್ನು ತಪ್ಪಿಸಿ.",
+                "12": "ಶಕ್ತಿ ಕುಗ್ಗುತ್ತದೆ. ಚೆನ್ನಾಗಿ ವಿಶ್ರಾಂತಿ ಪಡೆಯಿರಿ; ಆಸ್ಪತ್ರೆ ಭೇಟಿಗಳು ಮತ್ತು ವಿದೇಶಿ ತೊಡಕುಗಳನ್ನು ತಪ್ಪಿಸಿ."
+            },
+            "Venus": {
+                "1": "ಪ್ರೀತಿ ಮತ್ತು ಸಾಮಾಜಿಕ ಜೀವನಕ್ಕೆ ಅತ್ಯುತ್ತಮ. ಆಕರ್ಷಣೆ ಹೆಚ್ಚಾಗುತ್ತದೆ.",
+                "2": "ಸೌಂದರ್ಯ ಉತ್ಪನ್ನಗಳು ಅಥವಾ ಐಷಾರಾಮಿ ವಸ್ತುಗಳ ಮೂಲಕ ಆರ್ಥಿಕ ಲಾಭ. ಮಿತವಾಗಿ ಖರ್ಚು ಮಾಡಿ.",
+                "3": "ಸೃಜನಶೀಲ ಸಂವಹನ ಹೆಚ್ಚುತ್ತದೆ. ಸಣ್ಣ ಪ್ರಯಾಣಗಳು ಆನಂದವನ್ನು ತರುತ್ತವೆ.",
+                "4": "ಮನೆಯನ್ನು ಸುಂದರಗೊಳಿಸುವ ಆಸೆ ಹೆಚ್ಚಾಗುತ್ತದೆ. ಕುಟುಂಬದಲ್ಲಿ ಸಾಮರಸ್ಯ ಮತ್ತು ಸೌಕರ್ಯ ಗರಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿರುತ್ತದೆ.",
+                "5": "ಪ್ರೇಮ ಮತ್ತು ಕಲಾತ್ಮಕ ಅಭಿವ್ಯಕ್ತಿಗೆ ಅತ್ಯುತ್ತಮ ಸಮಯ. ಪ್ರೇಮ ಸಂಬಂಧಗಳು ಅರಳುತ್ತವೆ.",
+                "6": "ಆರೋಗ್ಯ ಸುಧಾರಿಸುತ್ತದೆ. ಸೇವಾ ಕಾರ್ಯಗಳು ತೃಪ್ತಿ ಮತ್ತು ಸೌಂದರ್ಯಯುತ ಆನಂದವನ್ನು ತರುತ್ತವೆ.",
+                "7": "ವಿವಾಹ ಮತ್ತು ಪಾಲುದಾರಿಕೆಯಲ್ಲಿ ಸಂತೋಷ. ಬದ್ಧತೆಗೆ ಸೂಕ್ತ ಸಮಯ.",
+                "8": "ರಹಸ್ಯ ಆಕರ್ಷಣೆಗಳು ಅಥವಾ ಆನುವಂಶಿಕ ವಿಷಯಗಳು ಹೊರಬರುತ್ತವೆ. ಆಳವಾದ ಭಾವನಾತ್ಮಕ ಬಂಧ ಸಾಧ್ಯ.",
+                "9": "ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರೇಮ ಜಾಗೃತವಾಗುತ್ತದೆ. ದೂರದ ಪ್ರಯಾಣಗಳು ರೋಮ್ಯಾಂಟಿಕ್ ಭೇಟಿಗಳಿಗೆ ದಾರಿಯಾಗುತ್ತವೆ.",
+                "10": "ವೃತ್ತಿಪರ ಆಕರ್ಷಣೆ ಅದ್ಭುತಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಸಾರ್ವಜನಿಕ ಇಮೇಜ್ ಮತ್ತು ವೃತ್ತಿಜೀವನದ ಲಾಭಗಳು ಪ್ರಬಲವಾಗಿರುತ್ತವೆ.",
+                "11": "ಸಾಮಾಜಿಕ ಲಾಭಗಳು ಮತ್ತು ನೆಟ್‌ವರ್ಕಿಂಗ್‌ನಲ್ಲಿ ಯಶಸ್ಸು. ಸ್ನೇಹಿತರ ಮೂಲಕ ಆನಂದ ಮತ್ತು ಅವಕಾಶಗಳು ದೊರೆಯುತ್ತವೆ.",
+                "12": "ಏಕಾಂತವು ಶಾಂತಿಯನ್ನು ತರುತ್ತದೆ. ಆಧ್ಯಾತ್ಮಿಕ ಕಾರ್ಯಗಳು ಅಥವಾ ಪ್ರಶಾಂತವಾದ ಆನಂದಗಳು ಲಭ್ಯ."
+            },
+            "Mercury": {
+                "1": "ತೀಕ್ಷ್ಣ ಬುದ್ಧಿಮತ್ತೆ ಮತ್ತು ಸ್ಪಷ್ಟ ಸಂವಹನ. ಇಂದು ನಿಮ್ಮನ್ನು ವಿಶ್ವಾಸದಿಂದ ವ್ಯಕ್ತಪಡಿಸಿ.",
+                "2": "ವ್ಯಾಪಾರ ಚರ್ಚೆಗಳು ನಿಮ್ಮ ಪರವಾಗಿರುತ್ತವೆ. ಮಾತುಕತೆಗಳು ಆರ್ಥಿಕ ಸ್ಪಷ್ಟತೆಯನ್ನು ತರುತ್ತವೆ.",
+                "3": "ಮಾನಸಿಕ ಚುರುಕುತನ ಗರಿಷ್ಠ ಮಟ್ಟದಲ್ಲಿರುತ್ತದೆ. ಬರವಣಿಗೆ, ಬೋಧನೆ ಮತ್ತು ಸಣ್ಣ ಪ್ರಯಾಣಗಳು ಹೆಚ್ಚು ಲಾಭದಾಯಕ.",
+                "4": "ಕೌಟುಂಬಿಕ ಮಾತುಕತೆಗಳು ಮುಖ್ಯವಾಗುತ್ತವೆ. ರಿಯಲ್ ಎಸ್ಟೇಟ್ ದಾಖಲೆಗಳು ಅಥವಾ ಮನೆ ಯೋಜನೆ ಸುಗಮವಾಗಿ ಸಾಗುತ್ತದೆ.",
+                "5": "ಸೃಜನಶೀಲ ಆಲೋಚನೆಗಳು ಹರಿಯುತ್ತವೆ. ನಿಮ್ಮ ವಿಚಾರಗಳನ್ನು ಮಕ್ಕಳೊಂದಿಗೆ ಅಥವಾ ಕಲಾತ್ಮಕ ಕಾರ್ಯಗಳಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ.",
+                "6": "ಕೆಲಸದ ದಕ್ಷತೆ ಹೆಚ್ಚಾಗಿರುತ್ತದೆ. ಕಾರ್ಯಗಳನ್ನು ಆಯೋಜಿಸಿ ಮತ್ತು ಬಾಕಿ ಇರುವ ಆರೋಗ್ಯ ಸಮಸ್ಯೆಗಳನ್ನು ಪರಿಹರಿಸಿ.",
+                "7": "ಪಾಲುದಾರಿಕೆ ಮಾತುಕತೆಗಳು ಫಲಪ್ರದವಾಗುತ್ತವೆ. ಪ್ರಮುಖ ಒಪ್ಪಂದಗಳು ಅಥವಾ ಕರಾರುಗಳು ಈಗ ಪ್ರಯೋಜನಕಾರಿ.",
+                "8": "ಸಂಶೋಧನೆ ಮತ್ತು ವಿಚಾರಣೆಗಳಿಗೆ ಅನುಕೂಲಕರ ಸಮಯ. ರಹಸ್ಯಗಳು ಅಥವಾ ಜಂಟಿ ಹಣಕಾಸು ವಿಚಾರಗಳಲ್ಲಿ ಆಳವಾಗಿ ಅಧ್ಯಯನ ಮಾಡಿ.",
+                "9": "ಉನ್ನತ ಶಿಕ್ಷಣದ ಬಗ್ಗೆ ಆಸಕ್ತಿ ಮೂಡುತ್ತದೆ. ತಾತ್ವಿಕ ಚರ್ಚೆಗಳು ಅಥವಾ ಪ್ರಯಾಣ ಯೋಜನೆಗಳು ನನಸಾಗುತ್ತವೆ.",
+                "10": "ವೃತ್ತಿಜೀವನದ ಸಂವಹನ ನಿರ್ಣಾಯಕವಾಗಿರುತ್ತದೆ. ಪ್ರಸ್ತುತಿಗಳು ಮತ್ತು ನೆಟ್‌ವರ್ಕಿಂಗ್ ಮಾನ್ಯತೆ ತರುತ್ತವೆ.",
+                "11": "ಸ್ನೇಹಿತರ ವಲಯ ವಿಸ್ತರಿಸುತ್ತದೆ. ಗುಂಪು ಚರ್ಚೆಗಳು ಮತ್ತು ಸಾಮಾಜಿಕ ಮಾಧ್ಯಮದಲ್ಲಿ ಸಕ್ರಿಯವಾಗಿರುವುದು ಫಲದಾಯಕ.",
+                "12": "ಆತ್ಮಾವಲೋಕನ ಸ್ಪಷ್ಟತೆಯನ್ನು ತರುತ್ತದೆ. ಶಾಂತವಾದ ಓದು ಅಥವಾ ಆಧ್ಯಾತ್ಮಿಕ ಅಧ್ಯಯನವನ್ನು ಸೂಚಿಸಲಾಗಿದೆ."
+            }
+        },
+        "lucky": {
+            "colors": [
+                "ಕೆಂಪು",
+                "ನೀಲಿ",
+                "ಹಸಿರು",
+                "ಹಳದಿ",
+                "ಬಿಳಿ",
+                "ಕಿತ್ತಳೆ",
+                "ಗುಲಾಬಿ"
+            ],
+            "numbers": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "9",
+                "2",
+                "6"
+            ]
+        },
+        "defaults": {
+            "positive": "ಗುರು ಅದೃಷ್ಟವನ್ನು ತರುತ್ತಾನೆ.",
+            "negative": "ಶನಿ ತಡವನ್ನು ಸೂಚಿಸುತ್ತಾನೆ.",
+            "caution": "ಇಂದು ಅನಗತ್ಯ ಅಪಾಯಗಳನ್ನು ತಪ್ಪಿಸಿ. ಶಾಂತಿಗಾಗಿ ಧ್ಯಾನ ಮಾಡಿ.",
+            "planet_placed": "{planet} {house}ನೇ ಮನೆಯಲ್ಲಿ ({sign}) ಇದೆ."
         }
     }
 };
