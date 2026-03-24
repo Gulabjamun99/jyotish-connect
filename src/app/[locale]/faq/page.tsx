@@ -10,64 +10,36 @@ interface FAQItem {
 
 const faqs: FAQItem[] = [
     {
-        question: "What is JyotishConnect?",
-        answer: "JyotishConnect is an online platform that connects you with verified and experienced astrologers for personalized consultations. We offer various services including birth chart analysis, horoscope readings, kundli matching, and video/audio consultations."
+        question: "How does the Astro Wallet work?",
+        answer: "The Astro Wallet is your digital balance on JyotishConnect. You can securely recharge it using Razorpay (via Credit/Debit Cards, UPI, or Net Banking). Your wallet balance is then used to instantly book video, audio, or chat consultations with our expert Astrologers without repeatedly entering card details."
     },
     {
-        question: "Are your astrologers verified?",
-        answer: "Yes, all astrologers on our platform undergo a thorough verification process. We verify their credentials, experience, and expertise in Vedic astrology. Each astrologer must provide valid identification and demonstrate their knowledge before being approved to offer consultations."
+        question: "How do Video / Audio Consultations work?",
+        answer: "Once you book a slot, the required amount is deducted from your Wallet. You and the astrologer will both receive a professional email invite with a direct 'Join Consultation Room' link (similar to Google Meet). Simply click the link precisely at your scheduled time to connect securely."
     },
     {
-        question: "How accurate are astrological predictions?",
-        answer: "Astrology is a traditional belief system and interpretive art. While our astrologers are highly experienced, predictions are based on astrological principles and should be viewed as guidance rather than absolute certainties. Results may vary, and astrology should not replace professional medical, legal, or financial advice."
+        question: "Who is 'Sarvagya' (The AI Chatbot)?",
+        answer: "Sarvagya is our integrated AI Astrology Assistant powered by advanced large language models. While Sarvagya accurately processes your Kundli data using astronomical math, its chat responses are AI-generated text meant for instant entertainment and generalized insights. For serious life questions, always book a Verified Human Astrologer."
     },
     {
-        question: "What information do I need to provide for a consultation?",
-        answer: "For an accurate astrological reading, you'll typically need to provide your date of birth, time of birth (as accurate as possible), and place of birth. Some consultations may require additional information depending on the specific service you're requesting."
+        question: "Are your astrologers background verified?",
+        answer: "Yes, every human astrologer listed on JyotishConnect goes through a strict manual vetting process. We review their Vedic astrology expertise, identity, and past experience before they are granted an Astrologer Portal account."
     },
     {
-        question: "How do I book a consultation?",
-        answer: "Simply browse our verified astrologers, view their profiles, specializations, and availability. Select your preferred astrologer, choose a consultation type (chat, audio, or video call), and book a time slot that works for you. Payment is processed securely through our platform."
+        question: "Can I get a refund if the prediction is wrong?",
+        answer: "No. Astrology is a matter of traditional belief, and predictions cannot be guaranteed. Therefore, we do not offer refunds based on dissatisfaction with an astrologer's reading or AI chat outputs. We only issue refunds for severe technical failures (e.g., platform crashes) or if the astrologer failed to join the video session."
     },
     {
-        question: "What payment methods do you accept?",
-        answer: "We accept various payment methods including credit/debit cards, UPI, net banking, and digital wallets through our secure payment gateway powered by Razorpay. All transactions are encrypted and secure."
+        question: "Is my birth data secure?",
+        answer: "Yes. Your Date, Time, and Place of birth are highly sensitive data points. We transmit them securely via SSL directly to the Swiss Ephemeris prediction engine and AI nodes strictly for chart calculation. Your data is not sold to marketers."
     },
     {
-        question: "What is your refund policy?",
-        answer: "Refunds are processed in accordance with the Consumer Protection Act, 2019. If you experience technical issues that prevent your consultation, or if an astrologer fails to join the session, you're eligible for a full refund. Refund requests must be submitted within 48 hours of the consultation. Please note that refunds are not provided for completed consultations or if you're dissatisfied with the astrological guidance provided."
+        question: "What languages are available for my Kundli?",
+        answer: "Our automated Kundli engine fully supports English, Hindi, Marathi, Bengali, Gujarati, Tamil, Telugu, and Kannada. Simply change the language toggle at the top of the site, and the entire Kundli prediction interface will translate smoothly."
     },
     {
-        question: "How long does a typical consultation last?",
-        answer: "Consultation duration varies by service type. Chat consultations are typically charged per message or per minute. Audio and video calls are usually available in 15, 30, or 60-minute sessions. The exact duration and pricing are displayed on each astrologer's profile."
-    },
-    {
-        question: "Is my personal information safe?",
-        answer: "Yes, we take data privacy very seriously. We comply with the Digital Personal Data Protection Act, 2023. Your personal information, including birth details and consultation history, is encrypted and stored securely. We never share your data with third parties without your explicit consent. For more details, please read our Privacy Policy."
-    },
-    {
-        question: "Can I get a consultation in my preferred language?",
-        answer: "Yes! Our astrologers speak various languages including Hindi, English, Tamil, Telugu, Bengali, Marathi, and more. You can filter astrologers by language preference when browsing our directory."
-    },
-    {
-        question: "What if I'm not satisfied with my consultation?",
-        answer: "While we cannot guarantee specific outcomes (as astrology is interpretive), we strive for quality service. If you have concerns about your consultation, please contact our support team within 48 hours. We have a grievance redressal mechanism in place and will investigate your complaint thoroughly."
-    },
-    {
-        question: "Can astrologers provide medical or legal advice?",
-        answer: "No. Our astrologers are strictly prohibited from providing medical, legal, or financial advice. Astrological consultations are for spiritual guidance and entertainment purposes only. For health, legal, or financial matters, please consult qualified professionals in those respective fields."
-    },
-    {
-        question: "Do you offer services for minors (under 18)?",
-        answer: "Users must be 18 years or older to create an account and book consultations. For consultations regarding minors, a parent or legal guardian must book and attend the session on their behalf."
-    },
-    {
-        question: "How do I report an issue or file a complaint?",
-        answer: "You can report issues through our Contact Us page, email us at support@astropanditconnect.com, or use the grievance redressal form. We acknowledge all complaints within 48 hours and aim to resolve them within 30 days."
-    },
-    {
-        question: "Can I download my birth chart or consultation report?",
-        answer: "Yes! After your consultation, you can download your birth chart (Kundli) in PDF format from your user dashboard. Some astrologers also provide detailed consultation reports that you can save for future reference."
+        question: "Can astrologers give me medical or stock market advice?",
+        answer: "Absolutely not. Astrologers are strictly instructed not to provide medical, legal, or financial trading advice. Any such conversation violates our Terms of Service. Please consult a licensed physician or registered SEBI advisor for such matters."
     }
 ];
 
@@ -106,8 +78,7 @@ export default function FAQPage() {
                         Frequently Asked Questions
                     </h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Find answers to common questions about our astrology consultation services,
-                        privacy, payments, and more.
+                        Clarifying how our Consultations, AI, and Wallet features operate.
                     </p>
                 </div>
 
@@ -115,9 +86,7 @@ export default function FAQPage() {
                 <div className="mb-8 p-6 rounded-lg border border-amber-500/30 bg-amber-500/5">
                     <p className="text-sm text-muted-foreground">
                         <strong className="text-amber-600">Disclaimer:</strong> Astrological services
-                        provided on this platform are for entertainment and spiritual guidance purposes
-                        based on traditional belief systems. Predictions are not guaranteed and should
-                        not be considered as substitutes for professional medical, legal, or financial advice.
+                        and the "Sarvagya" AI provided on this platform are strictly for entertainment and spiritual guidance.
                     </p>
                 </div>
 
@@ -130,15 +99,15 @@ export default function FAQPage() {
 
                 {/* Contact CTA */}
                 <div className="mt-12 text-center p-8 rounded-lg bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20">
-                    <h2 className="text-2xl font-bold mb-3">Still have questions?</h2>
+                    <h2 className="text-2xl font-bold mb-3">Still have critical questions?</h2>
                     <p className="text-muted-foreground mb-6">
-                        Our support team is here to help you with any additional queries.
+                        Our corporate support team is available via email to resolve billing or platform issues.
                     </p>
                     <a
                         href="/contact"
                         className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                     >
-                        Contact Us
+                        Contact Operations
                     </a>
                 </div>
             </div>

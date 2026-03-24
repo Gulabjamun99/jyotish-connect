@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, MapPin, Clock, Send } from "lucide-react";
+import { Mail, ShieldAlert, Phone, MapPin, Clock, Send } from "lucide-react";
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -16,8 +16,6 @@ export default function ContactPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Implement actual form submission to backend
-        console.log("Form submitted:", formData);
         setSubmitted(true);
         setTimeout(() => setSubmitted(false), 5000);
     };
@@ -35,10 +33,10 @@ export default function ContactPage() {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                        Contact Us
+                        Corporate Contact Hub
                     </h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Have questions or need assistance? We're here to help! Reach out to us through any of the channels below.
+                        For business inquiries, refund disputes, or reporting platform abuse, please contact the appropriate department below.
                     </p>
                 </div>
 
@@ -46,105 +44,76 @@ export default function ContactPage() {
                     {/* Contact Information */}
                     <div className="space-y-6">
                         <div className="p-6 rounded-lg border border-primary/20 bg-card/50 backdrop-blur-sm">
-                            <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
+                            <h2 className="text-2xl font-bold mb-6">Department Directories</h2>
 
                             <div className="space-y-4">
-                                {/* Email */}
+                                {/* Customer Support */}
                                 <div className="flex items-start gap-4">
                                     <div className="p-3 rounded-lg bg-primary/10">
                                         <Mail className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold mb-1">Email Support</h3>
-                                        <p className="text-sm text-muted-foreground">support@astropanditconnect.com</p>
-                                        <p className="text-xs text-muted-foreground mt-1">We respond within 24 hours</p>
+                                        <h3 className="font-semibold mb-1">Customer & Billing Support</h3>
+                                        <p className="text-sm text-muted-foreground">For Razorpay wallet issues or failed video calls.</p>
+                                        <p className="text-xs text-primary mt-1 font-mono">support@astropanditconnect.com</p>
                                     </div>
                                 </div>
 
-                                {/* Phone */}
+                                {/* Astrologer Onboarding */}
                                 <div className="flex items-start gap-4">
                                     <div className="p-3 rounded-lg bg-primary/10">
                                         <Phone className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold mb-1">Phone Support</h3>
-                                        <p className="text-sm text-muted-foreground">+91 98765 43210</p>
-                                        <p className="text-xs text-muted-foreground mt-1">Mon-Sat: 9:00 AM - 6:00 PM IST</p>
+                                        <h3 className="font-semibold mb-1">Astrologer Onboarding</h3>
+                                        <p className="text-sm text-muted-foreground">Are you a Vedic expert looking to join the platform?</p>
+                                        <p className="text-xs text-primary mt-1 font-mono">partners@astropanditconnect.com</p>
                                     </div>
                                 </div>
 
-                                {/* WhatsApp */}
+                                {/* Grievance */}
                                 <div className="flex items-start gap-4">
-                                    <div className="p-3 rounded-lg bg-primary/10">
-                                        <MessageCircle className="w-5 h-5 text-primary" />
+                                    <div className="p-3 rounded-lg bg-red-500/10">
+                                        <ShieldAlert className="w-5 h-5 text-red-500" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold mb-1">WhatsApp</h3>
-                                        <p className="text-sm text-muted-foreground">+91 98765 43210</p>
-                                        <p className="text-xs text-muted-foreground mt-1">Quick responses during business hours</p>
-                                    </div>
-                                </div>
-
-                                {/* Business Hours */}
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 rounded-lg bg-primary/10">
-                                        <Clock className="w-5 h-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold mb-1">Business Hours</h3>
-                                        <p className="text-sm text-muted-foreground">Monday - Saturday: 9:00 AM - 6:00 PM</p>
-                                        <p className="text-sm text-muted-foreground">Sunday: Closed</p>
+                                        <h3 className="font-semibold mb-1">Legal & Abuse Reports</h3>
+                                        <p className="text-sm text-muted-foreground">To report a violation of terms or report abusive behavior during sessions.</p>
+                                        <p className="text-xs text-primary mt-1 font-mono">legal@astropanditconnect.com</p>
                                     </div>
                                 </div>
 
                                 {/* Address */}
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-4 mt-6">
                                     <div className="p-3 rounded-lg bg-primary/10">
                                         <MapPin className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold mb-1">Registered Office</h3>
+                                        <h3 className="font-semibold mb-1">Corporate Headquarters</h3>
                                         <p className="text-sm text-muted-foreground">
-                                            AstroPandit Connect<br />
-                                            123, Jyotish Bhawan<br />
-                                            MG Road, Connaught Place<br />
-                                            New Delhi, Delhi - 110001<br />
-                                            India
+                                            AstroPandit Connect LLC<br />
+                                            (Fictional Address / To Be Assigned)<br />
+                                            New Delhi, India<br />
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Grievance Redressal */}
-                        <div className="p-6 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                            <h3 className="font-semibold mb-2 text-amber-600">Grievance Redressal Officer</h3>
-                            <p className="text-sm text-muted-foreground mb-2">
-                                For complaints or grievances as per Consumer Protection Act, 2019:
-                            </p>
-                            <p className="text-sm">
-                                <strong>Name:</strong> Rajesh Kumar (Grievance Officer)<br />
-                                <strong>Email:</strong> grievance@astropanditconnect.com<br />
-                                <strong>Response Time:</strong> Acknowledged within 48 hours, resolved within 30 days
-                            </p>
-                        </div>
                     </div>
 
                     {/* Contact Form */}
                     <div className="p-6 rounded-lg border border-primary/20 bg-card/50 backdrop-blur-sm">
-                        <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
+                        <h2 className="text-2xl font-bold mb-6">Submit a Ticket</h2>
 
                         {submitted && (
                             <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
-                                Thank you! Your message has been sent successfully. We'll get back to you soon.
+                                Ticket lodged successfully. Our operations team will contact you within 24-48 business hours.
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium mb-2">
-                                    Full Name *
-                                </label>
+                                <label htmlFor="name" className="block text-sm font-medium mb-2">Registered Name</label>
                                 <input
                                     type="text"
                                     id="name"
@@ -153,14 +122,11 @@ export default function ContactPage() {
                                     value={formData.name}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    placeholder="Your name"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium mb-2">
-                                    Email Address *
-                                </label>
+                                <label htmlFor="email" className="block text-sm font-medium mb-2">Registered Email</label>
                                 <input
                                     type="email"
                                     id="email"
@@ -169,29 +135,11 @@ export default function ContactPage() {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    placeholder="your.email@example.com"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="phone" className="block text-sm font-medium mb-2">
-                                    Phone Number
-                                </label>
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    placeholder="+91 XXXXXXXXXX"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="type" className="block text-sm font-medium mb-2">
-                                    Inquiry Type *
-                                </label>
+                                <label htmlFor="type" className="block text-sm font-medium mb-2">Ticket Category</label>
                                 <select
                                     id="type"
                                     name="type"
@@ -200,35 +148,15 @@ export default function ContactPage() {
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
                                 >
-                                    <option value="general">General Inquiry</option>
-                                    <option value="support">Technical Support</option>
-                                    <option value="billing">Billing & Payments</option>
-                                    <option value="refund">Refund Request</option>
-                                    <option value="complaint">Complaint/Grievance</option>
-                                    <option value="astrologer">Astrologer Partnership</option>
+                                    <option value="support">Technical Support (Video Call Failure)</option>
+                                    <option value="billing">Wallet Recharge / Razorpay Issue</option>
+                                    <option value="legal">Report Harassment / Code of Conduct Violation</option>
+                                    <option value="astrologer">Astrologer Application</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label htmlFor="subject" className="block text-sm font-medium mb-2">
-                                    Subject *
-                                </label>
-                                <input
-                                    type="text"
-                                    id="subject"
-                                    name="subject"
-                                    required
-                                    value={formData.subject}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    placeholder="Brief subject of your inquiry"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="message" className="block text-sm font-medium mb-2">
-                                    Message *
-                                </label>
+                                <label htmlFor="message" className="block text-sm font-medium mb-2">Message Description</label>
                                 <textarea
                                     id="message"
                                     name="message"
@@ -237,7 +165,6 @@ export default function ContactPage() {
                                     onChange={handleChange}
                                     rows={5}
                                     className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                                    placeholder="Please provide details about your inquiry..."
                                 />
                             </div>
 
@@ -246,7 +173,7 @@ export default function ContactPage() {
                                 className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                             >
                                 <Send className="w-4 h-4" />
-                                Send Message
+                                Transmit Ticket
                             </button>
                         </form>
                     </div>
