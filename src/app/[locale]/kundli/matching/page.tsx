@@ -325,7 +325,7 @@ export default function MatchingPage() {
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`flex-1 min-w-[150px] flex items-center justify-center gap-3 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab.id
                                                 ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-blue-500/40 scale-100"
-                                                : "text-blue-900/40 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 scale-95"
+                                                : "text-blue-900/60 hover:text-blue-900 dark:text-slate-400 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 scale-95"
                                                 }`}
                                         >
                                             <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "animate-pulse" : ""}`} /> {tab.label}

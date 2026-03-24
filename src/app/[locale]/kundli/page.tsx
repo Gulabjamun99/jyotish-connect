@@ -435,7 +435,7 @@ export default function KundliPage() {
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
                                             ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 scale-100"
-                                            : "text-white/40 hover:text-white/70 hover:bg-white/5 scale-95"
+                                            : "text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 scale-95"
                                             }`}
                                     >
                                         <tab.icon className="w-4 h-4" /> {tab.label}
@@ -681,20 +681,49 @@ export default function KundliPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-right-4">
                                         <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-[2.5rem] border border-orange-100">
                                             <h3 className="text-2xl font-black text-amber-900 mb-6 flex items-center gap-3">
-                                                <Star className="w-6 h-6" /> Lucky Gemstones
+                                                <Star className="w-6 h-6" /> {locale === 'hi' ? "शुभ रत्न" : locale === 'mr' ? "शुभ रत्ने" : "Lucky Gemstones"}
                                             </h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                                                {[
-                                                    { label: "Life Stone (Lagnesh)", stone: (kundliData as any).gemstones?.Sun || "Ruby", planet: "Based on Asc" },
-                                                    { label: "Lucky Stone (9th Lord)", stone: (kundliData as any).gemstones?.Jupiter || "Yellow Sapphire", planet: "Based on 9th" },
-                                                    { label: "Benefic Stone (5th Lord)", stone: (kundliData as any).gemstones?.Mars || "Red Coral", planet: "Based on 5th" }
-                                                ].map((item, i) => (
-                                                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50">
-                                                        <div className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">{item.label}</div>
-                                                        <div className="text-lg font-black text-slate-900">{item.stone || "Consult Astrologer"}</div>
-                                                        <div className="text-xs text-slate-400 mt-2">Worn for prosperity</div>
-                                                    </div>
-                                                ))}
+                                                {(() => {
+                                                    const getPlanetaryLord = (signNum: number) => {
+                                                        switch (signNum) {
+                                                            case 1: case 8: return "Mars";
+                                                            case 2: case 7: return "Venus";
+                                                            case 3: case 6: return "Mercury";
+                                                            case 4: return "Moon";
+                                                            case 5: return "Sun";
+                                                            case 9: case 12: return "Jupiter";
+                                                            case 10: case 11: return "Saturn";
+                                                            default: return "Sun";
+                                                        }
+                                                    };
+                                                    const ascSignNum = chart.ascendantLongitude ? Math.floor(chart.ascendantLongitude / 30) + 1 : 1;
+                                                    const lagnesh = getPlanetaryLord(ascSignNum);
+                                                    const fifthLord = getPlanetaryLord(((ascSignNum - 1 + 4) % 12) + 1);
+                                                    const ninthLord = getPlanetaryLord(((ascSignNum - 1 + 8) % 12) + 1);
+
+                                                    const transGemstones = getTrans(locale).gemstones;
+                                                    
+                                                    const labels_en = ["Life Stone (Lagnesh)", "Lucky Stone (9th Lord)", "Benefic Stone (5th Lord)"];
+                                                    const labels_hi = ["जीवन रत्न (लग्नेश)", "भाग्य रत्न (नवमेश)", "कल्याणकारी रत्न (पंचमेश)"];
+                                                    const labels_mr = ["जीवन रत्न (लग्नेश)", "भाग्य रत्न (नवमेश)", "कल्याणकारी रत्न (पंचमेश)"];
+                                                    const labels = locale === 'hi' ? labels_hi : locale === 'mr' ? labels_mr : labels_en;
+
+                                                    return [
+                                                        { label: labels[0], stone: transGemstones[lagnesh as keyof typeof transGemstones], planet: translatePlanet(lagnesh, locale) },
+                                                        { label: labels[1], stone: transGemstones[ninthLord as keyof typeof transGemstones], planet: translatePlanet(ninthLord, locale) },
+                                                        { label: labels[2], stone: transGemstones[fifthLord as keyof typeof transGemstones], planet: translatePlanet(fifthLord, locale) }
+                                                    ].map((item, i) => (
+                                                        <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50">
+                                                            <div className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center justify-between">
+                                                                {item.label}
+                                                                <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]">{item.planet}</span>
+                                                            </div>
+                                                            <div className="text-lg font-black text-slate-900">{item.stone || "Consult Astrologer"}</div>
+                                                            <div className="text-xs text-slate-400 mt-2">{locale === 'hi' ? "समृद्धि के लिए धारण करें" : locale === 'mr' ? "समृद्धीसाठी परिधान करा" : "Worn for prosperity"}</div>
+                                                        </div>
+                                                    ));
+                                                })()}
                                             </div>
                                             <p className="text-xs text-amber-800/60 mt-6 text-center italic">* Note: Gemstones should only be worn after consultation with an expert astrologer.</p>
                                         </div>
