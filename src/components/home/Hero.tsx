@@ -164,42 +164,53 @@ export function Hero() {
 
                     <div className="hidden lg:flex flex-col gap-4 relative justify-center items-end">
                         <div className="absolute top-1/2 right-0 -translate-y-1/2 w-64 h-64 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
-                        {[
-                            { icon: Video, title: 'Face-to-Face', desc: 'Private video sessions', cls: 'glass-accent', color: 'text-accent', delay: '0s', href: '/search' },
-                            { icon: Sparkles, title: 'Sarvagya (AI)', desc: 'Algorithmic insights', cls: 'glass-accent', color: 'text-accent', delay: '0.2s', trigger: 'open-sarvagya' },
-                        ].map((f) => (
-                            f.trigger ? (
-                                <button 
-                                    key={f.title} 
-                                    onClick={() => window.dispatchEvent(new CustomEvent(f.trigger!))}
-                                    style={{ animationDelay: f.delay }} 
-                                    className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4 text-left"
-                                >
-                                    <div className={`w-10 h-10 shrink-0 rounded-xl ${f.cls} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                        <f.icon className={`w-5 h-5 ${f.color}`} />
+                        
+                        {/* Face-to-Face Card */}
+                        <Link 
+                            href="/search"
+                            style={{ animationDelay: '0s' }} 
+                            className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4"
+                        >
+                            <div className="w-10 h-10 shrink-0 rounded-xl glass-accent flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Video className="w-5 h-5 text-accent" />
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">Face-to-Face</h3>
+                                <p className="text-[10px] text-muted-foreground leading-tight truncate">Private video sessions</p>
+                            </div>
+                        </Link>
+
+                        {/* Sarvagya (AI) Card */}
+                        <button 
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-sarvagya'))}
+                            style={{ animationDelay: '0.2s' }} 
+                            className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 hover:shadow-[0_0_30px_rgba(217,119,6,0.15)] transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4 text-left relative z-20"
+                        >
+                            {/* Glowing Hover Tooltip */}
+                            <div className="absolute right-[105%] top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:-translate-x-2 translate-x-4">
+                                <div className="relative">
+                                    {/* Glow Effect */}
+                                    <div className="absolute -inset-3 bg-amber-500/20 blur-xl rounded-full animate-pulse z-[-1]" />
+                                    {/* Tooltip Card */}
+                                    <div className="relative bg-zinc-900/95 backdrop-blur-xl border border-amber-500/30 rounded-2xl px-4 py-3 shadow-[0_0_30px_rgba(217,119,6,0.15)] whitespace-nowrap">
+                                        <p className="text-[11px] font-bold text-amber-400 tracking-wide">
+                                            ✨ Ask the stars anything...
+                                        </p>
+                                        <p className="text-[9px] text-zinc-500 font-medium mt-0.5">Vedic AI • Always Online</p>
+                                        {/* Arrow */}
+                                        <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-zinc-900/95 border-r border-t border-amber-500/30 rotate-45" />
                                     </div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">{f.title}</h3>
-                                        <p className="text-[10px] text-muted-foreground leading-tight truncate">{f.desc}</p>
-                                    </div>
-                                </button>
-                            ) : (
-                                <Link 
-                                    key={f.title} 
-                                    href={f.href || '#'} 
-                                    style={{ animationDelay: f.delay }} 
-                                    className="p-4 w-52 glass rounded-2xl border border-white/5 hover:border-accent/30 transition-all duration-500 float-hover hover:-translate-x-2 group flex items-center gap-4"
-                                >
-                                    <div className={`w-10 h-10 shrink-0 rounded-xl ${f.cls} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                        <f.icon className={`w-5 h-5 ${f.color}`} />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">{f.title}</h3>
-                                        <p className="text-[10px] text-muted-foreground leading-tight truncate">{f.desc}</p>
-                                    </div>
-                                </Link>
-                            )
-                        ))}
+                                </div>
+                            </div>
+
+                            <div className="w-10 h-10 shrink-0 rounded-xl glass-accent flex items-center justify-center group-hover:scale-110 transition-transform group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)]">
+                                <Sparkles className="w-5 h-5 text-accent group-hover:drop-shadow-[0_0_8px_rgba(217,119,6,0.8)]" />
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-black text-xs text-white mb-0.5 whitespace-nowrap">Sarvagya (AI)</h3>
+                                <p className="text-[10px] text-muted-foreground leading-tight truncate">Algorithmic insights</p>
+                            </div>
+                        </button>
                     </div>
 
                     <div className="lg:hidden flex flex-wrap justify-center gap-2 pt-6 border-t border-white/5 mt-2">
