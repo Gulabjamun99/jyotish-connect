@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/lib/firebase";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, User as UserIcon, LogOut, Menu, Languages } from "lucide-react";
+import { Moon, Sun, User as UserIcon, LogOut, Menu, Languages, Home } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter, Link } from "@/i18n/navigation";
@@ -76,7 +76,7 @@ export function Navbar() {
     return (
         <nav className="sticky top-0 z-50 w-full glass border-none border-b border-primary/10 backdrop-blur-2xl">
             <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                     <Link href="/" className="flex items-center space-x-1.5 group">
                         <div className="w-8 h-8 md:w-9 md:h-9 bg-primary rounded-lg rotate-12 group-hover:rotate-0 transition-transform duration-500 shadow-lg shadow-primary/20 flex items-center justify-center font-black text-white text-lg">
                             J
@@ -84,6 +84,11 @@ export function Navbar() {
                         <span className="text-xl md:text-2xl font-black text-gradient tracking-tighter">
                             JyotishConnect
                         </span>
+                    </Link>
+                    <Link href="/" title="Home">
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center hover:bg-primary/20 transition-colors ml-1">
+                            <Home className="w-3.5 h-3.5 text-primary" />
+                        </div>
                     </Link>
                 </div>
 

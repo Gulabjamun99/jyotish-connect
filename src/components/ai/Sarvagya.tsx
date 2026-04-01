@@ -189,11 +189,28 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                         initial={{ x: 100, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: 100, opacity: 0 }}
-                        className="fixed top-1/2 -translate-y-1/2 right-0 z-[100]"
+                        className="fixed top-1/2 -translate-y-1/2 right-0 z-[100] group"
                     >
+                        {/* Glowing Hover Tooltip */}
+                        <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-0 translate-x-4">
+                            <div className="relative">
+                                {/* Glow Effect */}
+                                <div className="absolute -inset-3 bg-amber-500/20 blur-xl rounded-full animate-pulse" />
+                                {/* Tooltip Card */}
+                                <div className="relative bg-zinc-900/95 backdrop-blur-xl border border-amber-500/30 rounded-2xl px-4 py-3 shadow-[0_0_30px_rgba(217,119,6,0.15)] whitespace-nowrap">
+                                    <p className="text-[11px] font-bold text-amber-400 tracking-wide">
+                                        ✨ Ask the stars anything...
+                                    </p>
+                                    <p className="text-[9px] text-zinc-500 font-medium mt-0.5">Vedic AI • Always Online</p>
+                                    {/* Arrow */}
+                                    <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-zinc-900/95 border-r border-t border-amber-500/30 rotate-45" />
+                                </div>
+                            </div>
+                        </div>
+
                         <Button
                             onClick={() => setIsOpen(true)}
-                            className="w-12 h-24 rounded-l-2xl glass-accent border border-accent/20 border-r-0 shadow-[-5px_0_20px_rgba(217,119,6,0.3)] hover:w-14 transition-all p-0 overflow-hidden relative group flex flex-col items-center justify-center gap-2"
+                            className="w-12 h-24 rounded-l-2xl glass-accent border border-accent/20 border-r-0 shadow-[-5px_0_20px_rgba(217,119,6,0.3)] hover:w-14 hover:shadow-[-8px_0_30px_rgba(217,119,6,0.5)] transition-all p-0 overflow-hidden relative flex flex-col items-center justify-center gap-2"
                         >
                             <div className="absolute inset-0 bg-gradient-to-b from-accent/20 via-transparent to-primary/20 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
                             <Sparkles className="w-6 h-6 text-accent drop-shadow-md z-10" />
