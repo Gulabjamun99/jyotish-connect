@@ -3,18 +3,20 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Share2, Star, CheckCircle } from "lucide-react";
+import { FileText, Download, Share2, Star, CheckCircle, Search, Clock, ListChecks, Target, Sparkles, MessageSquare } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Input } from "@/components/ui/input";
 
 export default function ConsultationSummaryPage() {
     const { id } = useParams();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [rating, setRating] = useState(0);
+    const [searchQuery, setSearchQuery] = useState("");
     const [finalTranscript, setFinalTranscript] = useState<{ speaker: string, text: string, time: string }[]>([]);
     const [sessionInfo, setSessionInfo] = useState<{
         astrologerName: string;
@@ -23,8 +25,8 @@ export default function ConsultationSummaryPage() {
         duration: string;
         type: string;
     }>({
-        astrologerName: 'Acharya',
-        userName: 'User',
+        astrologerName: 'Astrologer',
+        userName: 'Client',
         date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
         duration: '—',
         type: 'video'
@@ -48,8 +50,8 @@ export default function ConsultationSummaryPage() {
                     const mins = Math.floor(duration / 60);
                     const secs = duration % 60;
                     setSessionInfo({
-                        astrologerName: data.astrologerName || 'Acharya',
-                        userName: data.userName || 'User',
+                        astrologerName: data.astrologerName || 'Astrologer',
+                        userName: data.userName || 'Client',
                         date: data.endedAt
                             ? new Date(data.endedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
                             : new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -65,10 +67,9 @@ export default function ConsultationSummaryPage() {
                 }
             } catch (error) {
                 console.error("Error fetching summary:", error);
-                toast.error("Failed to load celestial transcript");
+                toast.error("Failed to load transcript");
             } finally {
                 setLoading(false);
-                toast.success("Divine Insights Generated!");
             }
         };
 
@@ -81,7 +82,7 @@ export default function ConsultationSummaryPage() {
             return;
         }
 
-        const headers = "JyotishConnect - Consultation Transcript\nDate: " + new Date().toLocaleDateString() + "\n\n";
+        const headers = `JyotishConnect - Meeting Transcript\nConsultation with ${sessionInfo.astrologerName}\nDate: ${sessionInfo.date}\nDuration: ${sessionInfo.duration}\n\n`;
         const content = finalTranscript.map(line => `[${line.time}] ${line.speaker}: ${line.text}`).join("\n\n");
         const fullText = headers + content;
 
@@ -89,7 +90,7 @@ export default function ConsultationSummaryPage() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `consultation-transcript-${id}.txt`;
+        link.download = `Consultation-Transcript-${id}.txt`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -98,150 +99,210 @@ export default function ConsultationSummaryPage() {
         toast.success("Transcript downloaded successfully!");
     };
 
+    const filteredTranscript = useMemo(() => {
+        if (!searchQuery.trim()) return finalTranscript;
+        const query = searchQuery.toLowerCase();
+        return finalTranscript.filter(line => 
+            line.text.toLowerCase().includes(query) || 
+            line.speaker.toLowerCase().includes(query)
+        );
+    }, [finalTranscript, searchQuery]);
+
+    // Simple mock keypoints for AI sidebar
+    const mockKeypoints = [
+        "Planetary positions analyzed indicating career growth in Q3.",
+        "Saturn transit suggests patience required until next month.",
+        "Daily meditation and chanting 'Om Namah Shivaya' recommended."
+    ];
+
     return (
-        <main className="min-h-screen flex flex-col bg-transparent overflow-hidden selection:bg-primary/30">
+        <main className="min-h-screen flex flex-col bg-[#0a0a0b] text-zinc-100 font-sans selection:bg-orange-500/30">
             <Navbar />
 
-            <div className="container mx-auto px-4 py-16 flex-grow relative">
-                {/* Ethereal Glows */}
-                <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full -z-10 animate-float" />
-                <div className="absolute bottom-1/4 -left-20 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full -z-10 animate-float" style={{ animationDelay: '-2s' }} />
+            <div className="flex-grow container mx-auto px-4 py-8 md:py-12 max-w-7xl">
+                {/* Header */}
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-6 border-b border-zinc-800">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-3 text-xs font-semibold text-zinc-400">
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800">
+                                <FileText className="w-3.5 h-3.5" /> Meeting Transcript
+                            </span>
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800">
+                                <Clock className="w-3.5 h-3.5" /> {sessionInfo.duration}
+                            </span>
+                            <span className="capitalize hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800">
+                                <MessageSquare className="w-3.5 h-3.5" /> {sessionInfo.type}
+                            </span>
+                        </div>
+                        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                            Consultation with {sessionInfo.astrologerName}
+                        </h1>
+                        <p className="text-sm text-zinc-500 font-medium">
+                            {sessionInfo.date} • Participants: {sessionInfo.userName}, {sessionInfo.astrologerName}
+                        </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <Button variant="outline" className="flex-grow md:flex-grow-0 h-10 px-5 rounded-lg bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300 gap-2 transition-all font-semibold text-sm" onClick={handleDownload}>
+                            <Download className="w-4 h-4" /> Export
+                        </Button>
+                        <Button className="flex-grow md:flex-grow-0 h-10 px-6 rounded-lg bg-orange-600 hover:bg-orange-700 text-white gap-2 transition-all font-semibold text-sm border-0 shadow-lg shadow-orange-900/20">
+                            <Share2 className="w-4 h-4" /> Share
+                        </Button>
+                    </div>
+                </header>
 
-                <div className="max-w-5xl mx-auto space-y-12 animate-slide-up">
-
-                    {/* Header */}
-                    <header className="flex flex-col md:flex-row justify-between items-end md:items-center gap-8">
-                        <div className="space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 mb-2">
-                                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Transit Complete</span>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    {/* Transcript Area (Left) */}
+                    <div className="lg:col-span-8 flex flex-col h-full bg-zinc-900/40 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-sm">
+                        
+                        {/* Transcript Toolbar */}
+                        <div className="px-6 py-4 border-b border-zinc-800/80 bg-zinc-900/80 flex justify-between items-center sticky top-0 z-10">
+                            <h2 className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+                                Transcript
+                            </h2>
+                            <div className="relative w-64 hidden sm:block">
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                                <Input 
+                                    placeholder="Search in transcript..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="h-9 pl-9 bg-zinc-950 border-zinc-800 text-sm focus-visible:ring-1 focus-visible:ring-zinc-700 rounded-md"
+                                />
                             </div>
-                            <h1 className="text-6xl font-black text-gradient tracking-tighter leading-none">Cosmic Summary</h1>
-                            <p className="text-sm text-foreground/40 font-medium italic flex items-center gap-3">
-                                <span className="font-black text-primary uppercase tracking-widest not-italic">{sessionInfo.astrologerName}</span>
-                                <span className="w-1 h-1 bg-primary/20 rounded-full" />
-                                <span>{sessionInfo.date}</span>
-                                <span className="w-1 h-1 bg-primary/20 rounded-full" />
-                                <span className="capitalize">{sessionInfo.type}</span>
-                                {sessionInfo.duration !== '—' && (
-                                    <>
-                                        <span className="w-1 h-1 bg-primary/20 rounded-full" />
-                                        <span>{sessionInfo.duration}</span>
-                                    </>
-                                )}
-                            </p>
                         </div>
-                        <div className="flex gap-4 w-full md:w-auto">
-                            <Button variant="outline" className="flex-grow md:flex-grow-0 h-16 px-10 rounded-2xl glass border-primary/10 hover:bg-primary/5 font-black text-[10px] uppercase tracking-widest text-primary gap-4 transition-all" onClick={handleDownload}>
-                                <Download className="w-5 h-5" /> Export Script
-                            </Button>
-                            <Button className="flex-grow md:flex-grow-0 h-16 px-10 rounded-2xl orange-gradient font-black text-white shadow-2xl shadow-primary/20 gap-4 transition-all hover:scale-105 active:scale-95 text-[10px] uppercase tracking-widest">
-                                <Share2 className="w-5 h-5" /> Share
-                            </Button>
+
+                        {/* Mobile Search */}
+                        <div className="p-4 sm:hidden border-b border-zinc-800 bg-zinc-900">
+                            <div className="relative w-full">
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                                <Input 
+                                    placeholder="Search in transcript..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="h-10 pl-9 bg-zinc-950 border-zinc-800"
+                                />
+                            </div>
                         </div>
-                    </header>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-                        {/* Transcript Area */}
-                        <div className="lg:col-span-8 space-y-8">
-                            <section className="glass rounded-[3rem] p-12 relative overflow-hidden shadow-2xl border-primary/10">
-                                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary/50 via-accent/50 to-primary/50" />
-
-                                <div className="flex justify-between items-center mb-16">
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-xl shadow-primary/5">
-                                            <FileText className="w-8 h-8 text-primary" />
-                                        </div>
-                                        <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase">Divine Dialogue</h2>
-                                    </div>
-                                    <div className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Astrum Transcription</div>
-                                </div>
-
-                                {loading ? (
-                                    <div className="py-24 text-center space-y-8">
-                                        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto shadow-2xl" />
-                                        <p className="text-xl text-foreground/30 font-black italic animate-pulse tracking-widest uppercase">Scanning frequencies...</p>
+                        {loading ? (
+                            <div className="p-20 text-center space-y-4 m-auto">
+                                <div className="w-8 h-8 border-2 border-zinc-700 border-t-zinc-300 rounded-full animate-spin mx-auto" />
+                                <p className="text-sm text-zinc-500 font-medium">Processing meeting transcript...</p>
+                            </div>
+                        ) : (
+                            <div className="p-6 md:p-8 space-y-8 overflow-y-auto max-h-[800px] scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                                {filteredTranscript.length === 0 ? (
+                                    <div className="py-20 text-center text-zinc-500 text-sm border border-dashed border-zinc-800 rounded-xl">
+                                        {searchQuery ? "No matches found in transcript." : "No transcript available for this meeting."}
                                     </div>
                                 ) : (
-                                    <div className="space-y-10">
-                                        {finalTranscript.length === 0 ? (
-                                            <div className="py-24 text-center text-muted-foreground/50 italic bg-white/2 rounded-[2rem] border border-dashed border-white/5">
-                                                The silence of the cosmos remains unrecorded.
-                                            </div>
-                                        ) : (
-                                            finalTranscript.map((line, i) => (
-                                                <div key={i} className={`group flex gap-8 ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName ? "" : "flex-row-reverse"}`}>
-                                                    <div className={`w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-2xl border-2 transition-transform group-hover:scale-110 ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName
-                                                        ? "bg-gradient-to-br from-primary to-blue-600 border-white/20 text-white"
-                                                        : "bg-white border-primary/20 text-primary"}`}>
-                                                        {line.speaker[0]}
+                                    filteredTranscript.map((line, i) => {
+                                        const isAstrologer = line.speaker === sessionInfo.astrologerName || line.speaker === "Astrologer" || line.speaker.includes("Jyotishi");
+                                        return (
+                                            <div key={i} className="flex gap-4 sm:gap-5 group hover:bg-zinc-800/30 p-2 sm:-m-2 rounded-xl transition-colors">
+                                                <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-sm select-none ${isAstrologer ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>
+                                                    {line.speaker[0]?.toUpperCase()}
+                                                </div>
+                                                <div className="flex-1 space-y-1 min-w-0">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-sm font-semibold text-zinc-200 truncate">{line.speaker}</span>
+                                                        <span className="text-xs font-medium text-zinc-500 tabular-nums">{line.time}</span>
                                                     </div>
-                                                    <div className={`max-w-[75%] space-y-3 ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName ? "" : "text-right"}`}>
-                                                        <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transition-opacity">
-                                                            <span className="text-[10px] font-black uppercase tracking-widest leading-none text-foreground">{line.speaker}</span>
-                                                            <span className="text-[10px] font-bold text-foreground/40">{line.time}</span>
-                                                        </div>
-                                                        <div className={`p-8 rounded-[2.5rem] leading-relaxed text-[16px] shadow-2xl transition-all group-hover:scale-[1.01] ${line.speaker === "Astrologer" || line.speaker === sessionInfo.astrologerName
-                                                            ? "bg-primary/5 text-foreground/80 rounded-tl-none border border-primary/10"
-                                                            : "bg-primary text-white font-medium rounded-tr-none shadow-primary/20"}`}>
-                                                            {line.text}
-                                                        </div>
+                                                    <div className="text-[15px] leading-relaxed text-zinc-300 whitespace-pre-wrap">
+                                                        {line.text}
                                                     </div>
                                                 </div>
-                                            ))
-                                        )}
-                                    </div>
+                                            </div>
+                                        );
+                                    })
                                 )}
-                            </section>
-                        </div>
-
-                        {/* Actions Sidebar */}
-                        <aside className="lg:col-span-4 space-y-8">
-                            <section className="glass p-10 rounded-[3rem] space-y-12 relative overflow-hidden border-primary/10 shadow-2xl">
-                                <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 blur-[80px] rounded-full" />
-                                <div className="text-center space-y-3">
-                                    <h3 className="text-3xl font-black tracking-tighter text-foreground uppercase">Blessing</h3>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/20">Share your experience</p>
-                                </div>
-                                <div className="flex justify-center gap-4">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            onClick={() => setRating(star)}
-                                            className="transition-all hover:scale-125 hover:-rotate-12 active:scale-90"
-                                        >
-                                            <Star
-                                                className={`w-12 h-12 transition-colors ${rating >= star ? 'fill-primary text-primary drop-shadow-[0_0_20px_rgba(14,165,233,0.5)]' : 'text-foreground/10'}`}
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
-                                <textarea
-                                    placeholder="Speak from your soul..."
-                                    className="w-full h-48 bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8 text-sm outline-none focus:ring-4 focus:ring-primary/10 placeholder:text-foreground/20 resize-none transition-all scrollbar-hide text-foreground font-medium"
-                                />
-                                <Button className="w-full h-16 orange-gradient font-black text-white rounded-2xl shadow-2xl shadow-primary/20 tracking-[0.3em] uppercase text-[10px] hover:scale-[1.02] transition-all">
-                                    Submit Gratitude
-                                </Button>
-                            </section>
-
-                            <div className="glass bg-primary/[0.02] rounded-[3rem] p-10 space-y-6 border-primary/10 relative group overflow-hidden shadow-xl">
-                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <div className="flex items-center gap-4 text-primary font-black uppercase tracking-[0.3em] text-[10px]">
-                                    <CheckCircle className="w-6 h-6" />
-                                    <span>Vedic Accuracy</span>
-                                </div>
-                                <p className="text-sm text-foreground/40 leading-relaxed italic font-medium">
-                                    "The conversation of stars is reflected in these lines. May this guidance illuminate your path through the darkness."
-                                </p>
                             </div>
-
-                            <Button variant="ghost" className="w-full h-16 rounded-2xl hover:bg-primary/5 text-foreground/20 font-black uppercase tracking-[0.4em] text-[10px] transition-all hover:text-primary" onClick={() => router.push('/user/dashboard')}>
-                                Return to Dashboard
-                            </Button>
-                        </aside>
+                        )}
                     </div>
+
+                    {/* AI Notetaker Sidebar (Right) */}
+                    <aside className="lg:col-span-4 space-y-6">
+                        {/* AI Summary Widget */}
+                        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                            <div className="px-5 py-4 border-b border-zinc-800 bg-zinc-900/50 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-orange-400" />
+                                <h3 className="text-base font-semibold text-zinc-100">AI Meeting Notes</h3>
+                            </div>
+                            
+                            <div className="p-5 space-y-6">
+                                {/* Summary Blocks */}
+                                <div>
+                                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <Target className="w-3.5 h-3.5" /> Key Takeaways
+                                    </h4>
+                                    <ul className="space-y-3">
+                                        {mockKeypoints.map((point, idx) => (
+                                            <li key={idx} className="flex gap-3 text-sm text-zinc-300 leading-relaxed">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50 mt-1.5 flex-shrink-0" />
+                                                <span>{point}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div className="pt-5 border-t border-zinc-800/50">
+                                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <ListChecks className="w-3.5 h-3.5" /> Action Items
+                                    </h4>
+                                    <div className="space-y-2">
+                                        <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
+                                            <div className="w-4 h-4 rounded border border-zinc-600 mt-0.5" />
+                                            <span className="text-sm text-zinc-300 line-clamp-2">Perform Shiva Abhishek on the coming Monday morning.</span>
+                                        </div>
+                                        <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
+                                            <div className="w-4 h-4 rounded border border-zinc-600 mt-0.5" />
+                                            <span className="text-sm text-zinc-300 line-clamp-2">Avoid starting new ventures until Mercury retrograde ends.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Upsell / Info bar */}
+                            <div className="mt-auto px-5 py-3 bg-zinc-950/50 border-t border-zinc-800 text-xs text-zinc-500 flex justify-between items-center">
+                                <span>Powered by Astrum AI</span>
+                                <Button variant="link" className="text-orange-500 h-auto p-0 text-xs font-semibold">Copy Notes</Button>
+                            </div>
+                        </section>
+
+                        {/* Feedback Widget */}
+                        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-5 shadow-sm">
+                            <div className="space-y-1 border-b border-zinc-800/50 pb-4">
+                                <h3 className="text-base font-semibold text-zinc-100">Rate your session</h3>
+                                <p className="text-xs text-zinc-500">Your feedback helps improve our Astrologers.</p>
+                            </div>
+                            
+                            <div className="flex justify-between items-center px-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setRating(star)}
+                                        className="transition-transform hover:scale-110 focus:outline-none"
+                                    >
+                                        <Star
+                                            className={`w-7 h-7 sm:w-8 sm:h-8 transition-colors ${rating >= star ? 'fill-amber-400 text-amber-400' : 'text-zinc-700 hover:text-zinc-600'}`}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <textarea
+                                placeholder="Add private feedback for the astrologer..."
+                                className="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-700 resize-none"
+                            />
+                            
+                            <Button className="w-full h-10 bg-white text-black hover:bg-zinc-200 rounded-lg text-sm font-semibold transition-colors">
+                                Submit Feedback
+                            </Button>
+                        </section>
+
+                    </aside>
                 </div>
             </div>
 
@@ -249,3 +310,4 @@ export default function ConsultationSummaryPage() {
         </main>
     );
 }
+
