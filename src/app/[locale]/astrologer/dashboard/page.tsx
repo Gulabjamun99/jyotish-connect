@@ -262,29 +262,44 @@ export default function AstrologerDashboard() {
                             {(() => {
                                 const isSessionPast = (b: any) => {
                                     if (b.status === 'completed' || b.status === 'cancelled' || b.status === 'canceled') return true;
-                                    if (b.status === 'active') return false; // ongoing
     
-                                    // Parse scheduled date and time
-                                    const dateObj = new Date(b.date?.seconds ? b.date.seconds * 1000 : b.date || b.createdAt || Date.now());
+                                    // Extract timestamp safely handling Firestore objects or strings
+                                    const getValidTime = (val: any) => {
+                                        if (!val) return null;
+                                        if (typeof val === 'number') return val;
+                                        if (val.seconds) return val.seconds * 1000;
+                                        if (val._seconds) return val._seconds * 1000; // Firebase Admin format
+                                        const d = new Date(val);
+                                        if (!isNaN(d.getTime())) return d.getTime();
+                                        return null;
+                                    };
+
+                                    const baseTime = getValidTime(b.date) || getValidTime(b.createdAt) || Date.now();
+                                    const dateObj = new Date(baseTime);
+                                    
                                     if (b.time) {
                                         try {
-                                            const [timeField, ampm] = b.time.split(' ');
+                                            const [timeField, ampm] = String(b.time).split(' ');
                                             if (timeField) {
                                                 const [hoursStr, minutesStr] = timeField.split(':');
                                                 let hours = parseInt(hoursStr, 10);
                                                 const minutes = parseInt(minutesStr || "0", 10);
                                                 
-                                                if (ampm?.toUpperCase() === 'PM' && hours < 12) hours += 12;
-                                                if (ampm?.toUpperCase() === 'AM' && hours === 12) hours = 0;
-                                                
-                                                dateObj.setHours(hours, minutes, 0, 0);
+                                                // Ensure valid numbers
+                                                if (!isNaN(hours) && !isNaN(minutes)) {
+                                                    if (ampm?.toUpperCase() === 'PM' && hours < 12) hours += 12;
+                                                    if (ampm?.toUpperCase() === 'AM' && hours === 12) hours = 0;
+                                                    dateObj.setHours(hours, minutes, 0, 0);
+                                                }
                                             }
                                         } catch (e) {
                                             console.error("Error parsing booking time", e);
                                         }
                                     }
                                     
-                                    return dateObj.getTime() < Date.now();
+                                    // Add 2 hours (120 mins) buffer so it stays in "Upcoming" during the session
+                                    const endTime = dateObj.getTime() + (120 * 60 * 1000);
+                                    return endTime < Date.now();
                                 };
 
                                 const filteredBookings = bookings.filter(b => {
