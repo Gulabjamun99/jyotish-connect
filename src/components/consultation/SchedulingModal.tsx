@@ -69,6 +69,23 @@ export function SchedulingModal({ isOpen, onClose, astrologerId, astrologerName,
                 type: bookingType,
                 price
             });
+
+            // Send confirmation emails
+            fetch('/api/email/booking-confirmation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.uid,
+                    userName: user.displayName || "Seeker",
+                    userEmail: user.email || "",
+                    astrologerId,
+                    astrologerName,
+                    date: date.toISOString(),
+                    time: selectedSlot,
+                    type: bookingType
+                })
+            }).catch(e => console.error("Failed to trigger email API", e));
+
             toast.success("Booking confirmed! Check your dashboard.");
             onClose();
         } catch (error) {

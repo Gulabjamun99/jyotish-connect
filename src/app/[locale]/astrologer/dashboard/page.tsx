@@ -260,9 +260,36 @@ export default function AstrologerDashboard() {
 
                         <div className="space-y-2 pt-2">
                             {(() => {
+                                const isSessionPast = (b: any) => {
+                                    if (b.status === 'completed' || b.status === 'cancelled' || b.status === 'canceled') return true;
+                                    if (b.status === 'active') return false; // ongoing
+    
+                                    // Parse scheduled date and time
+                                    const dateObj = new Date(b.date?.seconds ? b.date.seconds * 1000 : b.date || b.createdAt || Date.now());
+                                    if (b.time) {
+                                        try {
+                                            const [timeField, ampm] = b.time.split(' ');
+                                            if (timeField) {
+                                                const [hoursStr, minutesStr] = timeField.split(':');
+                                                let hours = parseInt(hoursStr, 10);
+                                                const minutes = parseInt(minutesStr || "0", 10);
+                                                
+                                                if (ampm?.toUpperCase() === 'PM' && hours < 12) hours += 12;
+                                                if (ampm?.toUpperCase() === 'AM' && hours === 12) hours = 0;
+                                                
+                                                dateObj.setHours(hours, minutes, 0, 0);
+                                            }
+                                        } catch (e) {
+                                            console.error("Error parsing booking time", e);
+                                        }
+                                    }
+                                    
+                                    return dateObj.getTime() < Date.now();
+                                };
+
                                 const filteredBookings = bookings.filter(b => {
-                                    const isDone = b.status === 'completed' || b.status === 'cancelled' || b.status === 'canceled';
-                                    return activeTab === 'upcoming' ? !isDone : isDone;
+                                    const isPast = isSessionPast(b);
+                                    return activeTab === 'upcoming' ? !isPast : isPast;
                                 });
 
                                 if (filteredBookings.length === 0) {
