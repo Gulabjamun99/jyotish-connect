@@ -329,7 +329,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full h-14 bg-white text-foreground hover:bg-sky-50 font-bold text-base flex items-center justify-center gap-3 rounded-2xl shadow-lg border border-primary/10 transition-all hover:scale-[1.02] active:scale-95"
+            className="w-full h-14 bg-white text-gray-800 hover:bg-gray-100 font-bold text-base flex items-center justify-center gap-3 rounded-2xl shadow-lg border border-white/20 transition-all hover:scale-[1.02] active:scale-95"
         >
             <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
             Continue with Google
@@ -408,7 +408,7 @@ export default function LoginPage() {
                                     <button 
                                         type="button" 
                                         onClick={() => setAuthMode("FORGOT_PASSWORD")}
-                                        className="text-xs text-primary hover:text-primary/80 font-bold transition-colors"
+                                        className="text-xs text-orange-400 hover:text-orange-300 font-bold transition-colors"
                                     >
                                         Forgot Password?
                                     </button>
@@ -437,9 +437,9 @@ export default function LoginPage() {
                                 Continue with Mobile
                             </Button>
 
-                            <p className="text-center text-xs text-foreground/60 pt-4">
+                            <p className="text-center text-xs text-zinc-400 pt-4">
                                 Don't have an account?{" "}
-                                <button onClick={() => setAuthMode("SIGNUP")} className="text-primary font-bold hover:underline">
+                                <button onClick={() => setAuthMode("SIGNUP")} className="text-orange-400 hover:text-orange-300 font-bold hover:underline">
                                     Sign Up
                                 </button>
                             </p>
@@ -497,9 +497,9 @@ export default function LoginPage() {
 
                             {renderGoogleButton()}
 
-                            <p className="text-center text-xs text-foreground/60 pt-4">
+                            <p className="text-center text-xs text-zinc-400 pt-4">
                                 Already have an account?{" "}
-                                <button onClick={() => setAuthMode("LOGIN")} className="text-primary font-bold hover:underline">
+                                <button onClick={() => setAuthMode("LOGIN")} className="text-orange-400 hover:text-orange-300 font-bold hover:underline">
                                     Sign In
                                 </button>
                             </p>
@@ -561,7 +561,7 @@ export default function LoginPage() {
                                     <button 
                                         type="button" 
                                         onClick={() => setShowOtpInput(false)} 
-                                        className="w-full text-xs font-bold text-foreground/40 hover:text-white transition-colors"
+                                        className="w-full text-xs font-bold text-zinc-400 hover:text-white transition-colors"
                                     >
                                         Change Phone Number
                                     </button>
