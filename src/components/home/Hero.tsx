@@ -138,15 +138,35 @@ export function Hero() {
                                 </Button>
                             </Link>
                         </div>
+
+                        {/* Circular Attributes */}
+                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                            <div className="flex items-center gap-3 group">
+                                <div className="w-12 h-12 rounded-full glass border border-primary/20 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.1)] group-hover:scale-110 group-hover:border-primary/50 transition-all duration-500">
+                                    <ShieldCheck className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-black text-sm tracking-wide">Vedic Verified</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">100% Secure</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 group">
+                                <div className="w-12 h-12 rounded-full glass border border-primary/20 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.1)] group-hover:scale-110 group-hover:border-primary/50 transition-all duration-500">
+                                    <Languages className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-black text-sm tracking-wide">Multilingual</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">8+ Languages</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="hidden lg:flex flex-col gap-4 relative justify-center items-end">
                         <div className="absolute top-1/2 right-0 -translate-y-1/2 w-64 h-64 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
                         {[
                             { icon: Video, title: 'Face-to-Face', desc: 'Private video sessions', cls: 'glass-accent', color: 'text-accent', delay: '0s', href: '/search' },
-                            { icon: ShieldCheck, title: 'Vedic Verified', desc: 'Secure background checks', cls: 'glass-orange', color: 'text-primary', delay: '0.4s' },
-                            { icon: Languages, title: 'Multilingual', desc: 'Connect in 8+ languages', cls: 'glass-orange', color: 'text-primary', delay: '0.2s' },
-                            { icon: Sparkles, title: 'Sarvagya (AI)', desc: 'Algorithmic insights', cls: 'glass-accent', color: 'text-accent', delay: '0.6s', trigger: 'open-sarvagya' },
+                            { icon: Sparkles, title: 'Sarvagya (AI)', desc: 'Algorithmic insights', cls: 'glass-accent', color: 'text-accent', delay: '0.2s', trigger: 'open-sarvagya' },
                         ].map((f) => (
                             f.trigger ? (
                                 <button 
