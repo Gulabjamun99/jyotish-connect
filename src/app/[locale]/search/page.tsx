@@ -51,8 +51,8 @@ export default function SearchPage() {
         return matchesSearch && matchesLanguage && matchesRating;
     }).sort((a, b) => {
         if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-        if (sortBy === "experience") return (b.experience || 0) - (a.experience || 0);
-        if (sortBy === "languages") return (b.languages?.length || 0) - (a.languages?.length || 0);
+        if (sortBy === "experience-high") return (b.experience || 0) - (a.experience || 0);
+        if (sortBy === "experience-low") return (a.experience || 0) - (b.experience || 0);
         return 0;
     });
 
@@ -115,8 +115,8 @@ export default function SearchPage() {
                                     className="bg-transparent border-none text-xs font-black uppercase tracking-widest text-foreground/60 outline-none px-4 py-2 cursor-pointer hover:text-primary transition-colors"
                                 >
                                     <option value="rating" className="bg-zinc-900 text-white">Rating: High to Low</option>
-                                    <option value="experience" className="bg-zinc-900 text-white">Experience: Most First</option>
-                                    <option value="languages" className="bg-zinc-900 text-white">Languages: Most First</option>
+                                    <option value="experience-high" className="bg-zinc-900 text-white">Experience: High to Low</option>
+                                    <option value="experience-low" className="bg-zinc-900 text-white">Experience: Low to High</option>
                                 </select>
                             </div>
                         </div>
@@ -150,7 +150,7 @@ export default function SearchPage() {
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]" />
                                         <div className="flex flex-col p-8 glass border-primary/5 rounded-[2.5rem] hover:border-primary/20 transition-all relative overflow-hidden h-full">
 
-                                            {astro.online && (
+                                            {astro.isOnline && (
                                                 <div className="absolute top-6 left-6 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse border border-green-500/20">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,1)]" />
                                                     Online
