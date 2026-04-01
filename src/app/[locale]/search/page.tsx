@@ -17,6 +17,7 @@ export default function SearchPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [astrologers, setAstrologers] = useState<Astrologer[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sortBy, setSortBy] = useState("rating");
     const [filters, setFilters] = useState<{ expertise: string[], language: string[], rating: string }>({
         expertise: [],
         language: [],
@@ -48,6 +49,11 @@ export default function SearchPage() {
         const matchesRating = filters.rating === "Any" || astro.rating >= parseFloat(filters.rating);
 
         return matchesSearch && matchesLanguage && matchesRating;
+    }).sort((a, b) => {
+        if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+        if (sortBy === "experience") return (b.experience || 0) - (a.experience || 0);
+        if (sortBy === "languages") return (b.languages?.length || 0) - (a.languages?.length || 0);
+        return 0;
     });
 
     console.log("ALL ASTROLOGERS:", astrologers);
@@ -58,30 +64,24 @@ export default function SearchPage() {
         <main className="min-h-screen bg-transparent overflow-hidden selection:bg-primary/30">
             <Navbar />
 
-            {/* Hero Search Section */}
-            <div className="relative py-24 border-b border-primary/5 overflow-hidden">
-                <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full -z-10 animate-float" />
-                <div className="absolute bottom-1/4 -left-20 w-[500px] h-[500px] bg-accent/5 blur-[150px] rounded-full -z-10 animate-float" style={{ animationDelay: '-3s' }} />
+            {/* Compact Hero Search Section */}
+            <div className="relative py-8 md:py-10 border-b border-primary/5 overflow-hidden">
+                <div className="absolute top-1/4 -right-20 w-[400px] h-[400px] bg-primary/5 blur-[150px] rounded-full -z-10" />
 
                 <div className="container mx-auto px-6 relative z-10">
-                    <div className="text-center space-y-8 animate-slide-up">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 mb-4">
-                            <SearchIcon className="w-3.5 h-3.5 text-primary" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Search Astrologers</span>
-                        </div>
-                        <h1 className="text-6xl md:text-8xl font-black text-gradient tracking-tighter leading-none">Find Your Guide</h1>
-                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium opacity-60">
+                    <div className="text-center space-y-3 animate-slide-up">
+                        <h1 className="text-3xl md:text-4xl font-black text-gradient tracking-tighter leading-none">Find Your Guide</h1>
+                        <p className="text-sm text-muted-foreground max-w-xl mx-auto font-medium opacity-60">
                             Find the right astrologer to guide you on your journey.
                         </p>
 
-                        <div className="max-w-3xl mx-auto relative group mt-12">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition-opacity" />
+                        <div className="max-w-2xl mx-auto relative group mt-4">
                             <div className="relative">
-                                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-foreground/20 w-6 h-6 z-10 group-hover:text-primary transition-colors" />
+                                <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-foreground/20 w-5 h-5 z-10 group-hover:text-primary transition-colors" />
                                 <Input
                                     type="text"
-                                    placeholder="Seek by name or sacred expertise (Vedic, Tarot, Palmistry)..."
-                                    className="w-full h-20 pl-16 pr-8 rounded-[2rem] border-primary/10 bg-white/50 backdrop-blur-2xl text-foreground font-black text-lg focus-visible:ring-4 focus-visible:ring-primary/10 transition-all outline-none placeholder:text-foreground/10"
+                                    placeholder="Seek by name or expertise (Vedic, Tarot, Palmistry)..."
+                                    className="w-full h-12 pl-12 pr-6 rounded-2xl border-primary/10 bg-white/50 backdrop-blur-2xl text-foreground font-bold text-sm focus-visible:ring-4 focus-visible:ring-primary/10 transition-all outline-none placeholder:text-foreground/10"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
@@ -91,7 +91,7 @@ export default function SearchPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-6 py-20">
+            <div className="container mx-auto px-6 py-6">
                 <div className="flex flex-col lg:flex-row gap-12">
                     <aside className="w-full lg:w-80 flex-shrink-0 animate-slide-up">
                         <div className="sticky top-24">
@@ -109,9 +109,14 @@ export default function SearchPage() {
                             </div>
                             <div className="glass p-1 rounded-xl flex items-center gap-2 border-primary/10">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30 ml-4">Sort by</span>
-                                <select className="bg-transparent border-none text-xs font-black uppercase tracking-widest text-foreground/60 outline-none px-4 py-2 cursor-pointer hover:text-primary transition-colors">
-                                    <option className="bg-white">Rating: High to Low</option>
-                                    <option className="bg-white">Experience</option>
+                                <select 
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="bg-transparent border-none text-xs font-black uppercase tracking-widest text-foreground/60 outline-none px-4 py-2 cursor-pointer hover:text-primary transition-colors"
+                                >
+                                    <option value="rating" className="bg-zinc-900 text-white">Rating: High to Low</option>
+                                    <option value="experience" className="bg-zinc-900 text-white">Experience: Most First</option>
+                                    <option value="languages" className="bg-zinc-900 text-white">Languages: Most First</option>
                                 </select>
                             </div>
                         </div>
