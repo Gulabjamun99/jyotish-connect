@@ -139,13 +139,21 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         if (!response.ok) {
             const errText = await response.text();
             console.error("Gemini API Error details:", errText);
-            let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+            
+            let errorMessage = "The celestial currents are heavy with traffic right now. Please wait for a few moments for the stars to align.";
+            let isQuotaError = false;
+
             try {
                 const errJson = JSON.parse(errText);
-                if (errJson.error?.message) errorMessage = errJson.error.message;
+                if (errJson.error?.code === 429 || errJson.error?.status === "RESOURCE_EXHAUSTED") {
+                    isQuotaError = true;
+                    errorMessage = "Sarvagya is currently in high demand by seekers across the globe. Spikes in cosmic demand are usually temporary. Please try again in 1-2 minutes.";
+                } else if (errJson.error?.message) {
+                    errorMessage = errJson.error.message;
+                }
             } catch (e) {}
             
-            return new Response(JSON.stringify({ error: errorMessage }), {
+            return new Response(JSON.stringify({ error: errorMessage, isQuota: isQuotaError }), {
                 status: response.status,
                 headers: { "Content-Type": "application/json" }
             });

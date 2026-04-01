@@ -142,11 +142,11 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                 ));
             }
         } catch (error: any) {
-            console.error(error);
+            console.error("Sarvagya Error:", error);
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: "model",
-                content: "The planetary alignments are disruptive right now. Please try again. (" + error.message + ")"
+                content: "The planetary alignments are disruptive right now. Please try again. \n\n*(Error: " + (error.message || "Unknown cosmic interference") + ")*"
             }]);
         } finally {
             setIsLoading(false);
