@@ -70,6 +70,7 @@ export function Navbar() {
         { code: "mr", name: "मराठी" },
         { code: "bn", name: "বাংলা" },
         { code: "gu", name: "ગુજરાતી" },
+        { code: "kn", name: "ಕನ್ನಡ" },
     ];
 
     return (
