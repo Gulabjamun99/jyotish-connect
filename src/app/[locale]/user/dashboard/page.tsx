@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
-import { History, Wallet, MessageSquare, Video, Star, FileText, Calendar, Heart } from "lucide-react";
+import { History, Wallet, MessageSquare, Video, Star, FileText, Calendar, Heart, User } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect } from "react";
 import { getUserBookings } from "@/services/firestore";
