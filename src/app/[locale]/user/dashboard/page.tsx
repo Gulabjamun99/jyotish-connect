@@ -195,29 +195,18 @@ export default function UserDashboard() {
                             </div>
                         )}
                     </div>
-
-                    {/* Real-time Transit Engine */}
-                    <div className="glass bg-zinc-900 border border-white/5 rounded-[2.5rem] p-8">
-                        <CosmicTransitHub natalPositions={userData?.kundliData?.[0]?.planets} />
-                    </div>
                 </div>
 
-                {/* ROW 2: Kundli Visualizer & Passport */}
+                {/* ROW 2: Cosmic Transits & Astro Passport */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                     
-                    {/* SVG Birth Chart */}
-                    <div className="glass bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 space-y-8">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                                <Star className="w-5 h-5 text-accent" />
-                                Natal Chart
-                            </h2>
-                            <Button variant="ghost" onClick={() => router.push('/kundli')} className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white px-0">Manage Data</Button>
-                        </div>
-                        <KundliChart 
-                            houses={userData?.kundliData?.[0]?.houses} 
-                            rashiNumbers={userData?.kundliData?.[0]?.rashiNumbers} 
-                        />
+                    {/* Real-time Transit Engine */}
+                    <div className="glass bg-zinc-900 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden">
+                        <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/10 blur-[60px] rounded-full" />
+                        <CosmicTransitHub natalPositions={userData?.kundliData?.[0]?.planets} />
+                        <p className="text-[10px] text-zinc-500 mt-4 leading-relaxed italic">
+                            *Transits show how current planet movements interact with your unique birth stars.
+                        </p>
                     </div>
 
                     {/* Integrated Astro-Passport */}
@@ -230,10 +219,10 @@ export default function UserDashboard() {
                 <section className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-black text-white tracking-tight">Family & Friends</h2>
-                        <Button variant="ghost" onClick={() => router.push('/kundli')} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:bg-transparent">Manage All</Button>
+                        <Button variant="ghost" onClick={() => router.push('/user/profile/edit')} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:bg-transparent">Manage All</Button>
                     </div>
                     <div className="flex gap-5 overflow-x-auto pb-6 no-scrollbar">
-                        <div onClick={() => router.push('/kundli')} className="min-w-[300px] glass bg-zinc-900 border border-white/5 p-6 rounded-3xl group hover:border-accent/40 transition-all cursor-pointer">
+                        <div onClick={() => router.push('/user/profile/edit')} className="min-w-[300px] glass bg-zinc-900 border border-white/5 p-6 rounded-3xl group hover:border-accent/40 transition-all cursor-pointer">
                             <div className="flex justify-between items-start">
                                 <div className="space-y-4">
                                     <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent font-black border border-accent/30 shadow-xl">
@@ -247,7 +236,7 @@ export default function UserDashboard() {
                                 <FileText className="w-5 h-5 text-zinc-700 group-hover:text-accent transition-colors" />
                             </div>
                         </div>
-                        <div onClick={() => router.push('/kundli')} className="min-w-[200px] glass border border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center gap-3 hover:bg-zinc-900 hover:border-zinc-500 transition-all cursor-pointer">
+                        <div onClick={() => router.push('/user/profile/edit')} className="min-w-[200px] glass border border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center gap-3 hover:bg-zinc-900 hover:border-zinc-500 transition-all cursor-pointer">
                             <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500">+</div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Add Family Member</span>
                         </div>
