@@ -68,7 +68,7 @@ export default function UserDashboard() {
                         <div>
                             <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Seeker Sanctuary</p>
                             <h1 className="text-4xl font-black text-white tracking-tight">Namaste, {user.displayName?.split(' ')[0]}</h1>
-                            <p className="text-sm font-medium text-zinc-400 mt-1">Your cosmic alignment is 84% today • <button onClick={() => router.push('/kundli')} className="text-orange-500/80 hover:text-orange-500 underline underline-offset-4 decoration-orange-500/30">View Details</button></p>
+                            <p className="text-sm font-medium text-zinc-400 mt-1">Your cosmic alignment is 84% today • <button onClick={() => router.push('/user/profile/edit')} className="text-orange-500/80 hover:text-orange-500 underline underline-offset-4 decoration-orange-500/30">View Details</button></p>
                         </div>
                     </div>
 
@@ -123,9 +123,9 @@ export default function UserDashboard() {
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 px-2">Cosmic Utilities</h2>
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { name: "Birth Chart", icon: Star, color: "text-orange-500", bg: "bg-orange-500/10", route: "/kundli" },
+                                { name: "My Profile", icon: User, color: "text-orange-500", bg: "bg-orange-500/10", route: "/user/profile/edit" },
                                 { name: "Match Making", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10", route: "/kundli-matching" },
-                                { name: "Panchang", icon: Calendar, color: "text-blue-500", bg: "bg-blue-500/10", route: "/kundli" },
+                                { name: "Kundli", icon: Star, color: "text-blue-500", bg: "bg-blue-500/10", route: "/kundli" },
                                 { name: "Horoscope", icon: FileText, color: "text-amber-500", bg: "bg-amber-500/10", route: "/horoscope" },
                             ].map((tool) => (
                                 <button 
