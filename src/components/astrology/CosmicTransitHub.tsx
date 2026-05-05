@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, AlertCircle, Compass, ChevronRight } from "lucide-react";
 import { TransitInfo, findSignificantTransits } from "@/lib/astrology/transit-logic";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "@/i18n/navigation";
 
 interface CosmicTransitHubProps {
     natalPositions?: any; // User's birth planet positions
 }
 
 export function CosmicTransitHub({ natalPositions }: CosmicTransitHubProps) {
+    const router = useRouter();
     const [transits, setTransits] = useState<TransitInfo[]>([]);
     const [alerts, setAlerts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -96,6 +98,7 @@ export function CosmicTransitHub({ natalPositions }: CosmicTransitHubProps) {
 
             <Button 
                 variant="ghost" 
+                onClick={() => router.push('/kundli')}
                 className="w-full h-12 border border-white/5 hover:bg-white/5 text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center justify-between px-6 rounded-2xl group"
             >
                 Cosmic Details

@@ -12,18 +12,25 @@ export async function sendEmail({ to, subject, html, ics }: EmailOptions) {
 
     // Dynamic Import to handle missing package in some environments
     let nodemailer;
+    let Resend;
     try {
         nodemailer = await import('nodemailer');
     } catch (e) {
-        console.warn("⚠️ Nodemailer not installed. Email simulation mode.");
+        console.warn("⚠️ Nodemailer not installed.");
+    }
+    try {
+        const resendModule = await import('resend');
+        Resend = resendModule.Resend;
+    } catch (e) {
+        console.warn("⚠️ Resend not installed.");
     }
 
     if (nodemailer && process.env.SMTP_HOST) {
-        // Real Email Sending
+        // Real Email Sending via SMTP
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: Number(process.env.SMTP_PORT) || 587,
-            secure: false, // true for 465, false for other ports
+            secure: false, 
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
@@ -44,6 +51,27 @@ export async function sendEmail({ to, subject, html, ics }: EmailOptions) {
         console.log("✅ Email sent successfully via SMTP.");
         return { success: true, method: 'smtp' };
 
+    } else if (Resend && process.env.RESEND_API_KEY) {
+        // Fallback to Resend
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const { data, error } = await resend.emails.send({
+            from: 'JyotishConnect <bookings@jyotishconnect.com>',
+            to: [to],
+            subject,
+            html,
+            attachments: ics ? [{
+                filename: 'consultation.ics',
+                content: ics,
+            }] : []
+        });
+
+        if (error) {
+            console.error("❌ Resend error:", error);
+            throw error;
+        }
+        console.log("✅ Email sent successfully via Resend.");
+        return { success: true, method: 'resend', data };
+
     } else {
         // Simulation Mode
         console.log("================ EMAIL SIMULATION ================");
@@ -56,7 +84,7 @@ export async function sendEmail({ to, subject, html, ics }: EmailOptions) {
         return {
             success: true,
             method: 'simulation',
-            message: 'Email logged to server console (SMTP not configured)'
+            message: 'Email logged to server console (SMTP or Resend not configured)'
         };
     }
 }

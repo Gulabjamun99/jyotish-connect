@@ -148,10 +148,9 @@ END:VCALENDAR`;
             if (!data.success) throw new Error(data.error);
 
             const bookingId = data.bookingId;
-            const link = `https://jyotishconnect.com/consult/${bookingId}`;
+            const link = `https://jyotish-connect-nine.vercel.app/en/consult/${bookingId}?type=${consultationType}`;
             setConfirmedLink(link);
             const icsContent = generateICSContent(selectedDate, selectedTime, link);
-            const formattedDate = format(selectedDate, "EEEE, MMMM d, yyyy");
 
             // 2. Send Emails (Dual Notification via central API)
             await fetch("/api/email/booking-confirmation", {
@@ -166,6 +165,7 @@ END:VCALENDAR`;
                     date: selectedDate.toISOString(),
                     time: selectedTime,
                     type: consultationType,
+                    bookingId: bookingId,
                     ics: icsContent
                 })
             }).catch(e => console.warn("Email API trigger failed", e));

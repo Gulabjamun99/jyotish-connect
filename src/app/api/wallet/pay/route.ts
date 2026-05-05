@@ -8,7 +8,7 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { userId, astrologerId, amount, bookingData } = body;
 
-        if (!userId || !astrologerId || !amount || !bookingData) {
+        if (!userId || !astrologerId || amount === undefined || !bookingData) {
             return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
         }
 

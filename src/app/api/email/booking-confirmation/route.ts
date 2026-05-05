@@ -41,50 +41,60 @@ export async function POST(req: Request) {
         });
 
         // The HTML Template shared for both User and Astrologer
+        const meetingLink = `https://jyotish-connect-nine.vercel.app/en/consult/${payload.bookingId || ''}?type=${type}`;
+        
         const buildEmailHtml = (isUser: boolean) => `
-            <div style="font-family: 'Segoe UI', system-ui, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #f1f5f9;">
-                <div style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 32px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px; letter-spacing: 2px;">✨ JyotishConnect</h1>
-                    <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 3px;">Booking Confirmed</p>
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+                <div style="background: #000000; padding: 40px; text-align: center;">
+                    <div style="display: inline-block; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;">
+                        <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;">JyotishConnect</h1>
+                    </div>
+                    <p style="color: #f97316; margin: 16px 0 0; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Sacred Consultation Confirmed</p>
                 </div>
 
-                <div style="padding: 32px; color: #334155; line-height: 1.6;">
-                    <h2 style="margin-top: 0; font-size: 20px; color: #0f172a;">
-                        ${isUser ? `Hello, ${userName || 'Seeker'}! 🙏` : `Namaste, ${astrologerName}! 🙏`}
+                <div style="padding: 40px; color: #1e293b; line-height: 1.7;">
+                    <h2 style="margin-top: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.025em;">
+                        ${isUser ? `Namaste, ${userName || 'Seeker'}! 🙏` : `Namaste, ${astrologerName}! 🙏`}
                     </h2>
                     
-                    <p style="font-size: 15px;">
+                    <p style="font-size: 16px; color: #475569;">
                         ${isUser 
-                            ? `Your consultation with <strong>${astrologerName}</strong> has been successfully scheduled.` 
-                            : `A new consultation has been booked with <strong>${userName || 'a Seeker'}</strong>.`}
+                            ? `Your spiritual journey with <strong>Master ${astrologerName}</strong> is now officially scheduled. Prepare your heart and mind for the wisdom ahead.` 
+                            : `A new soul has sought your guidance. A session with <strong>${userName || 'a Seeker'}</strong> has been successfully booked.`}
                     </p>
 
-                    <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 24px 0;">
-                        <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 30px; margin: 32px 0;">
+                        <table style="width: 100%; border-collapse: collapse;">
                             <tr>
-                                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">📅 Date:</td>
-                                <td style="padding: 8px 0; color: #0f172a; font-weight: 700;">${formattedDate}</td>
+                                <td style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; width: 100px;">📅 Date</td>
+                                <td style="padding: 10px 0; color: #0f172a; font-size: 16px; font-weight: 700;">${formattedDate}</td>
                             </tr>
                             <tr>
-                                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">⏰ Time:</td>
-                                <td style="padding: 8px 0; color: #0f172a; font-weight: 700;">${time} IST</td>
+                                <td style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">⏰ Time</td>
+                                <td style="padding: 10px 0; color: #0f172a; font-size: 16px; font-weight: 700;">${time} (IST)</td>
                             </tr>
                             <tr>
-                                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">📞 Type:</td>
-                                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-transform: capitalize;">${type} Consultation</td>
+                                <td style="padding: 10px 0; color: #64748b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">🔮 Mode</td>
+                                <td style="padding: 10px 0; color: #0f172a; font-size: 16px; font-weight: 700; text-transform: capitalize;">${type} Session</td>
                             </tr>
                         </table>
                     </div>
 
-                    <div style="background: #fdfae5; border: 1px solid #fef08a; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                        <p style="margin: 0; font-size: 13px; color: #854d0e; text-align: center; font-weight: 500;">
-                            ⚠️ Please join the meeting room strictly <strong>on time</strong> using your dashboard. 
-                        </p>
+                    <div style="text-align: center; margin: 40px 0;">
+                        <p style="color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 1px;">Join the Session Here</p>
+                        <a href="${meetingLink}" style="display: inline-block; background: #f97316; color: white; text-decoration: none; padding: 20px 40px; border-radius: 16px; font-weight: 800; font-size: 16px; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);">Enter Consultation Room</a>
+                        <p style="margin-top: 12px; font-size: 11px; color: #94a3b8;">Click the button above at the scheduled time to connect.</p>
                     </div>
 
-                    <div style="text-align: center; margin-top: 32px;">
-                        <a href="https://jyotishconnect.com/${isUser ? 'user/dashboard' : 'astrologer/dashboard'}" style="display: inline-block; background: #f97316; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; letter-spacing: 0.5px;">Go to Dashboard</a>
+                    <div style="background: #fff7ed; border: 1px solid #ffedd5; padding: 20px; border-radius: 16px;">
+                        <p style="margin: 0; font-size: 13px; color: #9a3412; font-weight: 600; line-height: 1.5;">
+                            ✨ <strong>Pro Tip:</strong> Ensure you are in a quiet room with a stable internet connection. We have attached a Calendar Invite (.ics) to this email for your convenience.
+                        </p>
                     </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                    <p style="color: #94a3b8; font-size: 12px; margin: 0;">May the cosmos illuminate your path. ✨<br/><strong>JyotishConnect Support Team</strong></p>
                 </div>
             </div>
         `;
