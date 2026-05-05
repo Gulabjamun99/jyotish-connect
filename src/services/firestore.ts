@@ -347,6 +347,18 @@ export const getAllAstrologers = async () => {
     }
 };
 
+export const createBooking = async (bookingData: any) => {
+    try {
+        const docRef = doc(collection(db, "bookings"));
+        const id = docRef.id;
+        await setDoc(docRef, { ...sanitize(bookingData), id, createdAt: new Date().toISOString() });
+        return id;
+    } catch (error) {
+        console.error("Error creating booking:", error);
+        throw error;
+    }
+};
+
 export const toggleVerification = async (astrologerId: string, status: boolean) => {
     try {
         const ref = doc(db, "astrologers", astrologerId);

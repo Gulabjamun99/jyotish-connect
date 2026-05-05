@@ -110,6 +110,8 @@ END:VCALENDAR`;
     const handleConfirm = async () => {
         if (!selectedDate || !selectedTime || !user || !userData) {
             if (!user) toast.error("Please login to book a consultation");
+            else if (!userData) toast.error("Your profile data is still loading. Please wait a moment.");
+            else if (!selectedTime) toast.error("Please select a time slot first.");
             return;
         }
 
@@ -145,7 +147,10 @@ END:VCALENDAR`;
             });
 
             const data = await res.json();
-            if (!data.success) throw new Error(data.error);
+            if (!data.success) {
+                console.error("Payment API Error:", data.error);
+                throw new Error(data.error || "Payment failed");
+            }
 
             const bookingId = data.bookingId;
             const link = `https://jyotish-connect-nine.vercel.app/en/consult/${bookingId}?type=${consultationType}`;
@@ -176,9 +181,9 @@ END:VCALENDAR`;
             onSchedule(selectedDate, selectedTime);
             toast.success("Booking confirmed! Calendar Invites sent.");
 
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to schedule. Please try again.");
+        } catch (error: any) {
+            console.error("Booking Flow Failure:", error);
+            toast.error(error.message || "Failed to schedule. Please try again.");
         } finally {
             setIsLoading(false);
         }
