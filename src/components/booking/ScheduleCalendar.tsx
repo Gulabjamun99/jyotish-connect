@@ -156,26 +156,23 @@ export function ScheduleCalendar({
                     Schedule for Later
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl bg-zinc-950 border-white/5 text-white p-0 overflow-hidden rounded-[2.5rem] shadow-2xl">
+            <DialogContent className="sm:max-w-md bg-zinc-950 border-white/5 text-white p-0 overflow-hidden rounded-[2rem] shadow-2xl">
                 <AnimatePresence mode="wait">
                     {step === 'select' ? (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col h-[600px]">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col h-[580px]">
                             {/* Header */}
-                            <div className="p-8 bg-zinc-900/50 border-b border-white/5">
-                                <h2 className="text-2xl font-black tracking-tight text-white">Schedule Sacred Time</h2>
-                                <p className="text-xs text-zinc-500 mt-2 font-bold uppercase tracking-widest flex items-center gap-2">
-                                    <Clock className="w-3 h-3 text-orange-500" /> {consultationType} with {astrologerName}
+                            <div className="p-6 bg-zinc-900/50 border-b border-white/5">
+                                <h2 className="text-xl font-black tracking-tight text-white">Schedule Time</h2>
+                                <p className="text-[10px] text-zinc-500 mt-1 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <Clock className="w-3 h-3 text-orange-500" /> {consultationType} with {astrologerName.split(' ')[0]}
                                 </p>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
                                 {/* Date Grid */}
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Select Date</h3>
-                                        <span className="text-[9px] font-bold text-orange-500/60 uppercase">Availability: High</span>
-                                    </div>
-                                    <div className="grid grid-cols-7 gap-2">
+                                <div className="space-y-3">
+                                    <h3 className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Select Date</h3>
+                                    <div className="grid grid-cols-7 gap-1.5">
                                         {days.map((date) => {
                                             const isSelected = isSameDay(date, selectedDate);
                                             const isWeekend = date.getDay() === 0;
@@ -183,13 +180,13 @@ export function ScheduleCalendar({
                                                 <button
                                                     key={date.toISOString()}
                                                     onClick={() => setSelectedDate(date)}
-                                                    className={`h-16 flex flex-col items-center justify-center rounded-2xl border transition-all ${isSelected
+                                                    className={`h-14 flex flex-col items-center justify-center rounded-xl border transition-all ${isSelected
                                                         ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20"
-                                                        : isWeekend ? "bg-zinc-900/20 border-white/5 text-zinc-700 opacity-50" : "bg-zinc-900 border-white/5 text-zinc-400 hover:border-white/20"
+                                                        : isWeekend ? "bg-zinc-900/20 border-white/5 text-zinc-700 opacity-50" : "bg-zinc-900 border-white/5 text-zinc-400 hover:border-white/10"
                                                         }`}
                                                 >
-                                                    <span className="text-[8px] font-black uppercase tracking-tighter">{format(date, "EEE")}</span>
-                                                    <span className="text-sm font-black">{format(date, "d")}</span>
+                                                    <span className="text-[7px] font-black uppercase tracking-tighter">{format(date, "EEE")}</span>
+                                                    <span className="text-xs font-black">{format(date, "d")}</span>
                                                 </button>
                                             );
                                         })}
@@ -197,9 +194,9 @@ export function ScheduleCalendar({
                                 </div>
 
                                 {/* Time Tabs */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Select Time (IST)</h3>
-                                    <div className="flex gap-2 p-1 bg-zinc-900 rounded-2xl border border-white/5">
+                                <div className="space-y-3">
+                                    <h3 className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Select Time (IST)</h3>
+                                    <div className="flex gap-1 p-1 bg-zinc-900 rounded-xl border border-white/5">
                                         {[
                                             { id: 'morning', label: 'Morning', icon: Sun },
                                             { id: 'afternoon', label: 'Afternoon', icon: Sunset },
@@ -208,42 +205,42 @@ export function ScheduleCalendar({
                                             <button
                                                 key={tab.id}
                                                 onClick={() => setTimeTab(tab.id as any)}
-                                                className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeTab === tab.id ? 'bg-zinc-800 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                                className={`flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${timeTab === tab.id ? 'bg-zinc-800 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-300'}`}
                                             >
-                                                <tab.icon className={`w-3 h-3 ${timeTab === tab.id ? 'text-orange-500' : 'text-zinc-600'}`} />
-                                                {tab.label}
+                                                <tab.icon className={`w-2.5 h-2.5 ${timeTab === tab.id ? 'text-orange-500' : 'text-zinc-600'}`} />
+                                                <span className="whitespace-nowrap">{tab.label}</span>
                                             </button>
                                         ))}
                                     </div>
 
                                     {/* Slot Grid */}
                                     {loadingSlots ? (
-                                        <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-orange-500" /></div>
+                                        <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-orange-500" /></div>
                                     ) : getFilteredSlots().length > 0 ? (
-                                        <div className="grid grid-cols-4 gap-2">
+                                        <div className="grid grid-cols-4 gap-1.5">
                                             {getFilteredSlots().map((time) => (
                                                 <button
                                                     key={time}
                                                     onClick={() => setSelectedTime(time)}
-                                                    className={`h-11 rounded-xl border text-xs font-black transition-all ${selectedTime === time ? 'bg-white text-black border-white shadow-xl' : 'bg-zinc-900 border-white/5 text-zinc-400 hover:border-white/10'}`}
+                                                    className={`h-9 rounded-lg border text-[10px] font-black transition-all ${selectedTime === time ? 'bg-white text-black border-white shadow-xl' : 'bg-zinc-900 border-white/5 text-zinc-400 hover:border-white/10'}`}
                                                 >
                                                     {time}
                                                 </button>
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-10 border border-dashed border-white/5 rounded-2xl text-[10px] font-bold text-zinc-600 uppercase tracking-widest">No slots available for this period</div>
+                                        <div className="text-center py-6 border border-dashed border-white/5 rounded-xl text-[9px] font-bold text-zinc-600 uppercase tracking-widest">No slots available</div>
                                     )}
                                 </div>
                             </div>
 
                             {/* Footer */}
-                            <div className="p-8 border-t border-white/5 bg-zinc-900/50 flex flex-col gap-4">
+                            <div className="p-6 border-t border-white/5 bg-zinc-900/50 flex flex-col gap-4">
                                 {selectedTime && (
-                                    <div className="flex items-center justify-between px-2">
+                                    <div className="flex items-center justify-between px-1">
                                         <div className="flex items-center gap-2">
-                                            <Check className="w-4 h-4 text-green-500" />
-                                            <span className="text-xs font-bold text-zinc-300">{format(selectedDate, "EEE, MMM d")} at {selectedTime} IST</span>
+                                            <Check className="w-3 h-3 text-green-500" />
+                                            <span className="text-[10px] font-bold text-zinc-400">{format(selectedDate, "EEE, MMM d")} • {selectedTime}</span>
                                         </div>
                                         <span className="text-xs font-black text-orange-500">₹{price}</span>
                                     </div>
@@ -251,12 +248,12 @@ export function ScheduleCalendar({
                                 <Button
                                     disabled={!selectedTime || isLoading}
                                     onClick={handleConfirm}
-                                    className="w-full h-16 bg-white text-black hover:bg-orange-500 hover:text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl"
+                                    className="w-full h-14 bg-white text-black hover:bg-orange-500 hover:text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-xl"
                                 >
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Booking"}
+                                    {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirm Booking"}
                                 </Button>
                             </div>
-                        </motion.div>
+                        </motion.div>v>
                     ) : (
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-12 text-center space-y-8 h-[600px] flex flex-col items-center justify-center">
                             <div className="w-24 h-24 bg-green-500/10 rounded-[2rem] flex items-center justify-center text-green-500 border border-green-500/20">
