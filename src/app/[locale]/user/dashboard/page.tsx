@@ -68,7 +68,7 @@ export default function UserDashboard() {
                         <div>
                             <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Seeker Sanctuary</p>
                             <h1 className="text-4xl font-black text-white tracking-tight">Namaste, {user.displayName?.split(' ')[0]}</h1>
-                            <p className="text-sm font-medium text-zinc-400 mt-1">Your cosmic alignment is 84% today • <span className="text-orange-500/80">View Details</span></p>
+                            <p className="text-sm font-medium text-zinc-400 mt-1">Your cosmic alignment is 84% today • <button onClick={() => router.push('/kundli')} className="text-orange-500/80 hover:text-orange-500 underline underline-offset-4 decoration-orange-500/30">View Details</button></p>
                         </div>
                     </div>
 
@@ -124,8 +124,8 @@ export default function UserDashboard() {
                         <div className="grid grid-cols-2 gap-4">
                             {[
                                 { name: "Birth Chart", icon: Star, color: "text-orange-500", bg: "bg-orange-500/10", route: "/kundli" },
-                                { name: "Match Making", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10", route: "/matching" },
-                                { name: "Panchang", icon: Calendar, color: "text-blue-500", bg: "bg-blue-500/10", route: "/panchang" },
+                                { name: "Match Making", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10", route: "/kundli-matching" },
+                                { name: "Panchang", icon: Calendar, color: "text-blue-500", bg: "bg-blue-500/10", route: "/kundli" },
                                 { name: "Horoscope", icon: FileText, color: "text-amber-500", bg: "bg-amber-500/10", route: "/horoscope" },
                             ].map((tool) => (
                                 <button 
@@ -226,20 +226,22 @@ export default function UserDashboard() {
                     </div>
                 </div>
 
-                {/* ROW 3: Saved Profiles (Horizontal) */}
+                {/* ROW 3: Family Profiles (Horizontal) */}
                 <section className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-black text-white tracking-tight">Cosmic Circles</h2>
-                        <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:bg-transparent">See All Profiles</Button>
+                        <h2 className="text-xl font-black text-white tracking-tight">Family & Friends</h2>
+                        <Button variant="ghost" onClick={() => router.push('/kundli')} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:bg-transparent">Manage All</Button>
                     </div>
                     <div className="flex gap-5 overflow-x-auto pb-6 no-scrollbar">
-                        <div className="min-w-[300px] glass bg-zinc-900 border border-white/5 p-6 rounded-3xl group hover:border-accent/40 transition-all cursor-pointer">
+                        <div onClick={() => router.push('/kundli')} className="min-w-[300px] glass bg-zinc-900 border border-white/5 p-6 rounded-3xl group hover:border-accent/40 transition-all cursor-pointer">
                             <div className="flex justify-between items-start">
                                 <div className="space-y-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent font-black border border-accent/30 shadow-xl">U</div>
+                                    <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent font-black border border-accent/30 shadow-xl">
+                                        {user.displayName?.[0] || 'U'}
+                                    </div>
                                     <div>
-                                        <p className="font-black text-white">Main Identity</p>
-                                        <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1">Natal Data Applied</p>
+                                        <p className="font-black text-white">Your Profile (Main)</p>
+                                        <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1">Birth Data Applied</p>
                                     </div>
                                 </div>
                                 <FileText className="w-5 h-5 text-zinc-700 group-hover:text-accent transition-colors" />
@@ -247,7 +249,7 @@ export default function UserDashboard() {
                         </div>
                         <div onClick={() => router.push('/kundli')} className="min-w-[200px] glass border border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center gap-3 hover:bg-zinc-900 hover:border-zinc-500 transition-all cursor-pointer">
                             <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500">+</div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">New Profile</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Add Family Member</span>
                         </div>
                     </div>
                 </section>

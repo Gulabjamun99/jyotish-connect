@@ -146,7 +146,7 @@ export default function UserProfileEditPage() {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         required
-                                        className="h-12 border-zinc-200 focus:border-orange-500 rounded-xl"
+                                        className="h-12 border-zinc-200 focus:border-orange-500 rounded-xl text-zinc-900"
                                     />
                                 </div>
                                 <div>
@@ -158,7 +158,7 @@ export default function UserProfileEditPage() {
                                         onChange={handleChange}
                                         required
                                         disabled
-                                        className="h-12 border-zinc-200 bg-zinc-50 rounded-xl text-zinc-500"
+                                        className="h-12 border-zinc-200 bg-zinc-50 rounded-xl text-zinc-400 font-bold"
                                     />
                                     <p className="text-[10px] text-zinc-400 mt-1">Email cannot be changed</p>
                                 </div>
@@ -171,7 +171,7 @@ export default function UserProfileEditPage() {
                                     value={formData.address}
                                     onChange={handleChange}
                                     required
-                                    className="h-12 border-zinc-200 focus:border-orange-500 rounded-xl"
+                                    className="h-12 border-zinc-200 focus:border-orange-500 rounded-xl text-zinc-900"
                                 />
                             </div>
                         </div>
@@ -211,7 +211,7 @@ export default function UserProfileEditPage() {
                                     value={formData.pob}
                                     onChange={handleChange}
                                     placeholder="e.g. New Delhi, India"
-                                    className="h-12 border-zinc-200 focus:border-indigo-500 rounded-xl"
+                                    className="h-12 border-zinc-200 focus:border-indigo-500 rounded-xl text-zinc-900 font-medium"
                                 />
                             </div>
                         </div>
