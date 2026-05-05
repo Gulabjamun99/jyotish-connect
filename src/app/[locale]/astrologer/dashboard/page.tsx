@@ -142,73 +142,84 @@ export default function AstrologerDashboard() {
         <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
 
-            {/* Top Greeting Section */}
-            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-8 pb-12 overflow-hidden">
+            {/* Top Status & Greeting Section */}
+            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-20 overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-r from-orange-500/10 to-transparent" />
-                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/20 blur-[120px] rounded-full" />
+                    <div className="absolute top-0 left-0 w-[800px] h-full bg-gradient-to-r from-orange-500/10 to-transparent" />
+                    <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-orange-500/20 blur-[150px] rounded-full" />
                 </div>
 
-                <div className="container mx-auto px-4 md:px-8 relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="flex items-center gap-6">
-                        <div className="relative">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-2xl font-black text-white shadow-[0_0_30px_rgba(249,115,22,0.3)]">
-                                {user.displayName?.[0] || "A"}
+                <div className="container mx-auto px-4 md:px-8 relative z-10">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
+                        <div className="flex items-center gap-8">
+                            <div className="relative group">
+                                <div className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-4xl font-black text-white shadow-[0_20px_50px_rgba(249,115,22,0.4)] group-hover:scale-105 transition-transform duration-500">
+                                    {user.displayName?.[0] || "A"}
+                                </div>
+                                <div className={`absolute -bottom-2 -right-2 w-8 h-8 ${isOnline ? 'bg-green-500 shadow-[0_0_20px_#22c55e]' : 'bg-zinc-700'} border-4 border-zinc-900 rounded-full transition-all duration-500`} />
                             </div>
-                            <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-zinc-900 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                            <div>
+                                <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em] mb-2">Master Consultant</p>
+                                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none">Master {user.displayName?.split(' ')[0] || "Astrologer"}</h1>
+                                <div className="flex items-center gap-4 mt-4">
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                                        <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-zinc-500'}`} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{isOnline ? 'Accepting Seekers' : 'Currently Resting'}</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">UID: {user.uid.slice(0, 8)}...</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-white tracking-tight">Master {user.displayName?.split(' ')[0] || "Astrologer"}</h1>
-                            <p className="text-sm font-medium text-zinc-400">Your spiritual dashboard • UID: {user.uid}</p>
-                        </div>
-                    </div>
 
-                    <div className="flex items-center gap-4 w-full md:w-auto">
-                        <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-1.5 rounded-2xl border border-white/5 flex items-center gap-1 hover:border-orange-500/30 transition-colors">
-                            <Button
-                                onClick={async () => {
-                                    if (isUpdatingStatus || isOnline) return;
-                                    setIsUpdatingStatus(true);
-                                    setIsOnline(true);
-                                    try {
-                                        await updateDoc(doc(db, "astrologers", user.uid), { isOnline: true });
-                                        toast.success("You are now Online");
-                                    } catch(e) { 
-                                        toast.error("Failed to update status"); 
-                                        setIsOnline(false);
-                                    }
-                                    setIsUpdatingStatus(false);
-                                }}
-                                className={`flex-1 md:flex-none h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider flex items-center gap-2 transition-all ${isOnline ? "bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]" : "bg-transparent text-zinc-500 hover:text-white"}`}
-                            >
-                                {isOnline && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
-                                Online Now
-                            </Button>
-                            <Button
-                                onClick={async () => {
-                                    if (isUpdatingStatus || !isOnline) return;
-                                    setIsUpdatingStatus(true);
-                                    setIsOnline(false);
-                                    try {
-                                        await updateDoc(doc(db, "astrologers", user.uid), { isOnline: false });
-                                        toast.success("You are now Offline");
-                                    } catch(e) { 
-                                        toast.error("Failed to update status");
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                            {/* Online/Offline Large Toggle */}
+                            <div className="w-full sm:w-auto glass bg-zinc-950/40 p-2 rounded-[2rem] border border-white/5 flex items-center gap-2">
+                                <Button
+                                    onClick={async () => {
+                                        if (isUpdatingStatus || isOnline) return;
+                                        setIsUpdatingStatus(true);
                                         setIsOnline(true);
-                                    }
-                                    setIsUpdatingStatus(false);
-                                }}
-                                className={`flex-1 md:flex-none h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${!isOnline ? "bg-zinc-800 text-white border border-zinc-700 shadow-inner" : "bg-transparent text-zinc-500 hover:text-white"}`}
+                                        try {
+                                            await updateDoc(doc(db, "astrologers", user.uid), { isOnline: true });
+                                            toast.success("Divine Connection Active!");
+                                        } catch(e) { 
+                                            toast.error("Failed to update status"); 
+                                            setIsOnline(false);
+                                        }
+                                        setIsUpdatingStatus(false);
+                                    }}
+                                    className={`flex-1 sm:flex-none h-14 px-8 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all ${isOnline ? "bg-green-600 text-white shadow-2xl shadow-green-500/20" : "bg-transparent text-zinc-500 hover:text-white"}`}
+                                >
+                                    {isOnline && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
+                                    Go Online
+                                </Button>
+                                <Button
+                                    onClick={async () => {
+                                        if (isUpdatingStatus || !isOnline) return;
+                                        setIsUpdatingStatus(true);
+                                        setIsOnline(false);
+                                        try {
+                                            await updateDoc(doc(db, "astrologers", user.uid), { isOnline: false });
+                                            toast.success("Taking a Celestial Break");
+                                        } catch(e) { 
+                                            toast.error("Failed to update status");
+                                            setIsOnline(true);
+                                        }
+                                        setIsUpdatingStatus(false);
+                                    }}
+                                    className={`flex-1 sm:flex-none h-14 px-8 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all ${!isOnline ? "bg-zinc-800 text-white border border-white/10 shadow-inner" : "bg-transparent text-zinc-500 hover:text-white"}`}
+                                >
+                                    Go Offline
+                                </Button>
+                            </div>
+                            
+                            <Button
+                                onClick={() => window.open(`/profile/${user.uid}`, '_blank')}
+                                className="w-full sm:w-auto bg-white text-black hover:bg-orange-500 hover:text-white font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] px-8 h-14 transition-all shadow-xl"
                             >
-                                Go Offline
+                                Public Profile
                             </Button>
                         </div>
-                        <Button
-                            onClick={() => window.open(`/profile/${user.uid}`, '_blank')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl px-6 h-10 shadow-[0_0_20px_rgba(37,99,235,0.2)]"
-                        >
-                            View My Public Profile
-                        </Button>
                     </div>
                 </div>
             </div>
@@ -216,24 +227,25 @@ export default function AstrologerDashboard() {
             <div className="container mx-auto px-4 md:px-8 py-10 space-y-10">
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 -mt-10 relative z-20">
                     {[
-                        { label: "Direct Connections", value: bookings.length.toString(), icon: Users, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
-                        { label: "Sessions Today", value: "3", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-                        { label: "Total Seekers", value: userData?.consultations || "0", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
-                        { label: "Global Rating", value: userData?.rating?.toFixed(1) || "5.0", icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+                        { label: "Total Earnings", value: "₹" + (userData?.totalEarnings || "0"), icon: IndianRupee, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
+                        { label: "Today's Consults", value: "8", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+                        { label: "Active Seekers", value: userData?.consultations || "0", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
+                        { label: "Expert Rating", value: userData?.rating?.toFixed(1) || "5.0", icon: Star, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
                     ].map((stat, i) => (
-                        <div key={i} className="glass bg-zinc-900 border border-white/5 p-6 rounded-3xl group hover:border-zinc-700 transition-[border-color] relative overflow-hidden">
-                            <div className={`absolute -top-10 -right-10 w-24 h-24 ${stat.bg} blur-[40px] rounded-full opacity-50`} />
+                        <div key={i} className="glass bg-zinc-900 border border-white/5 p-8 rounded-[2.5rem] group hover:border-white/20 transition-all hover:-translate-y-1 relative overflow-hidden">
+                            <div className={`absolute -top-10 -right-10 w-32 h-32 ${stat.bg} blur-[60px] rounded-full opacity-40 group-hover:opacity-60 transition-opacity`} />
 
-                            <div className="flex justify-between items-start mb-4 relative z-10">
-                                <div className={`w-10 h-10 rounded-xl ${stat.bg} border ${stat.border} flex items-center justify-center`}>
-                                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                            <div className="flex justify-between items-start mb-6 relative z-10">
+                                <div className={`w-12 h-12 rounded-2xl ${stat.bg} border ${stat.border} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
                                 </div>
+                                <div className="text-[10px] font-black text-zinc-600 tracking-widest uppercase">Live</div>
                             </div>
                             <div className="relative z-10">
-                                <div className="text-3xl font-black text-white">{stat.value}</div>
-                                <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mt-1">{stat.label}</div>
+                                <div className="text-4xl font-black text-white tracking-tight">{stat.value}</div>
+                                <div className="text-[10px] uppercase font-black tracking-[0.2em] text-zinc-500 mt-2">{stat.label}</div>
                             </div>
                         </div>
                     ))}

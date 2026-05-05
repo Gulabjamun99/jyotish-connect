@@ -51,51 +51,63 @@ export default function UserDashboard() {
             <Navbar />
 
             {/* Top Greeting Section */}
-            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-8 pb-12 overflow-hidden">
+            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-16 overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-l from-orange-500/10 to-transparent" />
                     <div className="absolute -top-40 -left-40 w-96 h-96 bg-orange-500/20 blur-[120px] rounded-full" />
                 </div>
 
-                <div className="container mx-auto px-4 md:px-8 relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="container mx-auto px-4 md:px-8 relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-2xl font-black text-white shadow-[0_0_30px_rgba(249,115,22,0.3)]">
-                            {user.displayName?.[0] || "U"}
+                        <div className="relative group">
+                            <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-3xl font-black text-white shadow-[0_0_40px_rgba(249,115,22,0.4)] group-hover:scale-105 transition-transform duration-500">
+                                {user.displayName?.[0] || "U"}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-zinc-900 rounded-full" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-white tracking-tight">Namaste, {user.displayName?.split(' ')[0]}</h1>
-                            <p className="text-sm font-medium text-zinc-400">Welcome to your Personal Cosmic Dashboard</p>
+                            <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Seeker Sanctuary</p>
+                            <h1 className="text-4xl font-black text-white tracking-tight">Namaste, {user.displayName?.split(' ')[0]}</h1>
+                            <p className="text-sm font-medium text-zinc-400 mt-1">Your cosmic alignment is 84% today • <span className="text-orange-500/80">View Details</span></p>
                         </div>
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                        <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-6 hover:border-primary/30 transition-colors">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black">
-                                    <Wallet className="w-5 h-5" />
+                        <div className="flex-1 md:flex-none glass bg-zinc-950/40 p-5 rounded-3xl border border-white/5 flex items-center justify-between gap-8 hover:border-orange-500/30 transition-all group">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                    <Wallet className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Wallet Balance</p>
-                                    <p className="text-xl font-black text-white">₹{userData?.walletBalance || 0}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Wallet Credits</p>
+                                    <p className="text-2xl font-black text-white">₹{userData?.walletBalance || 0}</p>
                                 </div>
                             </div>
                             <Button 
                                 onClick={() => setIsRechargeModalOpen(true)}
-                                className="bg-white text-black hover:bg-zinc-200 font-bold px-4 py-2 rounded-xl text-xs"
+                                className="bg-white text-black hover:bg-orange-500 hover:text-white font-black px-6 py-3 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-xl"
                             >
-                                Add Cash
+                                Top Up
                             </Button>
                         </div>
                     </div>
                 </div>
             </div >
 
+            {/* Daily Wisdom Banner */}
+            <div className="relative border-b border-white/5 bg-zinc-950/50 py-4 overflow-hidden">
+                <div className="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-center gap-4 text-center">
+                    <span className="px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full text-orange-500 text-[10px] font-black uppercase tracking-widest">Today's Wisdom</span>
+                    <p className="text-zinc-400 text-sm font-medium italic">"The stars don't force, they only incline. Your karma is the true master of your destiny today."</p>
+                </div>
+            </div>
+
             {/* Profile Incomplete Banner */}
             {
                 !userData?.profileComplete && (
-                    <div className="bg-red-500/10 border-y border-red-500/20 py-3 px-4 text-center">
-                        <p className="text-red-400 text-[10px] font-black tracking-widest uppercase">
-                            ⚠️ Complete your profile to unlock birth chart analysis and bookings.
+                    <div className="bg-red-500/5 border-b border-red-500/10 py-3 px-4 text-center">
+                        <p onClick={() => router.push('/user/profile/edit')} className="text-red-500/60 text-[9px] font-black tracking-[0.2em] uppercase cursor-pointer hover:text-red-500 transition-colors">
+                            ⚠️ Complete your profile to unlock birth chart analysis and detailed predictions.
                         </p>
                     </div>
                 )
@@ -103,47 +115,82 @@ export default function UserDashboard() {
 
             <div className="container mx-auto px-4 md:px-8 py-10 space-y-12">
 
-                {/* ROW 1: Active Consultation & Live Transits */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* ROW 1: Quick Tools & Active Consultation */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    {/* Quick Tools Grid */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 px-2">Cosmic Utilities</h2>
+                        <div className="grid grid-cols-2 gap-4">
+                            {[
+                                { name: "Birth Chart", icon: Star, color: "text-orange-500", bg: "bg-orange-500/10", route: "/kundli" },
+                                { name: "Match Making", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10", route: "/matching" },
+                                { name: "Panchang", icon: Calendar, color: "text-blue-500", bg: "bg-blue-500/10", route: "/panchang" },
+                                { name: "Horoscope", icon: FileText, color: "text-amber-500", bg: "bg-amber-500/10", route: "/horoscope" },
+                            ].map((tool) => (
+                                <button 
+                                    key={tool.name}
+                                    onClick={() => router.push(tool.route)}
+                                    className="glass bg-zinc-900/50 border border-white/5 p-4 rounded-3xl flex flex-col items-center justify-center gap-3 group hover:border-white/20 transition-all hover:-translate-y-1"
+                                >
+                                    <div className={`w-12 h-12 rounded-2xl ${tool.bg} flex items-center justify-center ${tool.color} group-hover:scale-110 transition-transform`}>
+                                        <tool.icon className="w-6 h-6" />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">{tool.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     
                     {/* Active Consultation Box */}
-                    <div className="lg:col-span-2 glass bg-zinc-900 border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full group-hover:bg-orange-500/20 transition-colors" />
+                    <div className="lg:col-span-8 glass bg-zinc-900 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden group flex flex-col justify-center">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 blur-[100px] rounded-full group-hover:bg-orange-500/20 transition-colors -z-10" />
                         
-                        <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center justify-between mb-10">
                             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
                                 <Video className="w-4 h-4 text-orange-500" />
-                                Action Station
+                                Session Center
                             </h2>
+                            {bookings.length > 0 && <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{bookings.length} Total Logs</span>}
                         </div>
 
                         {bookings.length > 0 && bookings[0].status !== 'completed' ? (
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
-                                <div className="flex gap-6 items-center">
-                                    <div className="w-20 h-20 rounded-3xl bg-zinc-800 flex items-center justify-center font-black text-3xl text-orange-500 shadow-2xl border border-white/5">
-                                        {bookings[0].astrologerName?.[0] || 'A'}
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-10 relative z-10">
+                                <div className="flex gap-8 items-center text-center md:text-left flex-col md:flex-row">
+                                    <div className="relative">
+                                        <div className="w-24 h-24 rounded-[2.5rem] bg-zinc-800 flex items-center justify-center font-black text-4xl text-orange-500 shadow-2xl border border-white/5 group-hover:scale-105 transition-transform">
+                                            {bookings[0].astrologerName?.[0] || 'A'}
+                                        </div>
+                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-zinc-900 animate-pulse" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <h3 className="text-2xl font-black text-white tracking-tight">{bookings[0].astrologerName}</h3>
-                                        <p className="text-sm font-bold text-zinc-500">{bookings[0].type.toUpperCase()} Consultation • LIVE NOW</p>
+                                    <div className="space-y-2">
+                                        <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em]">Incoming Signal</p>
+                                        <h3 className="text-3xl font-black text-white tracking-tight">{bookings[0].astrologerName}</h3>
+                                        <div className="flex items-center gap-3 justify-center md:justify-start">
+                                            <span className="px-2 py-0.5 bg-zinc-800 rounded text-zinc-500 text-[8px] font-black uppercase tracking-widest border border-white/5">{bookings[0].type}</span>
+                                            <span className="text-[10px] font-bold text-green-500 animate-pulse uppercase tracking-widest">Waiting in Sanctuary</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <Button
                                     onClick={() => router.push(`/consult/${bookings[0].id}?type=${bookings[0].type}`)}
-                                    className="h-16 w-full md:w-auto md:px-10 orange-gradient text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-2xl animate-pulse"
+                                    className="h-20 w-full md:w-auto md:px-12 orange-gradient text-white font-black uppercase tracking-[0.2em] text-sm rounded-[2rem] shadow-[0_20px_50px_rgba(249,115,22,0.3)] hover:scale-105 active:scale-95 transition-all"
                                 >
-                                    Start Meeting
+                                    Connect Now
                                 </Button>
                             </div>
                         ) : (
-                            <div className="text-center py-10 border border-dashed border-white/5 rounded-3xl">
-                                <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">No Active Session Right Now</p>
+                            <div className="text-center py-16 border-2 border-dashed border-white/5 rounded-[2.5rem] bg-zinc-950/20">
+                                <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-6 text-zinc-700">
+                                    <Video className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-black text-zinc-400 tracking-tight mb-2">No Active Transmissions</h3>
+                                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mb-8">Ready for your next spiritual guidance?</p>
                                 <Button 
-                                    variant="ghost" 
-                                    className="mt-4 text-orange-500 font-black tracking-widest uppercase text-[10px] hover:bg-orange-500/10"
+                                    className="bg-white text-black hover:bg-orange-500 hover:text-white font-black tracking-widest uppercase text-xs rounded-2xl px-10 h-14 transition-all shadow-xl"
                                     onClick={() => router.push('/search')}
                                 >
-                                    Book a Call
+                                    Find Your Guide
                                 </Button>
                             </div>
                         )}
