@@ -43,7 +43,7 @@ export default function ProfilePage() {
                     image: data.photoURL || "/placeholder-avatar.png",
                     verified: data.verified || false,
                     bio: data.bio || "Experienced astrologer ready to guide you.",
-                    online: data.online || true,
+                    online: data.isOnline ?? false,
                     experience: data.experience || 0,
                     education: data.education || "",
                     specializations: data.specializations || [],
@@ -198,12 +198,23 @@ export default function ProfilePage() {
 
                             {/* Actions */}
                             <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-6">
-                                <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 h-12 px-6">
-                                    <Heart className="w-4 h-4" /> Save
-                                </Button>
-                                <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 h-12 px-6">
-                                    <Share2 className="w-4 h-4" /> Share Profile
-                                </Button>
+                                {user?.uid === profile.id ? (
+                                    <Button 
+                                        onClick={() => router.push('/astrologer/onboarding')} 
+                                        className="rounded-xl border border-orange-500 bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 font-bold gap-2 h-12 px-8 uppercase tracking-wider"
+                                    >
+                                        Edit My Profile
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 h-12 px-6">
+                                            <Heart className="w-4 h-4" /> Save
+                                        </Button>
+                                        <Button variant="outline" className="rounded-xl border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 gap-2 h-12 px-6">
+                                            <Share2 className="w-4 h-4" /> Share Profile
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

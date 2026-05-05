@@ -19,6 +19,7 @@ export default function AstrologerDashboard() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const [isOnline, setIsOnline] = useState(true);
     const prevBookingsLength = useRef(0);
     const seenBookingIds = useRef<Set<string>>(new Set());
 
@@ -71,6 +72,12 @@ export default function AstrologerDashboard() {
             return () => unsubscribe();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (userData !== undefined) {
+            setIsOnline(userData?.isOnline !== false);
+        }
+    }, [userData]);
 
     useEffect(() => {
         if (userData && !loading) {
@@ -160,30 +167,38 @@ export default function AstrologerDashboard() {
                         <div className="flex-1 md:flex-none glass bg-zinc-950/50 p-1.5 rounded-2xl border border-white/5 flex items-center gap-1 hover:border-orange-500/30 transition-colors">
                             <Button
                                 onClick={async () => {
-                                    if (isUpdatingStatus) return;
+                                    if (isUpdatingStatus || isOnline) return;
                                     setIsUpdatingStatus(true);
+                                    setIsOnline(true);
                                     try {
                                         await updateDoc(doc(db, "astrologers", user.uid), { isOnline: true });
                                         toast.success("You are now Online");
-                                    } catch(e) { toast.error("Failed to update status"); }
+                                    } catch(e) { 
+                                        toast.error("Failed to update status"); 
+                                        setIsOnline(false);
+                                    }
                                     setIsUpdatingStatus(false);
                                 }}
-                                className={`flex-1 md:flex-none h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider flex items-center gap-2 transition-all ${userData?.isOnline !== false ? "bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]" : "bg-transparent text-zinc-500 hover:text-white"}`}
+                                className={`flex-1 md:flex-none h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider flex items-center gap-2 transition-all ${isOnline ? "bg-green-500 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]" : "bg-transparent text-zinc-500 hover:text-white"}`}
                             >
-                                {userData?.isOnline !== false && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
+                                {isOnline && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
                                 Online Now
                             </Button>
                             <Button
                                 onClick={async () => {
-                                    if (isUpdatingStatus) return;
+                                    if (isUpdatingStatus || !isOnline) return;
                                     setIsUpdatingStatus(true);
+                                    setIsOnline(false);
                                     try {
                                         await updateDoc(doc(db, "astrologers", user.uid), { isOnline: false });
                                         toast.success("You are now Offline");
-                                    } catch(e) { toast.error("Failed to update status"); }
+                                    } catch(e) { 
+                                        toast.error("Failed to update status");
+                                        setIsOnline(true);
+                                    }
                                     setIsUpdatingStatus(false);
                                 }}
-                                className={`flex-1 md:flex-none h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${userData?.isOnline === false ? "bg-zinc-800 text-white border border-zinc-700 shadow-inner" : "bg-transparent text-zinc-500 hover:text-white"}`}
+                                className={`flex-1 md:flex-none h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${!isOnline ? "bg-zinc-800 text-white border border-zinc-700 shadow-inner" : "bg-transparent text-zinc-500 hover:text-white"}`}
                             >
                                 Go Offline
                             </Button>
@@ -399,7 +414,7 @@ export default function AstrologerDashboard() {
                             <Button variant="outline" className="w-full justify-start h-12 rounded-xl text-xs font-bold border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => router.push('/astrologer/transactions')}>
                                 <IndianRupee className="w-4 h-4 mr-3 opacity-60" /> Earnings & Wallet
                             </Button>
-                            <Button variant="outline" className="w-full justify-start h-12 rounded-xl text-xs font-bold border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => router.push('/astrologer/profile/edit')}>
+                            <Button variant="outline" className="w-full justify-start h-12 rounded-xl text-xs font-bold border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => router.push('/astrologer/onboarding')}>
                                 <User className="w-4 h-4 mr-3 opacity-60" /> Edit Public Profile
                             </Button>
                     </div>
