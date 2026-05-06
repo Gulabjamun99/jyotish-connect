@@ -14,7 +14,18 @@ export async function POST(req: Request) {
 
         const userRef = doc(db, 'users', userId);
         const astroUserRef = doc(db, 'astrologers', userId);
+        const astrologerRef = doc(db, 'astrologers', astrologerId);
+
         let bookingId = '';
+        let astrologerEmail = bookingData.astrologerEmail;
+
+        // Fetch astrologer data for email if not provided
+        if (!astrologerEmail) {
+            const astroSnap = await getDoc(astrologerRef);
+            if (astroSnap.exists()) {
+                astrologerEmail = astroSnap.data().email;
+            }
+        }
 
         await runTransaction(db, async (t) => {
             // Check both users and astrologers collections for the seeker's profile
@@ -41,6 +52,7 @@ export async function POST(req: Request) {
                 id: bookingId,
                 status: "upcoming",
                 paymentMode: 'wallet',
+                astrologerEmail: astrologerEmail || "",
                 createdAt: new Date().toISOString()
             });
 
@@ -58,8 +70,9 @@ export async function POST(req: Request) {
             });
         });
 
-        // Async Email Trigger
+        // Async Email Triggers for BOTH parties
         try {
+            // 1. Send to User
             if (bookingData.userEmail) {
                 sendMeetingInvite({
                     to: bookingData.userEmail,
@@ -69,10 +82,22 @@ export async function POST(req: Request) {
                     date: bookingData.date,
                     time: bookingData.time,
                     bookingId: bookingId
-                }).catch(e => console.error("Email error:", e));
+                }).catch(e => console.error("User Email error:", e));
+            }
+
+            // 2. Send to Astrologer
+            if (astrologerEmail) {
+                sendAstrologerAlert({
+                    astrologerEmail,
+                    astrologerName: bookingData.astrologerName || "Master",
+                    userName: bookingData.userName || "Seeker",
+                    date: bookingData.date,
+                    time: bookingData.time,
+                    bookingId: bookingId
+                }).catch(e => console.error("Astrologer Email error:", e));
             }
         } catch (e) {
-            console.error("Email dispatch failed", e);
+            console.error("Email dispatch failed:", e);
         }
 
         return NextResponse.json({ success: true, bookingId });
