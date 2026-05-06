@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { doc, collection, runTransaction } from 'firebase/firestore';
+import { doc, collection, runTransaction, getDoc } from 'firebase/firestore';
 import { sendAstrologerAlert, sendMeetingInvite } from '@/services/email';
 
 export async function POST(req: Request) {
@@ -13,24 +13,25 @@ export async function POST(req: Request) {
         }
 
         const userRef = doc(db, 'users', userId);
+        const astroUserRef = doc(db, 'astrologers', userId);
         let bookingId = '';
 
         await runTransaction(db, async (t) => {
-            const userDoc = await t.get(userRef);
-            if (!userDoc.exists()) throw new Error("User not found");
+            // Check both users and astrologers collections for the seeker's profile
+            let userDoc = await t.get(userRef);
+            if (!userDoc.exists()) {
+                userDoc = await t.get(astroUserRef);
+            }
+
+            if (!userDoc.exists()) {
+                throw new Error("User profile not found. Please ensure you have completed your profile.");
+            }
 
             const currentBalance = userDoc.data()?.walletBalance || 0;
-            // FREE TESTING: Bypass balance checks and deduction
-            // if (currentBalance < amount) {
-            //     throw new Error("Insufficient wallet balance");
-            // }
+            
+            // Note: Wallet deduction logic is currently bypassed for testing as per user request
+            // if (currentBalance < amount) throw new Error("Insufficient balance");
 
-            // 1. Deduct from wallet (DISABLED FOR TESTING)
-            // t.update(userRef, {
-            //     walletBalance: currentBalance - amount
-            // });
-
-            // 2. Create the Booking Document
             const bookingsRef = collection(db, 'bookings');
             const newBookingRef = doc(bookingsRef);
             bookingId = newBookingRef.id;
@@ -38,12 +39,11 @@ export async function POST(req: Request) {
             t.set(newBookingRef, {
                 ...bookingData,
                 id: bookingId,
-                status: bookingData.time === "Instant" ? "active" : "upcoming", // Active immediately for instant
+                status: "upcoming",
                 paymentMode: 'wallet',
                 createdAt: new Date().toISOString()
             });
 
-            // 3. Create a Transaction record
             const txRef = doc(collection(db, 'transactions'));
             t.set(txRef, {
                 userId,
@@ -53,41 +53,32 @@ export async function POST(req: Request) {
                 status: 'completed',
                 paymentMode: 'wallet',
                 bookingId: bookingId,
-                description: `Consultation Booking: ${bookingData.type}`,
+                description: `Booking: ${bookingData.type}`,
                 createdAt: new Date().toISOString()
             });
         });
-        // 4. Send Confirmation Emails (Asynchronously)
-        const userEmail = bookingData.userEmail;
-        const astrologerEmail = bookingData.astrologerEmail;
-        
-        if (userEmail) {
-            sendMeetingInvite({
-                to: userEmail,
-                userName: bookingData.userName || "Seeker",
-                astrologerName: bookingData.astrologerName || "Master",
-                type: bookingData.type,
-                date: bookingData.date,
-                time: bookingData.time,
-                bookingId: bookingId
-            }).catch(e => console.error("Wallet Booking User Invite Error:", e));
-        }
 
-        if (astrologerEmail) {
-            sendAstrologerAlert({
-                astrologerEmail,
-                astrologerName: bookingData.astrologerName || "Master",
-                userName: bookingData.userName || "Seeker",
-                date: bookingData.date,
-                time: bookingData.time,
-                bookingId: bookingId
-            }).catch(e => console.error("Wallet Booking Astrologer Email Error:", e));
+        // Async Email Trigger
+        try {
+            if (bookingData.userEmail) {
+                sendMeetingInvite({
+                    to: bookingData.userEmail,
+                    userName: bookingData.userName || "Seeker",
+                    astrologerName: bookingData.astrologerName || "Master",
+                    type: bookingData.type,
+                    date: bookingData.date,
+                    time: bookingData.time,
+                    bookingId: bookingId
+                }).catch(e => console.error("Email error:", e));
+            }
+        } catch (e) {
+            console.error("Email dispatch failed", e);
         }
 
         return NextResponse.json({ success: true, bookingId });
 
     } catch (error: any) {
-        console.error('Wallet payment failed:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('Booking failed:', error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
