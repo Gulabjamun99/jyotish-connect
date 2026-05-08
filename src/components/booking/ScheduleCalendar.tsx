@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { format, addDays, isSameDay, startOfToday } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Check, Loader2, ChevronDown, ChevronRight, Sparkles, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Check, Loader2, Sparkles, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "react-hot-toast";
 import { checkAvailability } from "@/services/firestore";
 import { useAuth } from "@/context/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface ScheduleCalendarProps {
     astrologerId: string;
@@ -33,8 +32,8 @@ export function ScheduleCalendar({
     const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState<'select' | 'success'>('select');
 
-    // Generate 30 days for selection
-    const allDays = Array.from({ length: 30 }, (_, i) => addDays(startOfToday(), i));
+    // Next 30 days for dropdown
+    const dateOptions = Array.from({ length: 30 }, (_, i) => addDays(startOfToday(), i));
 
     useEffect(() => {
         const fetchSlots = async () => {
@@ -42,7 +41,6 @@ export function ScheduleCalendar({
             setLoadingSlots(true);
             try {
                 const slots = await checkAvailability(astrologerId, selectedDate);
-                // If backend returns empty, provide fallbacks for testing as per user's "test it" request
                 setAvailableSlots(slots.length > 0 ? slots : ["10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]);
                 setSelectedTime("");
             } catch (err) {
@@ -56,7 +54,7 @@ export function ScheduleCalendar({
 
     const handleConfirm = async () => {
         if (!selectedDate || !selectedTime || !user) {
-            toast.error("Please choose a date and time first.");
+            toast.error("Please select date and time");
             return;
         }
 
@@ -68,7 +66,7 @@ export function ScheduleCalendar({
                 userEmail: user.email || "",
                 astrologerId,
                 astrologerName,
-                date: format(selectedDate, "yyyy-MM-dd"), // Simplified date format for email
+                date: format(selectedDate, "EEE, MMM d, yyyy"),
                 time: selectedTime,
                 type: consultationType,
                 price
@@ -85,10 +83,9 @@ export function ScheduleCalendar({
 
             setStep('success');
             onSchedule(selectedDate, selectedTime);
-            toast.success("Consultation Scheduled Successfully!");
+            toast.success("Scheduled!");
         } catch (error: any) {
-            console.error("Booking Error:", error);
-            toast.error(error.message || "Something went wrong. Please check your balance.");
+            toast.error(error.message || "Failed to schedule");
         } finally {
             setIsLoading(false);
         }
@@ -97,105 +94,92 @@ export function ScheduleCalendar({
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <button className="w-full h-14 bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-white rounded-2xl flex items-center justify-between px-6 transition-all group active:scale-[0.98]">
-                    <div className="flex items-center gap-3">
-                        <CalendarIcon className="w-5 h-5 text-orange-500" />
-                        <span className="text-xs font-bold uppercase tracking-widest">Schedule for Later</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-orange-500 transition-colors" />
-                </button>
+                <Button className="w-full h-14 bg-zinc-900 border border-white/5 hover:bg-zinc-800 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] gap-3">
+                    <CalendarIcon className="w-4 h-4 text-orange-500" />
+                    Pick a Schedule
+                </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[380px] bg-zinc-950 border-white/5 text-white p-0 overflow-hidden rounded-[2rem] shadow-2xl">
-                <AnimatePresence mode="wait">
-                    {step === 'select' ? (
-                        <div className="p-6 space-y-8">
-                            <div className="space-y-1">
-                                <h2 className="text-xl font-black text-white">Book Your Slot</h2>
-                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Scheduling with {astrologerName}</p>
-                            </div>
+            <DialogContent className="sm:max-w-[360px] bg-zinc-950 border border-white/10 text-white p-0 overflow-hidden rounded-[2rem] shadow-2xl z-[9999]">
+                {step === 'select' ? (
+                    <div className="p-8 space-y-8 bg-zinc-950">
+                        <div className="space-y-1">
+                            <h2 className="text-xl font-black text-white">Schedule Now</h2>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Master {astrologerName.split(' ')[0]}</p>
+                        </div>
 
-                            {/* 1. Date Selection - Premium Horizontal Scroll */}
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
-                                    <CalendarIcon className="w-3 h-3" /> Step 1: Pick Date
-                                </label>
-                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                                    {allDays.map((date) => {
-                                        const isSelected = isSameDay(date, selectedDate);
-                                        return (
-                                            <button
-                                                key={date.toISOString()}
-                                                onClick={() => setSelectedDate(date)}
-                                                className={`min-w-[55px] h-16 flex flex-col items-center justify-center rounded-xl border transition-all ${
-                                                    isSelected 
-                                                    ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-600/20" 
-                                                    : "bg-zinc-900 border-white/5 text-zinc-500 hover:border-white/20"
-                                                }`}
-                                            >
-                                                <span className="text-[7px] font-black uppercase opacity-60">{format(date, "EEE")}</span>
-                                                <span className="text-sm font-black">{format(date, "d")}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* 2. Time Selection - Super Simple Dropdown */}
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
-                                    <Clock className="w-3 h-3" /> Step 2: Pick Time (IST)
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        value={selectedTime}
-                                        onChange={(e) => setSelectedTime(e.target.value)}
-                                        className="w-full h-14 bg-zinc-900 border border-white/5 rounded-xl px-5 text-sm font-bold text-white appearance-none focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer"
-                                    >
-                                        <option value="" disabled>--- Select Available Slot ---</option>
-                                        {availableSlots.map((time) => (
-                                            <option key={time} value={time} className="bg-zinc-950">{time} IST</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
-                                </div>
-                                {loadingSlots && <p className="text-[8px] text-orange-500 animate-pulse font-black uppercase">Refreshing slots...</p>}
-                            </div>
-
-                            {/* Confirmation Footer */}
-                            <div className="pt-4 space-y-4">
-                                <Button
-                                    disabled={!selectedTime || isLoading}
-                                    onClick={handleConfirm}
-                                    className="w-full h-14 bg-white text-black hover:bg-orange-600 hover:text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all"
+                        {/* 1. Pick Date Dropdown */}
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+                                <CalendarIcon className="w-3.5 h-3.5" /> 1. Select Date
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={selectedDate.toISOString()}
+                                    onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                                    className="w-full h-14 bg-zinc-900 border border-white/5 rounded-xl px-5 text-sm font-bold text-white appearance-none focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer"
                                 >
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm & Schedule"}
-                                </Button>
-                                
-                                <div className="flex items-center justify-center gap-2 text-[8px] text-zinc-600 font-bold uppercase tracking-widest">
-                                    <Sparkles className="w-3 h-3" /> World-Class V2.1 Active
-                                </div>
+                                    {dateOptions.map((date) => (
+                                        <option key={date.toISOString()} value={date.toISOString()} className="bg-zinc-950">
+                                            {format(date, "EEEE, d MMM")}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                             </div>
                         </div>
-                    ) : (
-                        <div className="p-10 text-center space-y-6 flex flex-col items-center">
-                            <div className="w-20 h-20 bg-green-500/10 rounded-3xl flex items-center justify-center text-green-500 border border-green-500/20">
-                                <Check className="w-10 h-10" />
+
+                        {/* 2. Pick Time Dropdown */}
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5" /> 2. Select Time (IST)
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={selectedTime}
+                                    onChange={(e) => setSelectedTime(e.target.value)}
+                                    className="w-full h-14 bg-zinc-900 border border-white/5 rounded-xl px-5 text-sm font-bold text-white appearance-none focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer"
+                                >
+                                    <option value="" disabled>--- Select Time Slot ---</option>
+                                    {availableSlots.map((time) => (
+                                        <option key={time} value={time} className="bg-zinc-950">{time} IST</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                             </div>
-                            <div className="space-y-2">
-                                <h2 className="text-2xl font-black text-white">Booking Locked!</h2>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
-                                    Emails have been triggered for both you and {astrologerName}.
-                                </p>
-                            </div>
-                            <Button 
-                                onClick={() => setIsOpen(false)}
-                                className="w-full h-12 bg-zinc-900 text-white font-bold uppercase tracking-widest text-[10px] rounded-xl border border-white/5"
+                        </div>
+
+                        {/* Confirm Button */}
+                        <div className="pt-4 space-y-4">
+                            <Button
+                                disabled={!selectedTime || isLoading}
+                                onClick={handleConfirm}
+                                className="w-full h-16 bg-white text-black hover:bg-orange-600 hover:text-white rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all"
                             >
-                                Great, Thanks!
+                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm Schedule"}
                             </Button>
+                            
+                            <p className="text-center text-[8px] text-zinc-700 font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                                <Sparkles className="w-3 h-3" /> Compact Mode V3.0
+                            </p>
                         </div>
-                    )}
-                </AnimatePresence>
+                    </div>
+                ) : (
+                    <div className="p-10 text-center space-y-6 bg-zinc-950 flex flex-col items-center">
+                        <div className="w-20 h-20 bg-green-500/10 rounded-3xl flex items-center justify-center text-green-500 border border-green-500/20">
+                            <Check className="w-10 h-10" />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-black text-white">Success!</h2>
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Mails sent to seeker and astrologer.</p>
+                        </div>
+                        <Button 
+                            onClick={() => setIsOpen(false)}
+                            className="w-full h-14 bg-zinc-900 text-white font-bold uppercase tracking-widest text-[10px] rounded-xl border border-white/5"
+                        >
+                            Close
+                        </Button>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );
