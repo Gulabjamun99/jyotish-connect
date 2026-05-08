@@ -99,11 +99,19 @@ export function ScheduleCalendar({
                     Pick a Schedule
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[360px] bg-zinc-950 border border-white/10 text-white p-0 overflow-hidden rounded-[2rem] shadow-2xl z-[9999]">
+            <DialogContent 
+                className="sm:max-w-[400px] p-0 overflow-hidden rounded-[2rem] shadow-2xl z-[9999]"
+                style={{ backgroundColor: '#09090b', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+            >
                 {step === 'select' ? (
-                    <div className="p-8 space-y-8 bg-zinc-950">
+                    <div className="p-8 space-y-8" style={{ backgroundColor: '#09090b' }}>
+                        {/* VERSION BANNER */}
+                        <div className="bg-orange-500/20 text-orange-500 text-[10px] font-black uppercase tracking-widest py-2 px-4 rounded-xl text-center border border-orange-500/30">
+                            V3.0 Compact Dropdown Mode Active
+                        </div>
+
                         <div className="space-y-1">
-                            <h2 className="text-xl font-black text-white">Schedule Now</h2>
+                            <h2 className="text-xl font-black text-white">Book Your Time</h2>
                             <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Master {astrologerName.split(' ')[0]}</p>
                         </div>
 
@@ -117,9 +125,10 @@ export function ScheduleCalendar({
                                     value={selectedDate.toISOString()}
                                     onChange={(e) => setSelectedDate(new Date(e.target.value))}
                                     className="w-full h-14 bg-zinc-900 border border-white/5 rounded-xl px-5 text-sm font-bold text-white appearance-none focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer"
+                                    style={{ backgroundColor: '#18181b', color: 'white' }}
                                 >
                                     {dateOptions.map((date) => (
-                                        <option key={date.toISOString()} value={date.toISOString()} className="bg-zinc-950">
+                                        <option key={date.toISOString()} value={date.toISOString()} style={{ backgroundColor: '#09090b' }}>
                                             {format(date, "EEEE, d MMM")}
                                         </option>
                                     ))}
@@ -138,10 +147,11 @@ export function ScheduleCalendar({
                                     value={selectedTime}
                                     onChange={(e) => setSelectedTime(e.target.value)}
                                     className="w-full h-14 bg-zinc-900 border border-white/5 rounded-xl px-5 text-sm font-bold text-white appearance-none focus:outline-none focus:border-orange-500/50 transition-all cursor-pointer"
+                                    style={{ backgroundColor: '#18181b', color: 'white' }}
                                 >
                                     <option value="" disabled>--- Select Time Slot ---</option>
                                     {availableSlots.map((time) => (
-                                        <option key={time} value={time} className="bg-zinc-950">{time} IST</option>
+                                        <option key={time} value={time} style={{ backgroundColor: '#09090b' }}>{time} IST</option>
                                     ))}
                                 </select>
                                 <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
@@ -157,19 +167,15 @@ export function ScheduleCalendar({
                             >
                                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm Schedule"}
                             </Button>
-                            
-                            <p className="text-center text-[8px] text-zinc-700 font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2">
-                                <Sparkles className="w-3 h-3" /> Compact Mode V3.0
-                            </p>
                         </div>
                     </div>
                 ) : (
-                    <div className="p-10 text-center space-y-6 bg-zinc-950 flex flex-col items-center">
+                    <div className="p-10 text-center space-y-6 flex flex-col items-center" style={{ backgroundColor: '#09090b' }}>
                         <div className="w-20 h-20 bg-green-500/10 rounded-3xl flex items-center justify-center text-green-500 border border-green-500/20">
                             <Check className="w-10 h-10" />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-white">Success!</h2>
+                            <h2 className="text-2xl font-black text-white">Confirmed!</h2>
                             <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Mails sent to seeker and astrologer.</p>
                         </div>
                         <Button 
