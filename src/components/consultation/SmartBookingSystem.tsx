@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, ChevronRight, ChevronLeft, CheckCircle2, Video } from "lucide-react";
+import { Calendar, Clock, Video, ChevronDown, CheckCircle2 } from "lucide-react";
 import { format, addDays, isSameDay, startOfDay } from "date-fns";
 import { toast } from "react-hot-toast";
 import { createBooking } from "@/services/firestore";
@@ -19,26 +19,33 @@ interface SmartBookingProps {
 
 export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEmail, user, userData }: SmartBookingProps) => {
     const router = useRouter();
-    const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
-    const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-    const [duration, setDuration] = useState<number>(30); // minutes
+    const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+    const [selectedSlot, setSelectedSlot] = useState<string>("");
+    const [duration, setDuration] = useState<string>("30"); 
     const [loading, setLoading] = useState(false);
 
-    // Generate next 14 days
-    const dates = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i));
+    // Generate next 14 days for dropdown
+    const dates = Array.from({ length: 14 }, (_, i) => {
+        const d = addDays(new Date(), i);
+        return {
+            label: format(d, "EEEE, MMMM do"),
+            value: format(d, "yyyy-MM-dd")
+        };
+    });
 
     // Generate time slots from 10 AM to 8 PM
     const generateSlots = () => {
         const slots = [];
-        let current = 10 * 60; // 10:00 AM in minutes
-        const end = 20 * 60; // 08:00 PM in minutes
+        let current = 10 * 60; // 10:00 AM
+        const end = 20 * 60; // 08:00 PM
+        const dur = parseInt(duration);
 
-        while (current <= end - duration) {
+        while (current <= end - dur) {
             const hours = Math.floor(current / 60);
             const minutes = current % 60;
             const timeString = `${hours % 12 || 12}:${minutes === 0 ? "00" : minutes} ${hours >= 12 ? "PM" : "AM"}`;
             slots.push(timeString);
-            current += 30; // 30-minute increments for slot start times
+            current += 30; 
         }
         return slots;
     };
@@ -59,7 +66,6 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
         const bookingId = `book_${Math.random().toString(36).substring(2, 9)}`;
 
         try {
-            // 1. Create Booking in Firestore
             await createBooking({
                 id: bookingId,
                 userId: user.uid,
@@ -68,168 +74,159 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                 astrologerId,
                 astrologerName,
                 astrologerEmail: astrologerEmail || "",
-                date: selectedDate.toISOString(),
+                date: selectedDate,
                 time: selectedSlot,
-                duration,
+                duration: parseInt(duration),
                 type: "video",
                 status: "scheduled",
                 paymentStatus: "completed",
                 meetingLink: `/consult/${bookingId}`
             } as any);
 
-            // 2. Send Emails (Non-blocking for UI)
-            sendBookingConfirmation({
-                userEmail: user.email,
-                userName: user.displayName || userData?.displayName || "Seeker",
-                astrologerName,
-                date: selectedDate,
-                time: selectedSlot,
-                bookingId,
-                amount: 0
-            });
-
-            if (astrologerEmail) {
-                sendAstrologerAlert({
-                    astrologerEmail,
-                    astrologerName,
+            // Send Emails
+            // NOTE: If emails are not arriving, check RESEND_API_KEY on Vercel
+            try {
+                await sendBookingConfirmation({
+                    userEmail: user.email,
                     userName: user.displayName || userData?.displayName || "Seeker",
-                    date: selectedDate,
+                    astrologerName,
+                    date: new Date(selectedDate),
                     time: selectedSlot,
-                    bookingId
+                    bookingId,
+                    amount: 0
                 });
+                
+                if (astrologerEmail) {
+                    await sendAstrologerAlert({
+                        astrologerEmail,
+                        astrologerName,
+                        userName: user.displayName || userData?.displayName || "Seeker",
+                        date: new Date(selectedDate),
+                        time: selectedSlot,
+                        bookingId
+                    });
+                }
+            } catch (e) {
+                console.error("Non-blocking email error:", e);
             }
 
-            toast.success("Session Scheduled! Check your email for the invite.", { duration: 5000 });
-            setSelectedSlot(null);
-            
-            // Redirect to dashboard or success page
-            setTimeout(() => {
-                router.push("/user/dashboard");
-            }, 2000);
+            toast.success("Scheduled! Check your mail for invite.");
+            setTimeout(() => router.push("/user/dashboard"), 2000);
 
         } catch (error) {
             console.error("Booking failed:", error);
-            toast.error("Failed to schedule session. Please try again.");
+            toast.error("Failed to schedule. Try again.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="space-y-8 bg-zinc-900/50 border border-zinc-800 p-6 md:p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full -mr-16 -mt-16" />
-            
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-white flex items-center gap-3">
-                        <Calendar className="w-6 h-6 text-orange-500" />
-                        Schedule Session
-                    </h3>
-                    <p className="text-zinc-400 text-sm font-medium italic">Book a personalized consultation at your convenience</p>
-                </div>
-                
-                {/* Duration Picker */}
-                <div className="flex bg-zinc-800/50 p-1 rounded-xl border border-zinc-700/50 w-fit">
-                    {[30, 60, 90].map((d) => (
-                        <button
-                            key={d}
-                            onClick={() => { setDuration(d); setSelectedSlot(null); }}
-                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                duration === d ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20" : "text-zinc-500 hover:text-zinc-300"
-                            }`}
-                        >
-                            {d}m
-                        </button>
-                    ))}
-                </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-6 space-y-6 shadow-2xl relative overflow-hidden max-w-md mx-auto">
+            {/* Header */}
+            <div className="space-y-1">
+                <h3 className="text-xl font-black text-white flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-orange-500" />
+                    Quick Booking
+                </h3>
+                <p className="text-xs text-zinc-500 font-medium">Schedule a professional video consultation</p>
             </div>
 
-            {/* Date Strip */}
+            {/* Dropdown Style Controls */}
             <div className="space-y-4">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-1">Select Date</label>
-                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide no-scrollbar">
-                    {dates.map((date, i) => (
-                        <button
-                            key={i}
-                            onClick={() => { setSelectedDate(date); setSelectedSlot(null); }}
-                            className={`flex flex-col items-center min-w-[70px] p-4 rounded-2xl border transition-all duration-300 ${
-                                isSameDay(selectedDate, date)
-                                    ? "bg-orange-500 border-orange-400 shadow-xl shadow-orange-500/20 translate-y-[-4px]"
-                                    : "bg-zinc-800/30 border-zinc-700/50 hover:border-zinc-500 text-zinc-400"
-                            }`}
+                {/* Date Select */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                        <Calendar className="w-3 h-3" /> Select Date
+                    </label>
+                    <div className="relative">
+                        <select 
+                            value={selectedDate}
+                            onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(""); }}
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-200 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
                         >
-                            <span className={`text-[10px] font-black uppercase tracking-tighter ${isSameDay(selectedDate, date) ? "text-orange-100" : "text-zinc-500"}`}>
-                                {format(date, "EEE")}
-                            </span>
-                            <span className={`text-xl font-black mt-1 ${isSameDay(selectedDate, date) ? "text-white" : "text-zinc-200"}`}>
-                                {format(date, "d")}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Time Grid */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-1">Available Slots</label>
-                    <span className="text-[10px] text-zinc-500 font-medium">10:00 AM - 08:00 PM IST</span>
-                </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {generateSlots().map((slot, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setSelectedSlot(slot)}
-                            className={`p-3 rounded-xl border text-[11px] font-bold transition-all ${
-                                selectedSlot === slot
-                                    ? "bg-white border-white text-zinc-950 shadow-xl shadow-white/10 scale-[1.02]"
-                                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600"
-                            }`}
-                        >
-                            {slot}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Confirmation Area */}
-            <div className="pt-6 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-green-500/10 rounded-full">
-                        <Video className="w-5 h-5 text-green-500" />
+                            {dates.map((d) => (
+                                <option key={d.value} value={d.value}>{d.label}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                     </div>
-                    <div>
-                        <div className="text-xs font-black text-zinc-500 uppercase tracking-widest">Selected Session</div>
-                        <div className="text-sm font-bold text-white">
-                            {selectedSlot ? `${format(selectedDate, "MMMM d")} at ${selectedSlot}` : "Select a time above"}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    {/* Duration Select */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                            <Clock className="w-3 h-3" /> Duration
+                        </label>
+                        <div className="relative">
+                            <select 
+                                value={duration}
+                                onChange={(e) => { setDuration(e.target.value); setSelectedSlot(""); }}
+                                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-200 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
+                            >
+                                <option value="30">30 Min</option>
+                                <option value="60">60 Min</option>
+                                <option value="90">90 Min</option>
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                        </div>
+                    </div>
+
+                    {/* Time Select */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                            <Clock className="w-3 h-3" /> Select Time
+                        </label>
+                        <div className="relative">
+                            <select 
+                                value={selectedSlot}
+                                onChange={(e) => setSelectedSlot(e.target.value)}
+                                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-200 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
+                            >
+                                <option value="" disabled>Choose Time</option>
+                                {generateSlots().map((slot) => (
+                                    <option key={slot} value={slot}>{slot}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
                 </div>
+            </div>
 
+            {/* Footer / Confirm */}
+            <div className="pt-4 border-t border-zinc-800">
                 <Button
                     onClick={handleBookSession}
                     disabled={!selectedSlot || loading}
-                    className={`h-14 px-10 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all ${
+                    className={`w-full h-14 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${
                         selectedSlot 
-                        ? "bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/20" 
-                        : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl shadow-orange-500/20 active:scale-[0.98]" 
+                        : "bg-zinc-800 text-zinc-600"
                     }`}
                 >
                     {loading ? (
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Scheduling...
-                        </div>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
-                        "Confirm Booking"
+                        <>
+                            <Video className="w-4 h-4" />
+                            Book Session
+                        </>
                     )}
                 </Button>
+
+                {selectedSlot && (
+                    <p className="text-[10px] text-center text-zinc-500 mt-4 font-bold flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        Confirming for {format(new Date(selectedDate), "MMM do")} at {selectedSlot}
+                    </p>
+                )}
             </div>
 
-            {/* Policy Note */}
-            <div className="mt-4 flex items-center gap-2 text-[10px] text-zinc-500 font-medium bg-zinc-950/50 p-3 rounded-xl border border-zinc-800/50">
-                <CheckCircle2 className="w-3 h-3 text-orange-500" />
-                Both parties will receive email invites with the video link automatically.
+            {/* Hint */}
+            <div className="bg-zinc-950/50 p-3 rounded-xl border border-zinc-800/50 text-[9px] text-zinc-500 font-medium leading-tight">
+                💡 <strong>How it works:</strong> After booking, a unique video link will be sent to your registered email. Both you and the Acharya can join using that link at the scheduled time.
             </div>
         </div>
     );

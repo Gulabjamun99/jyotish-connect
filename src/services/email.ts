@@ -5,9 +5,9 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 // FALLBACK: If the domain is not verified, Resend will only allow sending from onboarding@resend.dev
-// We will try to use the professional address, but if it fails, we warn in logs.
-const SENDER_EMAIL = 'JyotishConnect <bookings@jyotishconnect.com>';
-// Note: If you haven't verified jyotishconnect.com in Resend dashboard, change SENDER_EMAIL to 'onboarding@resend.dev'
+// Change this to your professional email once the domain is verified in Resend.
+const SENDER_EMAIL = 'onboarding@resend.dev'; 
+// const SENDER_EMAIL = 'JyotishConnect <bookings@jyotishconnect.com>';
 
 export const sendBookingConfirmation = async ({
     userEmail,
