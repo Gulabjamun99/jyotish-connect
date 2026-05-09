@@ -22,6 +22,7 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
     const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [selectedSlot, setSelectedSlot] = useState<string>("");
     const [duration, setDuration] = useState<string>("30"); 
+    const [mode, setMode] = useState<"video" | "audio" | "chat">("video");
     const [loading, setLoading] = useState(false);
 
     // Generate next 14 days for dropdown
@@ -77,14 +78,13 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                 date: selectedDate,
                 time: selectedSlot,
                 duration: parseInt(duration),
-                type: "video",
+                type: mode,
                 status: "scheduled",
                 paymentStatus: "completed",
                 meetingLink: `/consult/${bookingId}`
             } as any);
 
             // Send Emails
-            // NOTE: If emails are not arriving, check RESEND_API_KEY on Vercel
             try {
                 await sendBookingConfirmation({
                     userEmail: user.email,
@@ -93,8 +93,9 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                     date: new Date(selectedDate),
                     time: selectedSlot,
                     bookingId,
-                    amount: 0
-                });
+                    amount: 0,
+                    type: mode // Added type
+                } as any);
                 
                 if (astrologerEmail) {
                     await sendAstrologerAlert({
@@ -103,8 +104,9 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                         userName: user.displayName || userData?.displayName || "Seeker",
                         date: new Date(selectedDate),
                         time: selectedSlot,
-                        bookingId
-                    });
+                        bookingId,
+                        type: mode // Added type
+                    } as any);
                 }
             } catch (e) {
                 console.error("Non-blocking email error:", e);
@@ -148,6 +150,25 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                             {dates.map((d) => (
                                 <option key={d.value} value={d.value}>{d.label}</option>
                             ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                    </div>
+                </div>
+
+                {/* Mode Select */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                        <Video className="w-3 h-3" /> Consultation Mode
+                    </label>
+                    <div className="relative">
+                        <select 
+                            value={mode}
+                            onChange={(e) => setMode(e.target.value as any)}
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-200 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
+                        >
+                            <option value="video">Video Call</option>
+                            <option value="audio">Audio Call</option>
+                            <option value="chat">Chat Session</option>
                         </select>
                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                     </div>

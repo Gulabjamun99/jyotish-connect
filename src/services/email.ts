@@ -16,7 +16,8 @@ export const sendBookingConfirmation = async ({
     date,
     time,
     bookingId,
-    amount
+    amount,
+    type
 }: {
     userEmail: string;
     userName: string;
@@ -25,6 +26,7 @@ export const sendBookingConfirmation = async ({
     time: string;
     bookingId: string;
     amount: number;
+    type?: string;
 }) => {
     if (!resend) {
         console.error("RESEND_API_KEY missing");
@@ -53,11 +55,12 @@ export const sendBookingConfirmation = async ({
                             <ul style="list-style: none; padding: 0; margin: 0; color: #431407;">
                                 <li style="margin-bottom: 10px;">📅 <strong>Date:</strong> ${formattedDate}</li>
                                 <li style="margin-bottom: 10px;">⏰ <strong>Time:</strong> ${time} IST</li>
+                                <li style="margin-bottom: 10px;">🎥 <strong>Mode:</strong> ${type ? type.toUpperCase() : 'VIDEO'}</li>
                                 <li style="margin-bottom: 10px;">🎫 <strong>Booking ID:</strong> ${bookingId}</li>
                             </ul>
                         </div>
                         <div style="text-align: center;">
-                            <a href="https://jyotishconnect.com/consult/${bookingId}" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Join Room</a>
+                            <a href="https://jyotish-connect-nine.vercel.app/consult/${bookingId}" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Join ${type === 'chat' ? 'Chat' : 'Call'}</a>
                         </div>
                     </div>
                 </div>
