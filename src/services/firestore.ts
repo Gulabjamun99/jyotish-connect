@@ -69,12 +69,15 @@ export interface Booking {
     userEmail?: string;
     astrologerId: string;
     astrologerName: string;
-    date: any; // Firestore Timestamp
+    astrologerEmail?: string;
+    date: any; // Firestore Timestamp or ISO string
     time: string;
+    duration?: number; // in minutes
     type: "video" | "audio" | "chat";
     price: number;
-    paymentMode?: 'wallet' | 'razorpay';
-    status: "pending" | "active" | "completed" | "cancelled" | "canceled"; // Handle both for safety
+    paymentMode?: 'wallet' | 'razorpay' | 'lead-gen';
+    status: "pending" | "active" | "scheduled" | "completed" | "cancelled" | "canceled";
+    meetingLink?: string;
     durationSeconds?: number;
     transcript?: string;
     createdAt?: any;

@@ -11,6 +11,7 @@ import { Star, CheckCircle, Video, Phone, MessageSquare, Calendar } from "lucide
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 import { SchedulingModal } from "@/components/consultation/SchedulingModal";
+import { SmartBookingSystem } from "@/components/consultation/SmartBookingSystem";
 
 export default function AstrologerProfilePage() {
     const { id } = useParams();
@@ -186,12 +187,13 @@ export default function AstrologerProfilePage() {
                                 </h3>
                                 <div className="h-full bg-purple-50 border-2 border-dashed border-purple-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center">
                                     <p className="text-purple-800 font-medium mb-4">Astrloger busy? Schedule a time that works for you.</p>
-                                    <Button
-                                        onClick={() => setIsSchedulingOpen(true)}
-                                        className="bg-purple-600 hover:bg-purple-700 w-full"
-                                    >
-                                        Schedule Appointment
-                                    </Button>
+                                    <SmartBookingSystem 
+                                        astrologerId={astrologer.id}
+                                        astrologerName={astrologer.name}
+                                        astrologerEmail={astrologer.email}
+                                        user={user}
+                                        userData={userData}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -203,13 +205,7 @@ export default function AstrologerProfilePage() {
                         </div>
                     </div>
 
-                    <SchedulingModal
-                        isOpen={isSchedulingOpen}
-                        onClose={() => setIsSchedulingOpen(false)}
-                        astrologerId={astrologer.id}
-                        astrologerName={astrologer.name}
-                        price={astrologer.price}
-                    />
+                    {/* SchedulingModal removed in favor of inline SmartBookingSystem */}
 
                     {/* About */}
                     <div className="bg-white rounded-3xl shadow-xl p-8">

@@ -10,6 +10,7 @@ import { useRouter } from "@/i18n/navigation";
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { getAstrologerById, createBooking } from "@/services/firestore";
+import { SmartBookingSystem } from "@/components/consultation/SmartBookingSystem";
 
 export default function ProfilePage() {
     const { user, userData } = useAuth();
@@ -238,6 +239,16 @@ export default function ProfilePage() {
                                 <Button onClick={handleBooking} className="w-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-primary text-white rounded-2xl">
                                     Connect Now
                                 </Button>
+                            </div>
+
+                            <div className="pt-4">
+                                <SmartBookingSystem 
+                                    astrologerId={profile.id}
+                                    astrologerName={profile.name}
+                                    astrologerEmail={profile.email}
+                                    user={user}
+                                    userData={userData}
+                                />
                             </div>
                         </div>
                     </aside>
