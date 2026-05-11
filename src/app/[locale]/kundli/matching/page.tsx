@@ -128,6 +128,18 @@ export default function MatchingPage() {
 
         const doc = new jsPDF('p', 'mm', 'a4');
         
+        // --- PREPARE ASSETS ---
+        let logoBase64: string | null = null;
+        try {
+            const response = await fetch('/logo.png');
+            const blob = await response.blob();
+            logoBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) { console.warn("Logo fetch failed"); }
+
         // --- Capture Sections ---
         const [overviewImg, detailsImg, findingsImg] = await Promise.all([
             captureSection("pdf-match-overview"),
@@ -135,25 +147,37 @@ export default function MatchingPage() {
             captureSection("pdf-match-findings")
         ]);
 
+        const addFooter = (page: number) => {
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Page ${page} | JyotishConnect Certified Match`, 105, 285, { align: "center" });
+        };
+
         // Page 1: Overview
         if (overviewImg) {
             doc.addImage(overviewImg, 'JPEG', 0, 0, 210, 297);
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
+            addFooter(1);
         }
 
         // Page 2: Details
         if (detailsImg) {
             doc.addPage();
             doc.addImage(detailsImg, 'JPEG', 0, 0, 210, 297);
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
+            addFooter(2);
         }
 
         // Page 3: Findings
         if (findingsImg) {
             doc.addPage();
             doc.addImage(findingsImg, 'JPEG', 0, 0, 210, 297);
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
+            addFooter(3);
         }
 
         toast.success("Match Report ready!", { id: "pdf-match" });
-        doc.save(`JyotishConnect_MatchReport.pdf`);
+        doc.save(`Kundli_Report_${boyData.name.replace(/\s+/g, '_')}_${girlData.name.replace(/\s+/g, '_')}.pdf`);
     };
 
     return (

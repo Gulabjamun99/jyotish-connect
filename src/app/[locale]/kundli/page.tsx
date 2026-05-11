@@ -119,12 +119,10 @@ export default function KundliPage() {
                 const svgEl = ref.current?.querySelector('svg');
                 if (!svgEl) return null;
                 
-                // Clone SVG to modify without affecting UI
                 const clonedSvg = svgEl.cloneNode(true) as SVGSVGElement;
                 clonedSvg.setAttribute('width', '800');
                 clonedSvg.setAttribute('height', '800');
                 
-                // Fix for text visibility in canvas
                 const texts = clonedSvg.querySelectorAll('text');
                 texts.forEach(t => {
                     t.setAttribute('style', 'font-family: Arial, sans-serif; font-weight: bold;');
@@ -141,7 +139,7 @@ export default function KundliPage() {
                         canvas.width = 800;
                         canvas.height = 800;
                         const ctx = canvas.getContext('2d')!;
-                        ctx.fillStyle = '#ffffff'; // Use white background for PDF
+                        ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, 800, 800);
                         ctx.drawImage(img, 0, 0, 800, 800);
                         URL.revokeObjectURL(svgUrl);
@@ -162,12 +160,12 @@ export default function KundliPage() {
             if (!element) return null;
             try {
                 const canvas = await html2canvas(element, {
-                    scale: 2, // Higher resolution
+                    scale: 2,
                     useCORS: true,
                     backgroundColor: "#ffffff",
                     logging: false
                 });
-                return canvas.toDataURL('image/jpeg', 0.85); // JPEG is smaller than PNG for PDFs
+                return canvas.toDataURL('image/jpeg', 0.85);
             } catch (e) {
                 console.error(`Failed to capture section ${elementId}:`, e);
                 return null;
@@ -177,10 +175,21 @@ export default function KundliPage() {
         const doc = new jsPDF('p', 'mm', 'a4');
         const trans: any = getTrans(locale);
         
-        // --- 1. PREPARE ASSETS (Phase 1: Charts & Snapshots) ---
-        toast.loading("Rendering high-quality report...", { id: "pdf-gen" });
+        toast.loading("Crafting your divine report...", { id: "pdf-gen" });
         
-        const [d1Img, d9Img, moonImg, d10Img, predictionsImg, panchangImg, planetsImg, doshasImg] = await Promise.all([
+        // --- PREPARE ASSETS ---
+        let logoBase64: string | null = null;
+        try {
+            const response = await fetch('/logo.png');
+            const blob = await response.blob();
+            logoBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) { console.warn("Logo fetch failed"); }
+
+        const [d1Img, d9Img, moonImg, d10Img, predictionsImg, panchangImg, planetsImg, doshasImg, remediesImg] = await Promise.all([
             captureChartImage(lagnaChartRef),
             captureChartImage(d9ChartRef),
             captureChartImage(moonChartRef),
@@ -188,61 +197,106 @@ export default function KundliPage() {
             captureSection("pdf-predictions"),
             captureSection("pdf-panchang"),
             captureSection("pdf-planets"),
-            captureSection("pdf-doshas")
+            captureSection("pdf-doshas"),
+            captureSection("pdf-remedies")
         ]);
+
+        const addHeader = (title: string) => {
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 40, 12);
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Astro-Connect AI | ${title}`, 200, 15, { align: "right" });
+            doc.setDrawColor(240, 240, 240);
+            doc.line(15, 25, 195, 25);
+        };
+
+        const addFooter = (page: number) => {
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Page ${page} | Certified Vedic Report`, 105, 285, { align: "center" });
+        };
 
         // --- PAGE 1: COVER ---
         doc.setFillColor(10, 10, 26);
         doc.rect(0, 0, 210, 297, 'F');
+        if (logoBase64) doc.addImage(logoBase64, 'PNG', 85, 40, 40, 12);
         doc.setTextColor(249, 115, 22);
         doc.setFontSize(36);
         doc.setFont("helvetica", "bold");
-        doc.text("Astro-Connect", 105, 80, { align: "center" });
+        doc.text("JyotishConnect", 105, 80, { align: "center" });
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(20);
-        doc.text(locale === 'hi' ? "व्यक्तिगत कुंडली रिपोर्ट" : locale === 'bn' ? "প্রিমিয়াম কুষ্ঠি রিপোর্ট" : locale === 'mr' ? "प्रीमियम कुंडली अहवाल" : "Premium Kundli Report", 105, 95, { align: "center" });
-        doc.setFontSize(16);
-        doc.text(formData.name || "User", 105, 130, { align: "center" });
+        doc.setFontSize(22);
+        doc.text(locale === 'hi' ? "व्यक्तिगत कुंडली रिपोर्ट" : "Premium Kundli Report", 105, 95, { align: "center" });
+        
+        doc.setFontSize(18);
+        doc.text(formData.name || "Seeker", 105, 130, { align: "center" });
+        
+        doc.setDrawColor(249, 115, 22);
+        doc.setLineWidth(1);
+        doc.line(80, 135, 130, 135);
+
         doc.setFontSize(10);
         doc.setTextColor(150, 150, 150);
-        doc.text(`Generated on ${new Date().toLocaleDateString()} · Powered by Astro-Connect AI`, 105, 280, { align: "center" });
+        doc.text(`Date of Birth: ${formData.dob} | Time: ${formData.tob}`, 105, 145, { align: "center" });
+        doc.text(`Place: ${formData.birthplace}`, 105, 152, { align: "center" });
 
-        // --- PAGE 2: CHARTS (D1 & D9) ---
+        doc.text(`Generated on ${new Date().toLocaleDateString()} · High Precision Swiss Ephemeris`, 105, 280, { align: "center" });
+
+        // --- PAGE 2: CHARTS ---
         doc.addPage();
+        addHeader("Divine Charts");
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(18);
-        doc.text(locale === 'hi' ? "कुण्डली चार्ट्स (Charts)" : locale === 'bn' ? "কুষ্ঠি চার্ট" : locale === 'mr' ? "कुंडली तक्ते" : "Kundli Charts", 15, 20);
+        doc.text(locale === 'hi' ? "कुण्डली चार्ट्स (Charts)" : "Kundli Charts", 15, 40);
 
         if (d1Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "लग्न कुण्डली (D1)" : locale === 'bn' ? "লগ্ন চার্ট (D1)" : locale === 'mr' ? "लग्न कुंडली (D1)" : "Lagna Chart (D1)", 15, 35);
-            doc.addImage(d1Img, 'PNG', 15, 40, 85, 85);
+            doc.text(locale === 'hi' ? "लग्न कुण्डली (D1)" : "Lagna Chart (D1)", 15, 55);
+            doc.addImage(d1Img, 'PNG', 15, 60, 85, 85);
         }
         if (d9Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "नवांश कुण्डली (D9)" : locale === 'bn' ? "নবাংশ চার্ট (D9)" : locale === 'mr' ? "नवांश कुंडली (D9)" : "Navamsa Chart (D9)", 110, 35);
-            doc.addImage(d9Img, 'PNG', 110, 40, 85, 85);
+            doc.text(locale === 'hi' ? "नवांश कुण्डली (D9)" : "Navamsa Chart (D9)", 110, 55);
+            doc.addImage(d9Img, 'PNG', 110, 60, 85, 85);
         }
         if (moonImg) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "चन्द्र कुण्डली" : locale === 'bn' ? "চন্দ্র চার্ট" : locale === 'mr' ? "चंद्र कुंडली" : "Moon Chart", 15, 145);
-            doc.addImage(moonImg, 'PNG', 15, 150, 85, 85);
+            doc.text(locale === 'hi' ? "चन्द्र कुण्डली" : "Moon Chart", 15, 165);
+            doc.addImage(moonImg, 'PNG', 15, 170, 85, 85);
         }
         if (d10Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "दशमांश कुण्डली (D10)" : locale === 'bn' ? "দশমাংশ চার্ট (D10)" : locale === 'mr' ? "दशमांश कुंडली (D10)" : "Dashamsha Chart (D10)", 110, 145);
-            doc.addImage(d10Img, 'PNG', 110, 150, 85, 85);
+            doc.text(locale === 'hi' ? "दशमांश कुण्डली (D10)" : "Dashamsha Chart (D10)", 110, 165);
+            doc.addImage(d10Img, 'PNG', 110, 170, 85, 85);
         }
+        addFooter(2);
 
-        // --- PAGE 3: PANCHANG & PLANETS (Snapshots) ---
-        if (panchangImg) {
-            doc.addPage();
-            doc.addImage(panchangImg, 'JPEG', 0, 0, 210, 297);
-        }
-        if (planetsImg) {
-            doc.addPage();
-            doc.addImage(planetsImg, 'JPEG', 0, 0, 210, 297);
-        }
+        // --- SNAPSHOT PAGES ---
+        const images = [
+            { img: panchangImg, title: "Panchang" },
+            { img: planetsImg, title: "Planets" },
+            { img: doshasImg, title: "Dosha Analysis" },
+            { img: predictionsImg, title: "Life Predictions" },
+            { img: remediesImg, title: "Remedies & Gemstones" }
+        ];
+
+        images.forEach((item, idx) => {
+            if (item.img) {
+                doc.addPage();
+                // We add the image directly covering the page for snapshot sections
+                doc.addImage(item.img, 'JPEG', 0, 0, 210, 297);
+                // Overlay a small header to maintain branding
+                if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 5, 25, 8);
+                doc.setFontSize(7);
+                doc.setTextColor(150, 150, 150);
+                doc.text(item.title, 195, 10, { align: "right" });
+                addFooter(idx + 3);
+            }
+        });
+
+        toast.success("Report ready for download!", { id: "pdf-gen" });
+        doc.save(`Kundli_Report_${formData.name.replace(/\s+/g, '_')}.pdf`);
+    };
 
         // --- PAGE 4+: DOSHAS & PREDICTIONS (Snapshots) ---
         if (doshasImg) {
@@ -808,7 +862,7 @@ export default function KundliPage() {
                     {/* Page: Doshas */}
                     <div id="pdf-doshas" className="space-y-8 p-10 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-red-600 border-b-4 border-red-500 pb-2 mb-8">
-                            {locale === 'hi' ? "दोष विश्लेषण" : locale === 'mr' ? "दोष विश्लेषण" : locale === 'bn' ? "দোষ বিশ্লেষণ" : "Dosha Analysis"}
+                            {locale === 'hi' ? "दोष विश्लेषण" : "Dosha Analysis"}
                         </h1>
                         <div className="grid grid-cols-1 gap-12">
                             {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
@@ -825,20 +879,47 @@ export default function KundliPage() {
                                     <p className="text-lg text-slate-700 leading-relaxed mb-6 italic">
                                         {data.description}
                                     </p>
-                                    {data.present && (
-                                        <div className="bg-white p-6 rounded-2xl border border-red-100">
-                                            <h4 className="text-sm font-black text-orange-600 uppercase mb-3 tracking-widest italic">Vedic Remedies</h4>
-                                            <ul className="space-y-3">
-                                                {(getTrans(locale).doshas?.[key]?.remedies || []).map((r: string, idx: number) => (
-                                                    <li key={idx} className="text-md text-slate-700 flex items-start gap-3 leading-relaxed">
-                                                        <span className="text-orange-500 font-bold">•</span> {r}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Page: Remedies */}
+                    <div id="pdf-remedies" className="space-y-8 p-10 bg-white min-h-[1100px]">
+                        <h1 className="text-3xl font-black text-amber-600 border-b-4 border-amber-500 pb-2 mb-8">
+                            {locale === 'hi' ? "उपचार और रत्न" : "Remedies & Gemstones"}
+                        </h1>
+                        <div className="grid grid-cols-1 gap-8">
+                            {/* Gemstones Section */}
+                            <div className="bg-amber-50 p-8 rounded-3xl border-2 border-amber-100">
+                                <h3 className="text-2xl font-black text-amber-900 mb-6 flex items-center gap-3">Lucky Gemstones</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    {/* Calculated Gemstones Logic simplified for PDF */}
+                                    <div className="bg-white p-6 rounded-2xl border border-amber-200">
+                                        <div className="text-sm font-bold text-amber-600 uppercase mb-2">Recommendation</div>
+                                        <p className="text-lg text-slate-800 font-medium">Based on your Lagna ({chart.ascendantSign}), wearing a high-quality Gemstone of your Lagna Lord can bring significant prosperity and health.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* General Remedies */}
+                            <div className="bg-indigo-50 p-8 rounded-3xl border-2 border-indigo-100">
+                                <h3 className="text-2xl font-black text-indigo-900 mb-6">Spiritual Remedies</h3>
+                                <ul className="space-y-4">
+                                    <li className="flex gap-4 items-start text-lg text-indigo-900">
+                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">•</span>
+                                        Recite the Beej Mantra of your Mahadasha Lord ({chart.dasha?.currentLords?.[0]}) for mental peace.
+                                    </li>
+                                    <li className="flex gap-4 items-start text-lg text-indigo-900">
+                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">•</span>
+                                        Perform charity on Saturdays to appease Saturn's influence in your chart.
+                                    </li>
+                                    <li className="flex gap-4 items-start text-lg text-indigo-900">
+                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">•</span>
+                                        Maintain a vegetarian diet on Tuesdays to strengthen Mars.
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
