@@ -99,6 +99,36 @@ export default function ProfilePage() {
                 price: 0,
                 paymentMode: 'lead-gen'
             } as any);
+
+            // Send Emails
+            try {
+                const { sendBookingConfirmation, sendAstrologerAlert } = await import("@/services/email");
+                await sendBookingConfirmation({
+                    userEmail: user.email || "",
+                    userName: user.displayName || userData?.displayName || "Seeker",
+                    astrologerName: profile.name,
+                    date: new Date(),
+                    time: "Now",
+                    bookingId: newBooking.id!,
+                    amount: 0,
+                    type: consultationType
+                });
+
+                if (profile.email) {
+                    await sendAstrologerAlert({
+                        astrologerEmail: profile.email,
+                        astrologerName: profile.name,
+                        userName: user.displayName || userData?.displayName || "Seeker",
+                        date: new Date(),
+                        time: "Now",
+                        bookingId: newBooking.id!,
+                        type: consultationType
+                    });
+                }
+            } catch (e) {
+                console.error("Non-blocking email error in direct connect:", e);
+            }
+
             toast.success("Connection Established! Joining room...", { id: 'booking' });
             router.push(`/consult/${newBooking.id}?type=${consultationType}`);
         } catch (error: any) {

@@ -12,7 +12,7 @@ import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
 import { getFullAstrologyData, performMatchMaking } from "@/lib/astrology/calculator";
-import { generateMatchVerdict, generateAshtakootAnalysis, generateDetailedMatchingReport, analyzeManglikCancellation } from "@/lib/astrology/prediction-engine";
+import { generateMatchVerdict, generateAshtakootAnalysis, generateDetailedMatchingReport, analyzeManglikCancellation, generateFullMatchAnalysis } from "@/lib/astrology/prediction-engine";
 import { useLocale, useTranslations } from "next-intl";
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
 
@@ -33,6 +33,7 @@ export default function MatchingPage() {
     });
 
     const [result, setResult] = useState<any>(null);
+    const [analysis, setAnalysis] = useState<any>(null);
 
     const calculateMatch = async () => {
         setLoading(true);
@@ -74,7 +75,9 @@ export default function MatchingPage() {
             }
 
             const matchResult = await response.json();
+            const fullAnalysis = generateFullMatchAnalysis(matchResult, locale);
             setResult(matchResult);
+            setAnalysis(fullAnalysis);
 
             setTimeout(() => {
                 document.getElementById("results")?.scrollIntoView({ behavior: 'smooth' });
@@ -141,9 +144,11 @@ export default function MatchingPage() {
         } catch (e) { console.warn("Logo fetch failed"); }
 
         // --- Capture Sections ---
-        const [overviewImg, detailsImg, findingsImg] = await Promise.all([
+        const [overviewImg, detailsImg, compatibilityImg, lifeAreasImg, remediesImg] = await Promise.all([
             captureSection("pdf-match-overview"),
             captureSection("pdf-match-details"),
+            captureSection("pdf-match-compatibility"),
+            captureSection("pdf-match-life-areas"),
             captureSection("pdf-match-findings")
         ]);
 
@@ -168,12 +173,28 @@ export default function MatchingPage() {
             addFooter(2);
         }
 
-        // Page 3: Findings
+        // Page 3: Compatibility
+        if (compatibilityImg) {
+            doc.addPage();
+            doc.addImage(compatibilityImg, 'JPEG', 0, 0, 210, 297);
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
+            addFooter(3);
+        }
+
+        // Page 4: Life Areas
+        if (lifeAreasImg) {
+            doc.addPage();
+            doc.addImage(lifeAreasImg, 'JPEG', 0, 0, 210, 297);
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
+            addFooter(4);
+        }
+
+        // Page 5: Findings & Remedies
         if (findingsImg) {
             doc.addPage();
             doc.addImage(findingsImg, 'JPEG', 0, 0, 210, 297);
             if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
-            addFooter(3);
+            addFooter(5);
         }
 
         toast.success("Match Report ready!", { id: "pdf-match" });
@@ -311,10 +332,12 @@ export default function MatchingPage() {
                                 {/* Premium Tabs Navigation */}
                                 <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-2 rounded-[2.5rem] flex overflow-x-auto gap-2 border border-blue-50 dark:border-slate-800 shadow-xl sticky top-6 z-20">
                                     {[
-                                        { id: 'overview', label: t('ganMilanTitle'), icon: LayoutGrid },
-                                        { id: 'doshas', label: t('doshaCheck'), icon: ShieldCheck },
-                                        { id: 'forecast', label: "Insights & Timing", icon: Zap },
-                                        { id: 'conclusion', label: t('finalVerdict'), icon: Heart },
+                                        { id: 'overview', label: "Personal & Score", icon: LayoutGrid },
+                                        { id: 'ashtakoot', label: "Gun Milan", icon: Sparkles },
+                                        { id: 'doshas', label: "Dosha Profile", icon: ShieldCheck },
+                                        { id: 'compatibility', label: "Compatibility", icon: Heart },
+                                        { id: 'lifeAreas', label: "Life & Future", icon: Zap },
+                                        { id: 'conclusion', label: "Verdict & Remedies", icon: CheckCircle2 },
                                     ].map((tab) => (
                                         <button
                                             key={tab.id}
@@ -331,35 +354,61 @@ export default function MatchingPage() {
 
                                 {/* Tab Content */}
                                 <div className="min-h-[400px]">
-                                    {activeTab === 'overview' && (
+                                    {activeTab === 'overview' && analysis && (
+                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="bg-white/80 backdrop-blur-xl dark:bg-slate-900 p-8 rounded-[2.5rem] border border-blue-50 dark:border-slate-800 shadow-sm">
+                                                    <h4 className="text-xl font-black text-blue-900 dark:text-white mb-6 flex items-center gap-2">
+                                                        <User className="w-5 h-5" /> Groom Details
+                                                    </h4>
+                                                    <div className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-400">
+                                                        <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><span>Rashi</span><span className="text-blue-600">{translateSign(analysis.section1.groom.rashi, locale)}</span></div>
+                                                        <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><span>Nakshatra</span><span className="text-blue-600">{analysis.section1.groom.nakshatra}</span></div>
+                                                        <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><span>Lagna</span><span className="text-blue-600">{analysis.section1.groom.lagna}</span></div>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white/80 backdrop-blur-xl dark:bg-slate-900 p-8 rounded-[2.5rem] border border-purple-50 dark:border-slate-800 shadow-sm">
+                                                    <h4 className="text-xl font-black text-purple-900 dark:text-white mb-6 flex items-center gap-2">
+                                                        <User className="w-5 h-5" /> Bride Details
+                                                    </h4>
+                                                    <div className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-400">
+                                                        <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><span>Rashi</span><span className="text-purple-600">{translateSign(analysis.section1.bride.rashi, locale)}</span></div>
+                                                        <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><span>Nakshatra</span><span className="text-purple-600">{analysis.section1.bride.nakshatra}</span></div>
+                                                        <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><span>Lagna</span><span className="text-purple-600">{analysis.section1.bride.lagna}</span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="bg-blue-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                                                <div className="relative z-10">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 mb-4">Executive Summary</h4>
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                                                        <div><div className="text-[10px] text-blue-300 uppercase mb-1">Emotional</div><div className="text-lg font-black">{analysis.section2.emotional}</div></div>
+                                                        <div><div className="text-[10px] text-blue-300 uppercase mb-1">Physical</div><div className="text-lg font-black">{analysis.section2.physical}</div></div>
+                                                        <div><div className="text-[10px] text-blue-300 uppercase mb-1">Financial</div><div className="text-lg font-black">{analysis.section2.financial}</div></div>
+                                                        <div><div className="text-[10px] text-blue-300 uppercase mb-1">Longevity</div><div className="text-lg font-black">{analysis.section2.longevity}</div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'ashtakoot' && analysis && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                                            {Object.entries(result.milan.ashtakoot).map(([key, val]: [string, any]) => (
-                                                <div key={key} className="bg-white/80 backdrop-blur-xl dark:bg-slate-900 p-8 rounded-[2.5rem] border border-blue-50 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
+                                            {analysis.section3.table.map((row: any) => (
+                                                <div key={row.name} className="bg-white/80 backdrop-blur-xl dark:bg-slate-900 p-8 rounded-[2.5rem] border border-blue-50 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
                                                     <div className="flex items-center justify-between mb-6">
-                                                        <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-lg transform group-hover:rotate-6 transition-transform ${val.score === val.total ? "bg-blue-600 text-white" : val.score === 0 ? "bg-amber-600 text-white" : "bg-indigo-500 text-white"}`}>
-                                                            <span className="text-xl font-black leading-none">{val.score}</span>
+                                                        <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-lg transform group-hover:rotate-6 transition-transform ${row.got === row.max ? "bg-blue-600 text-white" : row.got === 0 ? "bg-amber-600 text-white" : "bg-indigo-500 text-white"}`}>
+                                                            <span className="text-xl font-black leading-none">{row.got}</span>
                                                             <span className="text-[8px] font-black uppercase opacity-80">Guna</span>
                                                         </div>
                                                         <div className="text-right">
-                                                            <h4 className="font-black text-blue-900 dark:text-white capitalize text-lg tracking-tight">{key}</h4>
-                                                            <div className="text-[10px] font-black text-blue-200 uppercase tracking-widest">{t('maxPoints')}: {val.total}</div>
+                                                            <h4 className="font-black text-blue-900 dark:text-white capitalize text-lg tracking-tight">{row.name}</h4>
+                                                            <div className="text-[10px] font-black text-blue-200 uppercase tracking-widest">MAX: {row.max}</div>
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-5">
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div className="bg-blue-50/50 dark:bg-slate-800/80 p-4 rounded-2xl border border-blue-100 dark:border-slate-800 text-center shadow-inner">
-                                                                <div className="text-[10px] font-black text-blue-500 uppercase mb-1 tracking-tighter">{result.boy.name || "Boy"}</div>
-                                                                <div className="text-xs font-black text-blue-900 dark:text-slate-300">{val.boyVal}</div>
-                                                            </div>
-                                                            <div className="bg-purple-50/50 dark:bg-slate-800/80 p-4 rounded-2xl border border-purple-100 dark:border-slate-800 text-center shadow-inner">
-                                                                <div className="text-[10px] font-black text-purple-500 uppercase mb-1 tracking-tighter">{result.girl.name || "Girl"}</div>
-                                                                <div className="text-xs font-black text-purple-900 dark:text-slate-300">{val.girlVal}</div>
-                                                            </div>
-                                                        </div>
-                                                        <p className="text-[12px] leading-relaxed text-blue-900/50 dark:text-slate-400 font-bold italic font-serif">
-                                                            {generateAshtakootAnalysis(key, val.score, val.total, val.boyVal, val.girlVal, locale)}
-                                                        </p>
-                                                    </div>
+                                                    <p className="text-[12px] leading-relaxed text-blue-900/50 dark:text-slate-400 font-bold italic font-serif">
+                                                        {row.interp}
+                                                    </p>
                                                 </div>
                                             ))}
                                         </div>
@@ -367,215 +416,104 @@ export default function MatchingPage() {
 
                                     {activeTab === 'doshas' && (
                                         <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-right-4 duration-500">
-                                            <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
-                                                <h3 className="text-3xl font-black flex items-center gap-4 text-slate-900 dark:text-white tracking-tight">
-                                                    <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-2xl shadow-sm">
-                                                        <ShieldCheck className="w-8 h-8 text-red-600" />
-                                                    </div>
-                                                    Critical Dosha Profile
-                                                </h3>
-                                                <div className="px-5 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg">Verification Level: High</div>
-                                            </div>
-
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                {/* Boy Dosha Card */}
-                                                <div className={`p-8 rounded-[2.5rem] border-2 relative overflow-hidden transition-all duration-500 ${result.boy.doshas.Manglik.present ? "bg-red-50/30 border-red-200 dark:bg-red-900/10 dark:border-red-900/50" : "bg-green-50/30 border-green-200 dark:bg-green-900/10 dark:border-green-900/50"}`}>
-                                                    <div className="absolute top-0 right-0 p-6 opacity-5 rotate-12">
-                                                        <Zap className="w-24 h-24" />
-                                                    </div>
-                                                    <div className="relative z-10">
-                                                        <div className="flex items-center justify-between mb-6">
-                                                            <div>
-                                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('boysChart')}</div>
-                                                                <div className="font-black text-2xl text-slate-900 dark:text-white">{result.boy.name}</div>
-                                                            </div>
-                                                            <span className={`px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-md ${result.boy.doshas.Manglik.present ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
-                                                                {result.boy.doshas.Manglik.present ? "Manglik Detected" : "Non-Manglik"}
-                                                            </span>
-                                                        </div>
-                                                        <div className="space-y-4">
-                                                            <div className="p-4 bg-white/50 dark:bg-slate-950/50 rounded-2xl border border-white/50">
-                                                                <h5 className="text-[11px] font-black text-slate-500 uppercase mb-2">Astrological Status</h5>
-                                                                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic">
-                                                                    {result.boy.doshas.Manglik.present
-                                                                        ? "Significant Martian intensity observed. This affects temperament and requires compatibility with a similar energy profile."
-                                                                        : "A naturally balanced energy. No restrictive Martian Doshas impede the flow of compatibility here."}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <div className={`p-8 rounded-[2.5rem] border-2 ${result.boy.doshas.Manglik.present ? "bg-red-50/30 border-red-200" : "bg-green-50/30 border-green-200"}`}>
+                                                    <h5 className="font-black text-xl mb-4">{result.boy.name}</h5>
+                                                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${result.boy.doshas.Manglik.present ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
+                                                        {result.boy.doshas.Manglik.present ? "Manglik" : "Non-Manglik"}
+                                                    </span>
                                                 </div>
-
-                                                {/* Girl Dosha Card */}
-                                                <div className={`p-8 rounded-[2.5rem] border-2 relative overflow-hidden transition-all duration-500 ${result.girl.doshas.Manglik.present ? "bg-red-50/30 border-red-200 dark:bg-red-900/10 dark:border-red-900/50" : "bg-green-50/30 border-green-200 dark:bg-green-900/10 dark:border-green-900/50"}`}>
-                                                    <div className="absolute top-0 right-0 p-6 opacity-5 rotate-12">
-                                                        <Sparkles className="w-24 h-24" />
-                                                    </div>
-                                                    <div className="relative z-10">
-                                                        <div className="flex items-center justify-between mb-6">
-                                                            <div>
-                                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('girlsChart')}</div>
-                                                                <div className="font-black text-2xl text-slate-900 dark:text-white">{result.girl.name}</div>
-                                                            </div>
-                                                            <span className={`px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-md ${result.girl.doshas.Manglik.present ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
-                                                                {result.girl.doshas.Manglik.present ? "Manglik Detected" : "Non-Manglik"}
-                                                            </span>
-                                                        </div>
-                                                        <div className="space-y-4">
-                                                            <div className="p-4 bg-white/50 dark:bg-slate-950/50 rounded-2xl border border-white/50">
-                                                                <h5 className="text-[11px] font-black text-slate-500 uppercase mb-2">Astrological Status</h5>
-                                                                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic">
-                                                                    {result.girl.doshas.Manglik.present
-                                                                        ? "Traditional Vedic analysis detects Manglik Dosha. This suggests a strong presence and specific destiny path in marriage."
-                                                                        : "Favorable planetary alignment. The chart is clear of standard Manglik restrictions, aiding smooth union."}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <div className={`p-8 rounded-[2.5rem] border-2 ${result.girl.doshas.Manglik.present ? "bg-red-50/30 border-red-200" : "bg-green-50/30 border-green-200"}`}>
+                                                    <h5 className="font-black text-xl mb-4">{result.girl.name}</h5>
+                                                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${result.girl.doshas.Manglik.present ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
+                                                        {result.girl.doshas.Manglik.present ? "Manglik" : "Non-Manglik"}
+                                                    </span>
                                                 </div>
                                             </div>
-
-                                            <div className="mt-10 p-1 w-full bg-gradient-to-r from-red-600 via-orange-500 to-red-600 rounded-[2.5rem] shadow-xl">
-                                                <div className="bg-slate-900 p-8 rounded-[2.4rem] text-white relative overflow-hidden">
-                                                    <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:rotate-45 transition-transform duration-1000">
-                                                        <ShieldCheck className="w-48 h-48" />
-                                                    </div>
-                                                    <div className="relative z-10">
-                                                        <h4 className="font-black text-red-500 text-[11px] uppercase tracking-[0.3em] mb-4">Final Dosha Consensus</h4>
-                                                        <p className="text-xl md:text-2xl font-black leading-snug drop-shadow-sm">
-                                                            {analyzeManglikCancellation(result.boy, result.girl, locale)}
-                                                        </p>
-                                                        <div className="mt-6 flex items-center gap-3">
-                                                            <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic font-serif">Note: This considers Manglik cancellation factors (Neecha Bhanga, Guru Drishti, etc.)</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div className="mt-8 p-8 bg-slate-900 text-white rounded-[2.5rem]">
+                                                <h4 className="font-black text-red-500 text-[10px] uppercase tracking-widest mb-2">Final Consensus</h4>
+                                                <p className="text-xl font-black">{analyzeManglikCancellation(result.boy, result.girl, locale)}</p>
                                             </div>
                                         </div>
                                     )}
 
-                                    {activeTab === 'forecast' && (
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                {(() => {
-                                                    const report: any = generateDetailedMatchingReport(result, locale);
-                                                    return ['bond', 'timing', 'forecast', 'family', 'finance', 'nature'].map((sec) => {
-                                                        const data = report[sec];
-                                                        const icons: any = {
-                                                            bond: Sparkles,
-                                                            timing: CheckCircle2,
-                                                            forecast: LayoutGrid,
-                                                            family: User,
-                                                            finance: Zap,
-                                                            nature: Heart
-                                                        };
-                                                        const colors: any = {
-                                                            bond: 'bg-purple-100 text-purple-600',
-                                                            timing: 'bg-blue-100 text-blue-600',
-                                                            forecast: 'bg-indigo-100 text-indigo-600',
-                                                            family: 'bg-green-100 text-green-600',
-                                                            finance: 'bg-yellow-100 text-yellow-600',
-                                                            nature: 'bg-pink-100 text-pink-600'
-                                                        }
-                                                        const Icon = icons[sec] || Sparkles;
-                                                        return (
-                                                            <div key={sec} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
-                                                                <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:opacity-[0.1] transition-all group-hover:scale-125 duration-700">
-                                                                    <Icon className="w-32 h-32" />
-                                                                </div>
-                                                                <div className="flex items-start gap-4 mb-6">
-                                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform ${colors[sec] || 'bg-slate-100'}`}>
-                                                                        <Icon className="w-7 h-7" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <h4 className="font-black text-slate-900 dark:text-white text-md uppercase tracking-tight mb-1">{data.title}</h4>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-serif italic">Vedic Insight</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-bold italic relative z-10 font-serif">
-                                                                    "{data.verdict}"
-                                                                </p>
-                                                            </div>
-                                                        );
-                                                    });
-                                                })()}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeTab === 'conclusion' && (
-                                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                            <div className="bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-900 p-12 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group border-4 border-white/5">
-                                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
-                                                <div className="absolute -top-20 -right-20 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
-                                                <div className="absolute -bottom-20 -left-20 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
-
-                                                <div className="relative z-10 text-center md:text-left">
-                                                    <div className="inline-flex items-center gap-3 px-6 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-[12px] font-black tracking-[0.4em] uppercase mb-10 text-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.2)]">
-                                                        <Sparkles className="w-5 h-5 animate-spin" /> Final Divine Verdict
-                                                    </div>
-                                                    <h3 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-none">
-                                                        Proceed with <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500">Divine Wisdom</span>
-                                                    </h3>
-                                                    <div className="p-8 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[3rem] mb-12 shadow-inner">
-                                                        <p className="text-white text-2xl md:text-3xl font-black leading-tight italic tracking-tight font-serif">
-                                                            "{generateMatchVerdict(
-                                                                result.milan.totalScore,
-                                                                result.boy.doshas.Manglik.present,
-                                                                result.girl.doshas.Manglik.present,
-                                                                locale
-                                                            )}"
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-6">
-                                                        <Button onClick={handleDownloadPDF} className="bg-white text-slate-900 hover:bg-slate-50 h-16 px-12 rounded-[2rem] text-xl font-black shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
-                                                            <FileText className="w-6 h-6" /> {t('downloadReport')}
-                                                        </Button>
-                                                        <Button onClick={handleWhatsAppShare} className="bg-green-500 hover:bg-green-600 text-white h-16 px-12 rounded-[2rem] text-xl font-black shadow-[0_20px_40px_rgba(34,197,94,0.3)] transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
-                                                            <Zap className="w-6 h-6" /> WhatsApp Summary
-                                                        </Button>
-                                                    </div>
+                                    {activeTab === 'compatibility' && analysis && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                                            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-blue-50 dark:border-slate-800 shadow-sm">
+                                                <h4 className="text-xl font-black text-blue-900 dark:text-white mb-6">Groom Personality</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {analysis.section4.groomTraits.map((t: string) => <span key={t} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-xs font-black">{t}</span>)}
                                                 </div>
                                             </div>
-
-                                            <div className="bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/10 dark:to-orange-900/10 border border-pink-100 dark:border-pink-950 p-12 rounded-[4rem] relative overflow-hidden group">
-                                                <div className="absolute -top-10 -right-10 opacity-[0.05] group-hover:rotate-12 transition-transform duration-1000">
-                                                    <Zap className="w-64 h-64 text-pink-500" />
+                                            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-purple-50 dark:border-slate-800 shadow-sm">
+                                                <h4 className="text-xl font-black text-purple-900 dark:text-white mb-6">Bride Personality</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {analysis.section4.brideTraits.map((t: string) => <span key={t} className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-xl text-xs font-black">{t}</span>)}
                                                 </div>
-                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 border-b-2 border-pink-100 dark:border-pink-900/40 pb-10">
+                                            </div>
+                                            <div className="md:col-span-2 bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800">
+                                                <h4 className="text-2xl font-black mb-8 flex items-center gap-4">
+                                                    <Heart className="w-8 h-8 text-pink-500" /> Dynamics & Bond
+                                                </h4>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                                     <div>
-                                                        <h4 className="font-black text-pink-900 dark:text-pink-100 text-4xl mb-3 flex items-center gap-4">
-                                                            <div className="p-3 bg-pink-600 text-white rounded-[1.5rem] shadow-lg shadow-pink-500/20">
-                                                                <Zap className="w-8 h-8" />
-                                                            </div>
-                                                            {t('remediesTitle')}
-                                                        </h4>
-                                                        <p className="text-pink-600/60 dark:text-pink-400 font-black uppercase text-[12px] tracking-[0.3em]">Strengthen your celestial bond with Vedic Wisdom</p>
+                                                        <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Emotional Connection</h5>
+                                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic font-serif">"{generateDetailedMatchingReport(result, locale).bond.verdict}"</p>
                                                     </div>
-                                                    <div className="px-6 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 rounded-full text-[10px] font-black tracking-widest uppercase">Recommendations: High Priority</div>
+                                                    <div>
+                                                        <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Nature Synchronization</h5>
+                                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic font-serif">"{generateDetailedMatchingReport(result, locale).nature.verdict}"</p>
+                                                    </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                                                    {(() => {
-                                                        const report: any = generateDetailedMatchingReport(result, locale);
-                                                        return report.remedies.list.map((item: string, i: number) => (
-                                                            <div key={i} className="flex gap-6 items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 rounded-[2.5rem] border-2 border-white dark:border-slate-800 transition-all hover:shadow-2xl hover:scale-[1.03] group/item">
-                                                                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-indigo-600 text-white rounded-2xl flex items-center justify-center text-lg font-black shrink-0 shadow-xl shadow-pink-500/30 group-hover/item:rotate-12 transition-transform">
-                                                                    {i + 1}
-                                                                </div>
-                                                                <p className="text-pink-950 dark:text-pink-50 font-black text-md leading-snug tracking-tight font-serif italic">"{item}"</p>
-                                                            </div>
-                                                        ));
-                                                    })()}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'lifeAreas' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                                            {['finance', 'family', 'timing'].map((sec) => {
+                                                const data = generateDetailedMatchingReport(result, locale)[sec];
+                                                return (
+                                                    <div key={sec} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm">
+                                                        <h4 className="font-black text-slate-900 dark:text-white text-md uppercase mb-4">{data.title}</h4>
+                                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic font-serif">"{data.verdict}"</p>
+                                                    </div>
+                                                );
+                                            })}
+                                            <div className="bg-indigo-900 p-8 rounded-[2.5rem] text-white">
+                                                <h4 className="font-black text-indigo-400 text-xs uppercase mb-4 tracking-widest">Marriage Window</h4>
+                                                {analysis.section14.periods.map((p: any) => (
+                                                    <div key={p.time} className="flex justify-between items-center mb-2 last:mb-0">
+                                                        <span className="font-bold">{p.time}</span>
+                                                        <span className="px-3 py-1 bg-white/10 rounded-lg text-[10px] font-black uppercase">{p.strength}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'conclusion' && analysis && (
+                                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                            <div className="bg-gradient-to-br from-blue-900 to-indigo-950 p-12 rounded-[4rem] text-white text-center shadow-2xl relative overflow-hidden">
+                                                <h3 className="text-4xl md:text-5xl font-black mb-6">Final Divine Verdict</h3>
+                                                <p className="text-2xl font-black italic font-serif text-blue-200">"{analysis.finalVerdict.recommendation}"</p>
+                                                <div className="mt-8 flex justify-center gap-4">
+                                                    <Button onClick={handleDownloadPDF} className="bg-white text-slate-900 rounded-2xl h-14 px-8 font-black">Download PDF</Button>
                                                 </div>
-                                                <div className="mt-12 text-center">
-                                                    <Button variant="ghost" className="text-pink-600 dark:text-pink-400 font-black uppercase tracking-widest text-[10px] flex items-center gap-2 mx-auto hover:bg-pink-50 px-8 py-6 rounded-2xl">
-                                                        Ask a detailed question to our Astrologer <Sparkles className="w-4 h-4" />
-                                                    </Button>
+                                            </div>
+                                            <div className="bg-white dark:bg-slate-900 p-12 rounded-[4rem] border border-pink-100 dark:border-slate-800 shadow-xl">
+                                                <h4 className="text-2xl font-black mb-8 flex items-center gap-3">
+                                                    <Zap className="w-8 h-8 text-yellow-500" /> Professional Remedies
+                                                </h4>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-4">
+                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">For Groom</h5>
+                                                        {analysis.section15.boyRemedies.map((r: string) => <div key={r} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl text-xs font-bold italic font-serif">"{r}"</div>)}
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">For Bride</h5>
+                                                        {analysis.section15.girlRemedies.map((r: string) => <div key={r} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl text-xs font-bold italic font-serif">"{r}"</div>)}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -611,121 +549,197 @@ export default function MatchingPage() {
                     ref={pdfContentRef}
                     className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
                 >
-                    {/* Page 1: Overview & Score */}
-                    <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-blue-600/10">
-                        <div className="flex justify-between items-center border-b-4 border-blue-600 pb-6 mb-10">
-                            <h1 className="text-4xl font-black text-blue-600 uppercase tracking-tighter">
-                                {locale === 'hi' ? "विशेष कुंडली मिलान" : "Celestial Match"}
-                            </h1>
+                    {/* Page 1: PERSONAL DETAILS & SUMMARY */}
+                    <div id="pdf-match-overview" className="p-16 bg-white min-h-[1100px] border-[16px] border-blue-600/5">
+                        <div className="flex justify-between items-start border-b-8 border-blue-600 pb-10 mb-12">
+                            <div>
+                                <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase mb-2">Kundli Milan</h1>
+                                <p className="text-blue-600 font-black tracking-[0.3em] uppercase text-xs">Premium Marriage Compatibility Analysis</p>
+                            </div>
                             <div className="text-right">
-                                <div className="text-5xl font-black text-blue-600">{result.milan.totalScore} / 36</div>
-                                <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">Guna Milan Score</div>
+                                <div className="text-6xl font-black text-blue-600">{result.milan.totalScore} / 36</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Divine Guna Score</div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-10 mb-12">
-                            <div className="bg-blue-50 p-6 rounded-3xl border-2 border-blue-100">
-                                <h3 className="text-sm font-black text-blue-600 uppercase mb-4 tracking-widest">{t("boyIdentityTitle")}</h3>
-                                <div className="text-2xl font-black text-slate-900 mb-1">{result.boy.name}</div>
-                                <div className="text-xs text-slate-500 font-bold uppercase">{boyData.dob} | {boyData.tob}</div>
-                            </div>
-                            <div className="bg-purple-50 p-6 rounded-3xl border-2 border-purple-100">
-                                <h3 className="text-sm font-black text-purple-600 uppercase mb-4 tracking-widest">{t("girlIdentityTitle")}</h3>
-                                <div className="text-2xl font-black text-slate-900 mb-1">{result.girl.name}</div>
-                                <div className="text-xs text-slate-500 font-bold uppercase">{girlData.dob} | {girlData.tob}</div>
+                        <div className="mb-12">
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 1 — Personal Details</h2>
+                            <div className="grid grid-cols-2 gap-10">
+                                <div className="space-y-4">
+                                    <h3 className="text-blue-600 font-black text-sm uppercase">Groom: {analysis.section1.groom.name}</h3>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Date of Birth</span><span className="font-bold text-slate-900">{analysis.section1.groom.dob}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Time of Birth</span><span className="font-bold text-slate-900">{analysis.section1.groom.tob}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Birth Place</span><span className="font-bold text-slate-900">{analysis.section1.groom.pob}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Zodiac Sign</span><span className="font-bold text-slate-900">{analysis.section1.groom.rashi}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Nakshatra</span><span className="font-bold text-slate-900">{analysis.section1.groom.nakshatra}</span></div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <h3 className="text-purple-600 font-black text-sm uppercase">Bride: {analysis.section1.bride.name}</h3>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Date of Birth</span><span className="font-bold text-slate-900">{analysis.section1.bride.dob}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Time of Birth</span><span className="font-bold text-slate-900">{analysis.section1.bride.tob}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Birth Place</span><span className="font-bold text-slate-900">{analysis.section1.bride.pob}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Zodiac Sign</span><span className="font-bold text-slate-900">{analysis.section1.bride.rashi}</span></div>
+                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Nakshatra</span><span className="font-bold text-slate-900">{analysis.section1.bride.nakshatra}</span></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            <h3 className="text-xl font-black text-slate-800 border-l-4 border-blue-600 pl-4">Vedic Conclusion</h3>
-                            <div className="p-8 bg-slate-50 rounded-3xl text-xl leading-relaxed text-slate-700 italic border border-slate-200">
-                                "{generateMatchVerdict(result.milan.totalScore, result.boy.doshas.Manglik.present, result.girl.doshas.Manglik.present, locale)}"
+                        <div>
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 2 — Overall Match Summary</h2>
+                            <div className="grid grid-cols-2 gap-8 mb-10">
+                                <div className="p-6 bg-slate-50 rounded-2xl">
+                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-4">Core Dimensions</div>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between"><span>Emotional Bond</span><span className="font-black">{analysis.section2.emotional}</span></div>
+                                        <div className="flex justify-between"><span>Physical Attraction</span><span className="font-black">{analysis.section2.physical}</span></div>
+                                        <div className="flex justify-between"><span>Financial Outlook</span><span className="font-black">{analysis.section2.financial}</span></div>
+                                        <div className="flex justify-between"><span>Family Environment</span><span className="font-black">{analysis.section2.family}</span></div>
+                                    </div>
+                                </div>
+                                <div className="p-6 bg-blue-900 text-white rounded-2xl">
+                                    <div className="text-[10px] font-black text-blue-400 uppercase mb-4">Divine Verdict</div>
+                                    <div className="text-xl font-black mb-2">{analysis.section2.quality}</div>
+                                    <p className="text-xs text-blue-200 italic font-serif">"{analysis.section2.recommendation}"</p>
+                                </div>
                             </div>
-                        </div>
-
-                        <div className="mt-12 p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl">
-                            <h4 className="font-black text-blue-400 text-[10px] uppercase tracking-[0.3em] mb-4 text-center">Dosha Consensus</h4>
-                            <p className="text-lg font-black text-center leading-snug">
-                                {analyzeManglikCancellation(result.boy, result.girl, locale)}
-                            </p>
                         </div>
                     </div>
 
-                    {/* Page 2: Ashtakoot & Panchang */}
-                    <div id="pdf-match-details" className="p-10 mb-20 bg-white min-h-[1100px]">
-                        <h2 className="text-3xl font-black text-indigo-600 border-b-4 border-indigo-500 pb-4 mb-8">
-                            {locale === 'hi' ? "अष्टकूट मिलान विश्लेषण" : "Ashtakoot Guna Milan"}
-                        </h2>
-                        
+                    {/* Page 2: ASHTAKOOT GUN MILAN ANALYSIS */}
+                    <div id="pdf-match-details" className="p-16 bg-white min-h-[1100px]">
+                        <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 3 — Ashtakoot Gun Milan</h2>
                         <table className="w-full border-collapse mb-12">
                             <thead>
-                                <tr className="bg-indigo-600 text-white">
-                                    <th className="p-4 text-left border border-indigo-500 text-xs">FACTOR</th>
-                                    <th className="p-4 text-center border border-indigo-500 text-xs">BOY</th>
-                                    <th className="p-4 text-center border border-indigo-500 text-xs">GIRL</th>
-                                    <th className="p-4 text-right border border-indigo-500 text-xs text-white/60">MAX</th>
-                                    <th className="p-4 text-right border border-indigo-500 text-xs">GOT</th>
+                                <tr className="bg-slate-900 text-white text-[10px]">
+                                    <th className="p-4 text-left border">COMPATIBILITY FACTOR</th>
+                                    <th className="p-4 text-center border">MAX</th>
+                                    <th className="p-4 text-center border">OBTAINED</th>
+                                    <th className="p-4 text-left border">INTERPRETATION</th>
                                 </tr>
                             </thead>
-                            <tbody className="text-md">
-                                {Object.entries(result.milan.ashtakoot).map(([key, val]: any, idx) => (
-                                    <tr key={key} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
-                                        <td className="p-4 border border-slate-200 font-bold uppercase text-slate-500">{key}</td>
-                                        <td className="p-4 border border-slate-200 text-center font-black">{val.boyVal || "-"}</td>
-                                        <td className="p-4 border border-slate-200 text-center font-black">{val.girlVal || "-"}</td>
-                                        <td className="p-4 border border-slate-200 text-right text-slate-300 font-bold">{val.total}</td>
-                                        <td className="p-4 border border-slate-200 text-right font-black text-indigo-600">{val.score}</td>
+                            <tbody>
+                                {analysis.section3.table.map((row: any) => (
+                                    <tr key={row.name} className="text-xs">
+                                        <td className="p-4 border font-black uppercase text-slate-600">{row.name}</td>
+                                        <td className="p-4 border text-center font-bold">{row.max}</td>
+                                        <td className="p-4 border text-center font-black text-blue-600">{row.got}</td>
+                                        <td className="p-4 border italic font-serif text-slate-500">{row.interp}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-
-                        <h2 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-4 mb-8">
-                            Interpretation
-                        </h2>
-                        <div className="grid grid-cols-1 gap-6">
-                            {Object.entries(result.milan.ashtakoot).map(([key, val]: any) => (
-                                <div key={key} className="p-4 border-l-4 border-slate-200 bg-slate-50">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{key}</span>
-                                    <p className="text-sm text-slate-700 italic font-serif">
-                                        {generateAshtakootAnalysis(key, val.score, val.total, val.boyVal, val.girlVal, locale)}
-                                    </p>
-                                </div>
-                            ))}
+                        <div className="p-8 bg-amber-50 border-l-8 border-amber-500 rounded-xl">
+                            <h4 className="font-black text-amber-900 mb-2 uppercase text-xs">Auspicious Note</h4>
+                            <p className="text-sm italic font-serif text-amber-800">"The Guna Milan of {result.milan.totalScore} points indicates a high degree of cosmic synchronization between the two charts, ensuring a balanced and purposeful union."</p>
                         </div>
                     </div>
 
-                    {/* Page 3: Detailed Forecasts */}
-                    <div id="pdf-match-findings" className="p-10 bg-white min-h-[1100px]">
-                        <h2 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-4 mb-8">
-                            Insights & Remedies
-                        </h2>
+                    {/* Page 3: PERSONALITY & DYNAMICS */}
+                    <div id="pdf-match-compatibility" className="p-16 bg-white min-h-[1100px]">
+                        <div className="mb-12">
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 4 — Personality Analysis</h2>
+                            <div className="grid grid-cols-2 gap-10">
+                                <div>
+                                    <h4 className="text-blue-600 font-black text-xs uppercase mb-4">Groom Attributes</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {analysis.section4.groomTraits.map((t: string) => <span key={t} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black border border-blue-100">{t}</span>)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-purple-600 font-black text-xs uppercase mb-4">Bride Attributes</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {analysis.section4.brideTraits.map((t: string) => <span key={t} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-black border border-purple-100">{t}</span>)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-12">
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 5 — Relationship Dynamics</h2>
+                            <div className="p-8 bg-slate-50 rounded-3xl space-y-6">
+                                <div>
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Synergy Outlook</h4>
+                                    <p className="text-sm italic font-serif text-slate-700 leading-relaxed">"{generateDetailedMatchingReport(result, locale).bond.verdict}"</p>
+                                </div>
+                                <div>
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nature & Temperament</h4>
+                                    <p className="text-sm italic font-serif text-slate-700 leading-relaxed">"{generateDetailedMatchingReport(result, locale).nature.verdict}"</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 7 — Manglik Dosha Analysis</h2>
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className={`p-6 rounded-2xl border-2 ${result.boy.doshas.Manglik.present ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-2">Groom Status</div>
+                                    <div className="text-lg font-black">{analysis.section7.boyStatus}</div>
+                                </div>
+                                <div className={`p-6 rounded-2xl border-2 ${result.girl.doshas.Manglik.present ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-2">Bride Status</div>
+                                    <div className="text-lg font-black">{analysis.section7.girlStatus}</div>
+                                </div>
+                            </div>
+                            <div className="mt-8 p-8 bg-slate-900 text-white rounded-3xl">
+                                <h4 className="text-red-500 font-black text-[10px] uppercase tracking-widest mb-4">Martial Consensus</h4>
+                                <p className="text-lg font-black">{analysis.section7.verdict}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Page 4: LIFE AREAS & FUTURE */}
+                    <div id="pdf-match-life-areas" className="p-16 bg-white min-h-[1100px]">
+                        <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 10-13 — Life Dimensions</h2>
                         <div className="space-y-10">
-                            {(() => {
-                                const report: any = generateDetailedMatchingReport(result, locale);
-                                return ['bond', 'timing', 'forecast', 'family', 'finance', 'nature'].map((sec) => {
-                                    const data = report[sec];
-                                    return (
-                                        <div key={sec} className="border-b border-slate-100 pb-6">
-                                            <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest mb-2">{data.title}</h3>
-                                            <p className="text-md text-slate-600 leading-relaxed italic">"{data.verdict}"</p>
-                                        </div>
-                                    );
-                                });
-                            })()}
-                            
-                            <div className="bg-indigo-50 p-8 rounded-[3.5rem] border-2 border-indigo-100">
-                                <h3 className="text-2xl font-black text-indigo-700 mb-6">Celestial Remedies</h3>
-                                <ul className="space-y-4 text-md text-indigo-900 italic font-serif">
-                                    {(() => {
-                                        const report: any = generateDetailedMatchingReport(result, locale);
-                                        return report.remedies.list.map((r: string, i: number) => (
-                                            <li key={i} className="flex gap-4 items-start">
-                                                <span className="w-6 h-6 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-[10px] font-black shrink-0">{i + 1}</span> {r}
-                                            </li>
-                                        ));
-                                    })()}
-                                </ul>
+                            {['finance', 'family', 'timing'].map((sec) => {
+                                const data = generateDetailedMatchingReport(result, locale)[sec];
+                                return (
+                                    <div key={sec} className="border-b pb-8">
+                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-3">{data.title}</h3>
+                                        <p className="text-sm italic font-serif text-slate-600 leading-relaxed">"{data.verdict}"</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="mt-12">
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 14 — Favorable Marriage Period</h2>
+                            <div className="grid grid-cols-2 gap-8">
+                                {analysis.section14.periods.map((p: any) => (
+                                    <div key={p.time} className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between items-center">
+                                        <span className="font-black text-blue-900">{p.time}</span>
+                                        <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg">{p.strength}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Page 5: REMEDIES & FINAL VERDICT */}
+                    <div id="pdf-match-findings" className="p-16 bg-white min-h-[1100px]">
+                        <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 15 — Astrological Remedies</h2>
+                        <div className="grid grid-cols-2 gap-10 mb-12">
+                            <div className="space-y-6">
+                                <h4 className="text-blue-600 font-black text-xs uppercase">Groom Recommendations</h4>
+                                {analysis.section15.boyRemedies.map((r: string) => <div key={r} className="p-4 bg-slate-50 rounded-xl text-xs font-bold italic font-serif">"{r}"</div>)}
+                            </div>
+                            <div className="space-y-6">
+                                <h4 className="text-purple-600 font-black text-xs uppercase">Bride Recommendations</h4>
+                                {analysis.section15.girlRemedies.map((r: string) => <div key={r} className="p-4 bg-slate-50 rounded-xl text-xs font-bold italic font-serif">"{r}"</div>)}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 16 — Final Astrological Verdict</h2>
+                            <div className="p-12 bg-gradient-to-br from-blue-600 to-indigo-900 text-white rounded-[4rem] text-center shadow-2xl relative overflow-hidden">
+                                <h3 className="text-4xl font-black mb-6">Celestial Union Approved</h3>
+                                <p className="text-2xl font-black italic font-serif text-blue-100 leading-tight">"{analysis.finalVerdict.recommendation}"</p>
+                                <div className="mt-10 pt-10 border-t border-white/20">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">Verified by JyotishConnect AI Engine</p>
+                                </div>
                             </div>
                         </div>
                     </div>

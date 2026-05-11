@@ -80,7 +80,8 @@ export const sendAstrologerAlert = async ({
     userName,
     date,
     time,
-    bookingId
+    bookingId,
+    type
 }: {
     astrologerEmail: string;
     astrologerName: string;
@@ -88,14 +89,41 @@ export const sendAstrologerAlert = async ({
     date: Date | string;
     time: string;
     bookingId: string;
+    type?: string;
 }) => {
     if (!resend) return { success: false };
     try {
+        const formattedDate = new Date(date).toLocaleDateString('en-IN', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
         await resend.emails.send({
-            from: 'JyotishConnect <alerts@jyotishconnect.com>',
+            from: SENDER_EMAIL,
             to: [astrologerEmail],
-            subject: `New Booking: ${userName}`,
-            html: `<p>Namaste Acharya ${astrologerName}, ${userName} has booked a session on ${date} at ${time}. Room ID: ${bookingId}</p>`
+            subject: `New ${type || 'Video'} Session: ${userName}`,
+            html: `
+                <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                    <div style="background-color: #1e293b; padding: 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">JyotishConnect Console</h1>
+                    </div>
+                    <div style="padding: 30px; background-color: #fff;">
+                        <h2 style="color: #333; margin-top: 0;">Namaste Acharya ${astrologerName},</h2>
+                        <p style="color: #475569; font-size: 16px; line-height: 1.6;">A new seeker has scheduled a <strong>${type ? type.toUpperCase() : 'VIDEO'}</strong> session with you.</p>
+                        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
+                            <h3 style="margin-top: 0; color: #1e293b;">Session Details</h3>
+                            <ul style="list-style: none; padding: 0; margin: 0; color: #334155;">
+                                <li style="margin-bottom: 10px;">👤 <strong>Seeker:</strong> ${userName}</li>
+                                <li style="margin-bottom: 10px;">📅 <strong>Date:</strong> ${formattedDate}</li>
+                                <li style="margin-bottom: 10px;">⏰ <strong>Time:</strong> ${time} IST</li>
+                                <li style="margin-bottom: 10px;">🎫 <strong>Booking ID:</strong> ${bookingId}</li>
+                            </ul>
+                        </div>
+                        <div style="text-align: center;">
+                            <a href="https://jyotish-connect-nine.vercel.app/consult/${bookingId}?role=astrologer" style="background-color: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Prepare for Session</a>
+                        </div>
+                    </div>
+                </div>
+            `
         });
         console.log("Alert sent to astrologer");
         return { success: true };

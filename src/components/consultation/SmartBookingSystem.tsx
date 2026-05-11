@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Video, ChevronDown, CheckCircle2 } from "lucide-react";
 import { format, addDays, isSameDay, startOfDay } from "date-fns";
@@ -22,9 +24,12 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [selectedSlot, setSelectedSlot] = useState<string>("");
-    const [duration, setDuration] = useState<string>("30"); 
+    const [duration, setDuration] = useState<string>("30");
     const [mode, setMode] = useState<"video" | "audio" | "chat">("video");
     const [loading, setLoading] = useState(false);
+    const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+    const [fetchingSlots, setFetchingSlots] = useState(false);
+    const [astrologerData, setAstrologerData] = useState<any>(null);
 
     // Generate next 14 days for dropdown
     const dates = Array.from({ length: 14 }, (_, i) => {
@@ -35,22 +40,62 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
         };
     });
 
-    // Generate time slots from 10 AM to 8 PM
-    const generateSlots = () => {
-        const slots = [];
-        let current = 10 * 60; // 10:00 AM
-        const end = 20 * 60; // 08:00 PM
-        const dur = parseInt(duration);
+    // Fetch astrologer data on mount
+    useEffect(() => {
+        const fetchAstro = async () => {
+            const data = await getDoc(doc(db, "astrologers", astrologerId));
+            if (data.exists()) setAstrologerData(data.data());
+        };
+        fetchAstro();
+    }, [astrologerId]);
 
-        while (current <= end - dur) {
-            const hours = Math.floor(current / 60);
-            const minutes = current % 60;
-            const timeString = `${hours % 12 || 12}:${minutes === 0 ? "00" : minutes} ${hours >= 12 ? "PM" : "AM"}`;
-            slots.push(timeString);
-            current += 30; 
+    // Generate slots based on availability
+    useEffect(() => {
+        const fetchSlots = async () => {
+            setFetchingSlots(true);
+            try {
+                // Get availability settings
+                const av = astrologerData?.availability || {
+                    days: [0, 1, 2, 3, 4, 5, 6],
+                    startTime: "10:00",
+                    endTime: "20:00"
+                };
+
+                const dateObj = new Date(selectedDate);
+                const dayOfWeek = dateObj.getDay();
+
+                if (!av.days.includes(dayOfWeek)) {
+                    setAvailableSlots([]);
+                    return;
+                }
+
+                const slots: string[] = [];
+                const [startH, startM] = av.startTime.split(":").map(Number);
+                const [endH, endM] = av.endTime.split(":").map(Number);
+                
+                let current = startH * 60 + startM;
+                const end = endH * 60 + endM;
+                const dur = parseInt(duration);
+
+                while (current <= end - dur) {
+                    const hours = Math.floor(current / 60);
+                    const minutes = current % 60;
+                    const timeString = `${hours % 12 || 12}:${minutes === 0 ? "00" : (minutes < 10 ? "0" + minutes : minutes)} ${hours >= 12 ? "PM" : "AM"}`;
+                    slots.push(timeString);
+                    current += 30; // 30 min intervals for slot starts
+                }
+                setAvailableSlots(slots);
+            } catch (e) {
+                console.error("Error generating slots:", e);
+            } finally {
+                setFetchingSlots(false);
+            }
+        };
+
+        if (astrologerData) {
+            fetchSlots();
         }
-        return slots;
-    };
+    }, [selectedDate, duration, astrologerData]);
 
     const handleBookSession = async () => {
         if (!user || !userData) {
@@ -206,10 +251,13 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                                 onChange={(e) => setSelectedSlot(e.target.value)}
                                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-200 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
                             >
-                                <option value="" disabled>Choose Time</option>
-                                {generateSlots().map((slot) => (
+                                <option value="" disabled>{fetchingSlots ? "Loading..." : "Choose Time"}</option>
+                                {availableSlots.map((slot) => (
                                     <option key={slot} value={slot}>{slot}</option>
                                 ))}
+                                {availableSlots.length === 0 && !fetchingSlots && (
+                                    <option disabled>No Slots Available</option>
+                                )}
                             </select>
                             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                         </div>

@@ -261,7 +261,7 @@ export default function AstrologerDashboard() {
                                 <h2 className="text-xl font-bold text-white">Your Sessions</h2>
                             </div>
                             <Button 
-                                onClick={() => toast.success("Advanced Schedule Management is coming soon! For now, your sessions are automatically synced.")}
+                                onClick={() => router.push('/astrologer/availability')}
                                 variant="ghost" 
                                 className="text-[10px] uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0"
                             >

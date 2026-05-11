@@ -912,6 +912,164 @@ export const generateDetailedMatchingReport = (
     return reports[lang as keyof typeof reports] || reports.en;
 };
 
+/**
+ * Generates the full 16-section Kundli Milan report data.
+ * This function derives all text from the actual calculated scores to ensure accuracy.
+ */
+export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
+    const score = result.milan.totalScore;
+    const ashtakoot = result.milan.ashtakoot;
+    const boy = result.boy;
+    const girl = result.girl;
+
+    const t = (en: string, hi: string, mr: string) => {
+        if (lang === 'hi') return hi;
+        if (lang === 'mr') return mr;
+        return en;
+    };
+
+    // Helper for interpreting scores
+    const getInterpretation = (key: string, s: number, max: number) => {
+        const ratio = s / max;
+        if (ratio >= 0.8) return t("Excellent compatibility in this aspect.", "इस पहलू में उत्कृष्ट अनुकूलता।", "या बाबतीत उत्कृष्ट सुसंगतता.");
+        if (ratio >= 0.5) return t("Good and manageable synchronization.", "अच्छा और प्रबंधनीय तालमेल।", "चांगली आणि व्यवस्थापित करण्यायोग्य सुसंगतता.");
+        return t("Potential friction, requires mutual adjustment.", "संभावित घर्षण, आपसी समायोजन की आवश्यकता है।", "संभावित संघर्ष, परस्पर समन्वयाची गरज आहे.");
+    };
+
+    const quality = score >= 28 ? t("Excellent", "उत्कृष्ट", "उत्कृष्ट") : 
+                    score >= 18 ? t("Very Good", "बहुत अच्छा", "खूप चांगले") : 
+                    score >= 10 ? t("Average", "औसत", "सरासरी") : t("Poor", "कमजोर", "कमकुवत");
+
+    const recommendation = score >= 18 ? t("Recommended for Marriage", "विवाह के लिए अनुशंसित", "विवाहासाठी शिफारस केली जाते") : t("Not Recommended without Remedies", "उपायों के बिना अनुशंसित नहीं", "उपाय केल्याशिवाय शिफारस नाही");
+
+    // Derive Personality from Moon Signs
+    const getTraits = (sign: string) => {
+        const traitMap: any = {
+            "Aries": [t("Energetic", "ऊर्जावान", "उत्साही"), t("Bold", "निडर", "धडाडीचा"), t("Spontaneous", "सहज", "स्फूर्त")],
+            "Taurus": [t("Reliable", "भरोसेमंद", "विश्वासार्ह"), t("Patient", "धैर्यवान", "संयमी"), t("Practical", "व्यावहारिक", "व्यावहारिक")],
+            "Gemini": [t("Communicative", "मिलनसार", "संवादप्रिय"), t("Adaptable", "अनुकूलनीय", "अनुकूलनक्षम"), t("Witty", "हाजिरजवाब", "चतुर")],
+            "Cancer": [t("Emotional", "भावुक", "भावनिक"), t("Nurturing", "देखभाल करने वाला", "ममताबद्ध"), t("Intuitive", "सहज ज्ञान युक्त", "अंतर्ज्ञानी")],
+            "Leo": [t("Confident", "आत्मविश्वासी", "आत्मविश्वासी"), t("Generous", "उدار", "उदार"), t("Ambitious", "महत्वाकांक्षी", "महत्वाकांक्षी")],
+            "Virgo": [t("Analytical", "विश्लेषणात्मक", "विश्लेषणात्मक"), t("Precise", "सटीक", "अचूक"), t("Hardworking", "मेहनती", "कष्टाळू")],
+            "Libra": [t("Balanced", "संतुलित", "संतुलित"), t("Diplomatic", "राजनयिक", "मुत्सद्दी"), t("Charming", "आकर्षक", "आकर्षक")],
+            "Scorpio": [t("Intense", "तीव्र", "तीव्र"), t("Determined", "दृढ़", "निश्चयी"), t("Mysterious", "रहस्यमय", "रहस्यमय")],
+            "Sagittarius": [t("Optimistic", "आशावादी", "आशावादी"), t("Adventurous", "साहसी", "साहसी"), t("Honest", "ईमानदार", "प्रामाणिक")],
+            "Capricorn": [t("Disciplined", "अनुशासित", "शिस्तप्रिय"), t("Ambitious", "महत्वाकांक्षी", "महत्वाकांक्षी"), t("Patient", "धैर्यवान", "संयमी")],
+            "Aquarius": [t("Original", "मौलिक", "मौलिक"), t("Independent", "स्वतंत्र", "स्वतंत्र"), t("Humanitarian", "मानवतावादी", "मानवतावादी")],
+            "Pisces": [t("Compassionate", "दयालु", "दयाळू"), t("Artistic", "कलात्मक", "कलात्मक"), t("Dreamy", "काल्पनिक", "काल्पनिक")]
+        };
+        return traitMap[sign] || [t("Intelligent", "बुद्धिमान", "हुशार"), t("Kind", "दयालु", "दयाळू"), t("Determined", "दृढ़", "निश्चयी")];
+    };
+
+    // Dynamic Remedies based on Doshas and Rashi
+    const getPersonalizedRemedies = (p: any, isBoy: boolean) => {
+        const rems = [];
+        const sign = p.moonSign;
+        
+        if (p.doshas.Manglik.present) {
+            rems.push(isBoy ? t("Fast on Tuesdays and visit Hanuman Temple", "मंगलवार को उपवास रखें और हनुमान मंदिर जाएं", "मंगळवारी उपवास करा आणि हनुमान मंदिरात जा") : t("Pray to Goddess Mangala Gauri", "देवी मंगला गौरी की पूजा करें", "देवी मंगला गौरीची पूजा करा"));
+        }
+        
+        const signRems: any = {
+            "Aries": t("Donate red items on Tuesdays", "मंगलवार को लाल वस्तुओं का दान करें", "मंगळवारी लाल वस्तूंचे दान करा"),
+            "Taurus": t("Offer white flowers to Lakshmi", "लक्ष्मी जी को सफेद फूल चढ़ाएं", "लक्ष्मी देवीला पांढरी फुले अर्पण करा"),
+            "Gemini": t("Feed green grass to cows", "गाय को हरी घास खिलाएं", "गायीला हिरवा चारा द्या"),
+            "Cancer": t("Drink water from silver glass", "चांदी के गिलास में पानी पिएं", "चांदीच्या ग्लासमध्ये पाणी प्या"),
+            "Leo": t("Offer water to Sun at sunrise", "सूर्योदय के समय सूर्य को जल दें", "सूर्योदयाच्या वेळी सूर्याला पाणी अर्पण करा"),
+            "Virgo": t("Keep a green hanky with you", "अपने पास हरा रुमाल रखें", "जवळ हिरवा रुमाल ठेवा"),
+            "Libra": t("Apply white sandalwood tilak", "सफेद चंदन का तिलक लगाएं", "पांढऱ्या चंदनाचा टिळा लावा"),
+            "Scorpio": t("Avoid spicy food on Tuesdays", "मंगलवार को मसालेदार भोजन से बचें", "मंगळवारी तिखट अन्न टाळा"),
+            "Sagittarius": t("Apply saffron tilak daily", "रोजाना केसर का तिलक लगाएं", "दररोज केशर टिळा लावा"),
+            "Capricorn": t("Light a mustard oil lamp for Shani", "शनि देव के लिए सरसों के तेल का दीपक जलाएं", "शनिदेवासाठी मोहरीच्या तेलाचा दिवा लावा"),
+            "Aquarius": t("Help the poor and needy", "गरीबों और जरूरतमंदों की मदद करें", "गरीब आणि गरजू लोकांना मदत करा"),
+            "Pisces": t("Worship Lord Vishnu on Thursdays", "गुरुवार को भगवान विष्णु की पूजा करें", "गुरुवारी भगवान विष्णूची पूजा करा")
+        };
+        
+        if (signRems[sign]) rems.push(signRems[sign]);
+        rems.push(t("Maintain a positive atmosphere at home", "घर में सकारात्मक वातावरण बनाए रखें", "घरात सकारात्मक वातावरण ठेवा"));
+        
+        return rems;
+    };
+
+    const boyRemedies = getPersonalizedRemedies(boy, true);
+    const girlRemedies = getPersonalizedRemedies(girl, false);
+
+
+    return {
+        section1: {
+            groom: {
+                name: boy.name,
+                dob: boy.dob,
+                tob: boy.tob,
+                pob: boy.pob,
+                rashi: boy.moonSign,
+                nakshatra: boy.nakshatra,
+                lagna: boy.ascendant
+            },
+            bride: {
+                name: girl.name,
+                dob: girl.dob,
+                tob: girl.tob,
+                pob: girl.pob,
+                rashi: girl.moonSign,
+                nakshatra: girl.nakshatra,
+                lagna: girl.ascendant
+            }
+        },
+        section2: {
+            score: `${score} / 36`,
+            quality: quality,
+            emotional: ashtakoot.bhakoot.score >= 5 ? t("Strong Connection", "मजबूत संबंध", "मजबूत संबंध") : t("Average Bonding", "औसत जुड़ाव", "सरासरी बाँडिंग"),
+            physical: ashtakoot.yoni.score >= 3 ? t("High Harmony", "उच्च सद्भाव", "उच्च सुसंवाद") : t("Adjustable", "समायोज्य", "समायोज्य"),
+            financial: ashtakoot.bhakoot.score >= 4 ? t("Wealth Gaining", "धन प्राप्ति", "धनप्राप्ती") : t("Careful Planning Needed", "सावधानीपूर्वक योजना की आवश्यकता", "काळजीपूर्वक नियोजनाची गरज"),
+            longevity: ashtakoot.nadi.score >= 6 ? t("Very High", "बहुत उच्च", "खूप उच्च") : t("Caution Advised", "सावधानी की सलाह", "सावधगिरीचा सल्ला"),
+            family: ashtakoot.gana.score >= 4 ? t("Respectful", "सम्मानजनक", "आदरयुक्त") : t("Mediocre", "औसत दर्जे का", "साधारण"),
+            manglik: boy.doshas.Manglik.present && girl.doshas.Manglik.present ? t("Both Manglik (Dosha Cancelled)", "दोनों मांगलिक (दोष रद्द)", "दोन्ही मांगलिक (दोष रद्द)") : (boy.doshas.Manglik.present || girl.doshas.Manglik.present ? t("Partial Manglik Imbalance", "आंशिक मांगलिक असंतुलन", "अंशतः मांगलिक असंतुलन") : t("Non-Manglik Bliss", "गैर-मांगलिक आनंद", "गैर-मांगलिक आनंद")),
+            recommendation: recommendation
+        },
+        section3: {
+            table: [
+                { name: t("Varna", "वर्ण", "वर्ण"), max: 1, got: ashtakoot.varna.score, interp: getInterpretation("varna", ashtakoot.varna.score, 1) },
+                { name: t("Vashya", "वश्य", "वश्य"), max: 2, got: ashtakoot.vashya.score, interp: getInterpretation("vashya", ashtakoot.vashya.score, 2) },
+                { name: t("Tara", "तारा", "तारा"), max: 3, got: ashtakoot.tara.score, interp: getInterpretation("tara", ashtakoot.tara.score, 3) },
+                { name: t("Yoni", "योनि", "योनि"), max: 4, got: ashtakoot.yoni.score, interp: getInterpretation("yoni", ashtakoot.yoni.score, 4) },
+                { name: t("Graha Maitri", "ग्रह मैत्री", "ग्रह मैत्री"), max: 5, got: ashtakoot.maitri.score, interp: getInterpretation("maitri", ashtakoot.maitri.score, 5) },
+                { name: t("Gana", "गण", "गण"), max: 6, got: ashtakoot.gana.score, interp: getInterpretation("gana", ashtakoot.gana.score, 6) },
+                { name: t("Bhakoot", "भकूट", "भकूट"), max: 7, got: ashtakoot.bhakoot.score, interp: getInterpretation("bhakoot", ashtakoot.bhakoot.score, 7) },
+                { name: t("Nadi", "नाड़ी", "नाड़ी"), max: 8, got: ashtakoot.nadi.score, interp: getInterpretation("nadi", ashtakoot.nadi.score, 8) }
+            ]
+        },
+        section4: {
+            groomTraits: getTraits(boy.moonSign),
+            brideTraits: getTraits(girl.moonSign)
+        },
+        section7: {
+            boyStatus: boy.doshas.Manglik.present ? t("Manglik", "मांगलिक", "मांगलिक") : t("Non-Manglik", "गैर-मांगलिक", "गैर-मांगलिक"),
+            girlStatus: girl.doshas.Manglik.present ? t("Manglik", "मांगलिक", "मांगलिक") : t("Non-Manglik", "गैर-मांगलिक", "गैर-मांगलिक"),
+            verdict: analyzeManglikCancellation(boy, girl, lang)
+        },
+        section14: {
+            periods: [
+                { time: `${new Date().getFullYear()} - ${new Date().getFullYear() + 1}`, strength: score >= 24 ? t("Very Strong", "बहुत मजबूत", "खूप मजबूत") : t("Moderate", "मध्यम", "मध्यम") },
+                { time: `${new Date().getFullYear() + 2}`, strength: t("Supportive", "सहायक", "सहाय्यक") }
+            ]
+        },
+        section15: {
+            boyRemedies,
+            girlRemedies,
+            jointRemedies: [
+                t("Visit temple together regularly", "नियमित रूप से एक साथ मंदिर जाएं", "नियमितपणे एकत्र मंदिरात जा"),
+                t("Practice transparent communication", "पारदर्शी संचार का अभ्यास करें", "पारदर्शक संवाद राखा")
+            ]
+        },
+        finalVerdict: {
+            score,
+            recommendation,
+            quality
+        }
+    };
+};
+
 export const generateAshtakootAnalysis = (
     key: string,
     score: number,
