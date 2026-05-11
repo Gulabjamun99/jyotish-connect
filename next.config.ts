@@ -38,8 +38,12 @@ const nextConfig: NextConfig = {
       new (require("copy-webpack-plugin"))({
         patterns: [
           {
-            from: "node_modules/swisseph-wasm/dist/swisseph.wasm",
+            from: "node_modules/swisseph-wasm/wsam/swisseph.wasm",
             to: "static/wasm/swisseph.wasm",
+          },
+          {
+            from: "node_modules/swisseph-wasm/wsam/swisseph.data",
+            to: "static/wasm/swisseph.data",
           },
         ],
       })
