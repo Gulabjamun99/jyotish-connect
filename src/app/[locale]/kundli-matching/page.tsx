@@ -16,7 +16,7 @@ import { LocationInput } from "@/components/kundli/LocationInput";
 // import { calculatePlanets, calculateGunMilan, calculatePanchang } from "@/lib/astrology/calculator";
 // ... imports
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
-import { generateDetailedMatchingReport } from "@/lib/astrology/prediction-engine";
+import { generateFullMatchAnalysis } from "@/lib/astrology/prediction-engine";
 
 // ... imports
 type PersonDetails = {
@@ -129,15 +129,15 @@ export default function KundliMatchingPage() {
 
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        const overviewImg = await captureSection("pdf-match-p1");
+        const overviewImg = await captureSection("pdf-match-overview");
         if (overviewImg) doc.addImage(overviewImg, 'JPEG', 0, 0, 210, 297);
 
         doc.addPage();
-        const detailsImg = await captureSection("pdf-match-p2");
+        const detailsImg = await captureSection("pdf-match-details");
         if (detailsImg) doc.addImage(detailsImg, 'JPEG', 0, 0, 210, 297);
 
         doc.addPage();
-        const analysisImg = await captureSection("pdf-match-p3");
+        const analysisImg = await captureSection("pdf-match-findings");
         if (analysisImg) doc.addImage(analysisImg, 'JPEG', 0, 0, 210, 297);
 
         toast.success("Match Report ready!", { id: "pdf-match" });
@@ -148,6 +148,12 @@ export default function KundliMatchingPage() {
         if (score > 24) return locale === 'hi' ? 'उत्कृष्ट मिलान' : 'Excellent Match';
         if (score > 18) return locale === 'hi' ? 'औसत मिलान' : 'Average Match';
         return locale === 'hi' ? 'कम अनुकूलता' : 'Low Compatibility';
+    };
+
+    const getMarriageStabilityMessage = (score: number) => {
+        if (score >= 28) return locale === 'hi' ? 'वैवाहिक जीवन बहुत सुखद और स्थिर रहेगा।' : 'Marital life will be very happy and stable.';
+        if (score >= 18) return locale === 'hi' ? 'मिलान अच्छा है, कुछ छोटे समझौतों की जरूरत हो सकती है।' : 'Match is good, might need some minor adjustments.';
+        return locale === 'hi' ? 'विवाह से पहले उचित ज्योतिषीय परामर्श और उपायों की सलाह दी जाती है।' : 'Proper astrological consultation and remedies are advised before marriage.';
     };
 
     return (
