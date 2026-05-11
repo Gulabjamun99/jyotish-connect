@@ -203,13 +203,13 @@ export default function KundliMatchingPage() {
                                 <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("birthCoordinatesLabel")}</Label>
                                 <LocationInput
                                     value={boy.place}
-                                    onChange={(location, lat, lng) => {
-                                        setBoy({
-                                            ...boy,
+                                    onChange={(location: string, lat?: number, lng?: number) => {
+                                        setBoy(prev => ({
+                                            ...prev,
                                             place: location,
-                                            lat: lat ?? 28.6139,
-                                            lng: lng ?? 77.2090
-                                        });
+                                            lat: lat ?? prev.lat,
+                                            lng: lng ?? prev.lng
+                                        }));
                                     }}
                                     required
                                 />
@@ -246,13 +246,13 @@ export default function KundliMatchingPage() {
                                 <Label className="text-xs font-bold text-white/60 uppercase tracking-wider">{t("birthCoordinatesLabel")}</Label>
                                 <LocationInput
                                     value={girl.place}
-                                    onChange={(location, lat, lng) => {
-                                        setGirl({
-                                            ...girl,
+                                    onChange={(location: string, lat?: number, lng?: number) => {
+                                        setGirl(prev => ({
+                                            ...prev,
                                             place: location,
-                                            lat: lat ?? 28.6139,
-                                            lng: lng ?? 77.2090
-                                        });
+                                            lat: lat ?? prev.lat,
+                                            lng: lng ?? prev.lng
+                                        }));
                                     }}
                                     required
                                 />

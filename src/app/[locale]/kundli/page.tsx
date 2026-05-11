@@ -298,19 +298,7 @@ export default function KundliPage() {
         doc.save(`Kundli_Report_${formData.name.replace(/\s+/g, '_')}.pdf`);
     };
 
-        // --- PAGE 4+: DOSHAS & PREDICTIONS (Snapshots) ---
-        if (doshasImg) {
-            doc.addPage();
-            doc.addImage(doshasImg, 'JPEG', 0, 0, 210, 297);
-        }
-        if (predictionsImg) {
-            doc.addPage();
-            doc.addImage(predictionsImg, 'JPEG', 0, 0, 210, 297);
-        }
 
-        toast.success("Report generated!", { id: "pdf-gen" });
-        doc.save(`Kundli_Report_${formData.name}.pdf`);
-    };
 
     return (
         <main className="min-h-screen bg-[#050510] text-white overflow-x-hidden selection:bg-orange-500/30 font-inter">
@@ -377,13 +365,13 @@ export default function KundliPage() {
                                     <label className="text-xs font-bold text-white/60 uppercase tracking-wider">Location</label>
                                     <LocationInput
                                         value={formData.birthplace}
-                                        onChange={(location, lat, lng) => {
-                                            setFormData({
-                                                ...formData,
+                                        onChange={(location: string, lat?: number, lng?: number) => {
+                                            setFormData(prev => ({
+                                                ...prev,
                                                 birthplace: location,
-                                                latitude: lat ?? 28.6139,
-                                                longitude: lng ?? 77.2090
-                                            });
+                                                latitude: lat ?? prev.latitude,
+                                                longitude: lng ?? prev.longitude
+                                            }));
                                         }}
                                         required
                                     />
