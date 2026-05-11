@@ -16,7 +16,7 @@ import { SmartBookingSystem } from "@/components/consultation/SmartBookingSystem
 export default function AstrologerProfilePage() {
     const { id } = useParams();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const [astrologer, setAstrologer] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isSchedulingOpen, setIsSchedulingOpen] = useState(false);

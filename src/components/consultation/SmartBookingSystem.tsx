@@ -18,6 +18,7 @@ interface SmartBookingProps {
 }
 
 export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEmail, user, userData }: SmartBookingProps) => {
+    console.log("Rendering SmartBookingSystem for:", astrologerName);
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [selectedSlot, setSelectedSlot] = useState<string>("");
