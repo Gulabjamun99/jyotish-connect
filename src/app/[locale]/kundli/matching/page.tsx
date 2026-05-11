@@ -64,8 +64,20 @@ export default function MatchingPage() {
                 body: JSON.stringify({
                     type: "match",
                     data: {
-                        boyDetails: { date: bDate, lat: boyData.lat, lng: boyData.lng },
-                        girlDetails: { date: gDate, lat: girlData.lat, lng: girlData.lng }
+                        boyDetails: { 
+                            date: bDate, 
+                            lat: boyData.lat, 
+                            lng: boyData.lng, 
+                            name: boyData.name, 
+                            birthplace: boyData.birthplace 
+                        },
+                        girlDetails: { 
+                            date: gDate, 
+                            lat: girlData.lat, 
+                            lng: girlData.lng, 
+                            name: girlData.name, 
+                            birthplace: girlData.birthplace 
+                        }
                     }
                 })
             });
@@ -190,9 +202,9 @@ export default function MatchingPage() {
         }
 
         // Page 5: Findings & Remedies
-        if (findingsImg) {
+        if (remediesImg) {
             doc.addPage();
-            doc.addImage(findingsImg, 'JPEG', 0, 0, 210, 297);
+            doc.addImage(remediesImg, 'JPEG', 0, 0, 210, 297);
             if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
             addFooter(5);
         }

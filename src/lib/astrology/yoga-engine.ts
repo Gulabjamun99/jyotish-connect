@@ -57,8 +57,12 @@ export function detectYogas(planets: any[], houses: any[]): Yoga[] {
         }
     };
 
-    // Note: To do this properly, we need the actual calculated house of each planet
-    // ...
+    // Call Mahapurusha checks
+    checkMahapurusha(mars, mars?.house || 0, "Ruchaka Yoga", 1);
+    checkMahapurusha(mercury, mercury?.house || 0, "Bhadra Yoga", 1);
+    checkMahapurusha(jupiter, jupiter?.house || 0, "Hamsa Yoga", 1);
+    checkMahapurusha(venus, venus?.house || 0, "Malavya Yoga", 1);
+    checkMahapurusha(saturn, saturn?.house || 0, "Shasha Yoga", 1);
 
     return yogas;
 }

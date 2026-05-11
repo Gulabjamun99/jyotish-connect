@@ -176,11 +176,12 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
 
     const ascSignId = Math.floor(data.ascendant / 30) + 1;
 
+    const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+    const nakshatras = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
+
     const planetsWithVaisheshika = data.planets.map(p => {
-        const signId = Math.floor(p.longitude / 30) + 1;
-        const nakshatraId = Math.floor(p.longitude / (360 / 27)) + 1;
-        const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
-        const nakshatras = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
+        const signId = (Math.floor(p.longitude / 30) % 12) + 1;
+        const nakshatraId = (Math.floor(p.longitude / (360 / 27)) % 27) + 1;
 
         return {
             ...p,
@@ -233,9 +234,9 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     let isPitra = false;
     let pitraDesc = "No Pitra Dosha detected.";
     if (sun && rahu && ketu) {
-        const sunHouse = (sun.signId - ascSignId + 12) % 12 + 1;
-        const rahuHouse = (rahu.signId - ascSignId + 12) % 12 + 1;
-        const ketuHouse = (ketu.signId - ascSignId + 12) % 12 + 1;
+        const sunHouse = sun.house;
+        const rahuHouse = rahu.house;
+        const ketuHouse = ketu.house;
 
         // Check if Sun is in same house as Rahu/Ketu or 9th house afflicted
         isPitra = sunHouse === rahuHouse || sunHouse === ketuHouse || sunHouse === 9 || rahuHouse === 9 || ketuHouse === 9;
@@ -317,6 +318,10 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
 
     return {
         ...data,
+        name: "Self",
+        moonSign: moon?.sign || "Unknown",
+        nakshatra: moon?.nakshatra || "Unknown",
+        ascendant: signs[ascSignId - 1],
         planets: planetsWithVaisheshika,
         panchang,
         dasha,
@@ -331,14 +336,30 @@ export async function performMatchMaking(boyDetails: any, girlDetails: any) {
     const boyData = await getFullAstrologyData(boyDetails.date, boyDetails.lat, boyDetails.lng);
     const girlData = await getFullAstrologyData(girlDetails.date, girlDetails.lat, girlDetails.lng);
 
-    const boyMoon = boyData.planets.find(p => p.name === "Moon");
-    const girlMoon = girlData.planets.find(p => p.name === "Moon");
+    // Merge names and details for UI
+    const boy = { 
+        ...boyData, 
+        name: boyDetails.name || "Groom",
+        dob: boyDetails.date.toLocaleDateString(),
+        tob: boyDetails.date.toLocaleTimeString(),
+        pob: boyDetails.birthplace || "Unknown"
+    };
+    const girl = { 
+        ...girlData, 
+        name: girlDetails.name || "Bride",
+        dob: girlDetails.date.toLocaleDateString(),
+        tob: girlDetails.date.toLocaleTimeString(),
+        pob: girlDetails.birthplace || "Unknown"
+    };
+
+    const boyMoon = boy.planets.find(p => p.name === "Moon");
+    const girlMoon = girl.planets.find(p => p.name === "Moon");
 
     const milan = calculateGuna(boyMoon, girlMoon);
 
     return {
-        boy: boyData,
-        girl: girlData,
+        boy,
+        girl,
         milan
     };
 }

@@ -71,7 +71,7 @@ export class AstrologyService {
                 longitude = 0;
             }
 
-            const signId = Math.floor(longitude / 30) + 1;
+            const signId = (Math.floor(longitude / 30) % 12) + 1;
             const deg = longitude % 30;
 
             return {
@@ -155,7 +155,7 @@ export class AstrologyService {
         }
 
         // Add Ascendant as a pseudo-planet in the results
-        const ascSignId = Math.floor(ascendant / 30) + 1;
+        const ascSignId = (Math.floor(ascendant / 30) % 12) + 1;
         results.push({
             name: "Asc",
             longitude: ascendant,
