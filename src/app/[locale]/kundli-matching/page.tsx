@@ -332,23 +332,24 @@ export default function KundliMatchingPage() {
                             )}
 
                             {activeTab === 'ashtakoot' && (
-                                            <div className="flex items-center gap-2 mb-2 text-white/30 text-xs font-black uppercase tracking-widest">
-                                                <Users className="w-4 h-4" /> {detailedReport.nature.title}
-                                            </div>
-                                            <p className="text-sm text-white/80 font-medium">{detailedReport.nature.verdict}</p>
+                                <div className="grid md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl">
+                                        <div className="flex items-center gap-2 mb-3 text-orange-400 text-xs font-black uppercase tracking-widest">
+                                            <Users className="w-4 h-4" /> {detailedReport.nature.title}
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-2 text-white/30 text-xs font-black uppercase tracking-widest">
-                                                <Wallet className="w-4 h-4" /> {detailedReport.finance.title}
-                                            </div>
-                                            <p className="text-sm text-white/80 font-medium">{detailedReport.finance.verdict}</p>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.nature.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl">
+                                        <div className="flex items-center gap-2 mb-3 text-blue-400 text-xs font-black uppercase tracking-widest">
+                                            <Wallet className="w-4 h-4" /> {detailedReport.finance.title}
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-2 text-white/30 text-xs font-black uppercase tracking-widest">
-                                                <Sparkles className="w-4 h-4" /> {detailedReport.family.title}
-                                            </div>
-                                            <p className="text-sm text-white/80 font-medium">{detailedReport.family.verdict}</p>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.finance.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl">
+                                        <div className="flex items-center gap-2 mb-3 text-purple-400 text-xs font-black uppercase tracking-widest">
+                                            <Sparkles className="w-4 h-4" /> {detailedReport.family.title}
                                         </div>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.family.verdict}</p>
                                     </div>
                                 </div>
                             )}

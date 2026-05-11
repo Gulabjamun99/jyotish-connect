@@ -1019,6 +1019,12 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
     const boyRemedies = getPersonalizedRemedies(boy, true);
     const girlRemedies = getPersonalizedRemedies(girl, false);
 
+    const jointRemedies = [
+        t("Visit a holy temple together on Fridays", "शुक्रवार को एक साथ पवित्र मंदिर जाएं", "शुक्रवारी एकत्र पवित्र मंदिरात जा"),
+        t("Practice transparent communication daily", "रोजाना पारदर्शी संवाद का अभ्यास करें", "दररोज पारदर्शक संवाद राखा"),
+        t("Perform joint charity on special occasions", "विशेष अवसरों पर संयुक्त दान करें", "विशेष प्रसंगी संयुक्त दान करा")
+    ];
+
 
     return {
         section1: {
@@ -1052,6 +1058,30 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
             manglik: boy.doshas.Manglik.present && girl.doshas.Manglik.present ? t("Both Manglik (Dosha Cancelled)", "दोनों मांगलिक (दोष रद्द)", "दोन्ही मांगलिक (दोष रद्द)") : (boy.doshas.Manglik.present || girl.doshas.Manglik.present ? t("Partial Manglik Imbalance", "आंशिक मांगलिक असंतुलन", "अंशतः मांगलिक असंतुलन") : t("Non-Manglik Bliss", "गैर-मांगलिक आनंद", "गैर-मांगलिक आनंद")),
             recommendation: recommendation
         },
+        marriage: {
+            title: t("Marriage Stability", "विवाह स्थिरता", "विवाह स्थिरता"),
+            verdict: score >= 24 ? t("Excellent marital bliss predicted.", "उत्कृष्ट वैवाहिक सुख की भविष्यवाणी।", "उत्कृष्ट वैवाहिक सुखाची भविष्यवाणी.") : t("Average stability, needs mutual understanding.", "औसत स्थिरता, आपसी समझ की आवश्यकता है।", "सरासरी स्थिरता, परस्पर समंजसपणा आवश्यक आहे.")
+        },
+        nature: {
+            title: t("Nature & Temperament", "स्वभाव और व्यवहार", "स्वभाव आणि वर्तन"),
+            verdict: ashtakoot.gana.score >= 4 ? t("Complementary personalities.", "पूरक व्यक्तित्व।", "पूरक व्यक्तिमत्व.") : t("Diverse natures, patience required.", "विविध स्वभाव, धैर्य आवश्यक।", "विविध स्वभाव, संयम आवश्यक.")
+        },
+        family: {
+            title: t("Family & Progeny", "परिवार और संतान", "कुटुंब आणि संतती"),
+            verdict: ashtakoot.nadi.score >= 8 ? t("Strong family growth potential.", "मजबूत पारिवारिक विकास की संभावना।", "मजबूत कौटुंबिक वाढीची शक्यता.") : t("Consult expert for Nadi dosha if scores are low.", "यदि स्कोर कम है तो नाड़ी दोष के लिए विशेषज्ञ से परामर्श करें।", "जर गुण कमी असतील तर नाडी दोषासाठी तज्ज्ञांचा सल्ला घ्या.")
+        },
+        finance: {
+            title: t("Financial Prosperity", "वित्तीय समृद्धि", "आर्थिक समृद्धी"),
+            verdict: ashtakoot.bhakoot.score >= 7 ? t("Great financial future together.", "साथ में शानदार वित्तीय भविष्य।", "एकत्र उत्तम आर्थिक भविष्य.") : t("Stable income, but careful spending advised.", "स्थिर आय, लेकिन सावधानी से खर्च करने की सलाह।", "स्थिर उत्पन्न, परंतु काळजीपूर्वक खर्च करण्याचा सल्ला.")
+        },
+        forecast: {
+            title: t("Future Forecast", "भविष्य का पूर्वानुमान", "भविष्यातील अंदाज"),
+            verdict: recommendation
+        },
+        remedies: {
+            title: t("Divine Remedies", "दिव्य उपाय", "दिव्य उपाय"),
+            list: jointRemedies
+        },
         section3: {
             table: [
                 { name: t("Varna", "वर्ण", "वर्ण"), max: 1, got: ashtakoot.varna.score, interp: getInterpretation("varna", ashtakoot.varna.score, 1) },
@@ -1082,10 +1112,7 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
         section15: {
             boyRemedies,
             girlRemedies,
-            jointRemedies: [
-                t("Visit temple together regularly", "नियमित रूप से एक साथ मंदिर जाएं", "नियमितपणे एकत्र मंदिरात जा"),
-                t("Practice transparent communication", "पारदर्शी संचार का अभ्यास करें", "पारदर्शक संवाद राखा")
-            ]
+            jointRemedies: jointRemedies
         },
         finalVerdict: {
             score,
