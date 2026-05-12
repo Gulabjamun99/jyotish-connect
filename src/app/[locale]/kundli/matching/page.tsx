@@ -320,7 +320,7 @@ export default function MatchingPage() {
                                         <div className="flex items-center gap-6 bg-slate-50/50 dark:bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-slate-800 backdrop-blur-md shadow-inner">
                                             <div className="text-center group/boy">
                                                 <div className="w-20 h-20 rounded-3xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-3xl font-black mb-3 mx-auto shadow-xl group-hover/boy:scale-110 transition-transform">
-                                                    {translateSign(result.boy.moonSign, locale).substring(0, 1)}
+                                                    {(translateSign(result.boy.moonSign, locale) || "S").substring(0, 1)}
                                                 </div>
                                                 <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tighter">{result.boy.name || "Boy"}</div>
                                             </div>
@@ -333,7 +333,7 @@ export default function MatchingPage() {
                                             </div>
                                             <div className="text-center group/girl">
                                                 <div className="w-20 h-20 rounded-3xl bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-3xl font-black mb-3 mx-auto shadow-xl group-hover/girl:scale-110 transition-transform">
-                                                    {translateSign(result.girl.moonSign, locale).substring(0, 1)}
+                                                    {(translateSign(result.girl.moonSign, locale) || "S").substring(0, 1)}
                                                 </div>
                                                 <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tighter">{result.girl.name || "Girl"}</div>
                                             </div>
@@ -559,7 +559,8 @@ export default function MatchingPage() {
             {result && (
                 <div 
                     ref={pdfContentRef}
-                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
+                    className="absolute left-0 top-0 -z-50 opacity-0 pointer-events-none bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
+                    style={{ clipPath: 'inset(0 0 100% 0)' }}
                 >
                     {/* Page 1: PERSONAL DETAILS & SUMMARY */}
                     <div id="pdf-match-overview" className="p-16 bg-white min-h-[1100px] border-[16px] border-blue-600/5">

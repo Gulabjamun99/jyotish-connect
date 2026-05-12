@@ -77,6 +77,16 @@ export function calculateGuna(boyMoon: any, girlMoon: any) {
     ashtakoot.nadi.girlVal = gNadi;
     ashtakoot.nadi.score = bNadi !== gNadi ? 8 : 0;
 
+    // --- Interpretations ---
+    ashtakoot.varna.interpretation = ashtakoot.varna.score === 1 ? "Excellent ego compatibility and work ethics." : "Work ethics and status may require adjustment.";
+    ashtakoot.vashya.interpretation = ashtakoot.vashya.score === 2 ? "Mutual attraction and dominance are balanced." : "One partner may dominate the other.";
+    ashtakoot.tara.interpretation = ashtakoot.tara.score === 3 ? "Destiny and longevity alignment is strong." : "Minor health or destiny conflicts possible.";
+    ashtakoot.yoni.interpretation = ashtakoot.yoni.score >= 3 ? "Physical and biological compatibility is excellent." : "Physical needs and habits may differ.";
+    ashtakoot.maitri.interpretation = ashtakoot.maitri.score >= 4 ? "Strong intellectual and psychological bond." : "Intellectual differences might arise.";
+    ashtakoot.gana.interpretation = ashtakoot.gana.score >= 4 ? "Behavioral and social temperament is well-matched." : "Temperamental differences likely.";
+    ashtakoot.bhakoot.interpretation = ashtakoot.bhakoot.score === 7 ? "Excellent financial and family growth." : "Potential financial or family disagreements.";
+    ashtakoot.nadi.interpretation = ashtakoot.nadi.score === 8 ? "Superior genetic and physiological compatibility." : "Caution: Potential health or progeny issues (Nadi Dosha).";
+
     const totalScore = Object.values(ashtakoot).reduce((acc: number, curr: any) => acc + curr.score, 0);
 
     return {
