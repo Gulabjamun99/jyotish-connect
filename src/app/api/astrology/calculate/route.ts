@@ -1,36 +1,34 @@
-import { NextResponse } from "next/server";
-import { getFullAstrologyData, performMatchMaking } from "@/lib/astrology/calculator";
+import { NextRequest, NextResponse } from 'next/server';
+import { getFullAstrologyData, performMatchMaking } from '@/lib/astrology/calculator';
 
-export async function POST(req: Request) {
-    try {
-        const body = await req.json();
-        const { type, data } = body;
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { type, data } = body;
 
-        if (type === "full") {
-            const { date, lat, lng } = data;
-            const result = await getFullAstrologyData(new Date(date), lat, lng);
-            return NextResponse.json(result);
-        }
-
-        if (type === "match") {
-            const { boyDetails, girlDetails } = data;
-            const result = await performMatchMaking(
-                { ...boyDetails, date: new Date(boyDetails.date) },
-                { ...girlDetails, date: new Date(girlDetails.date) }
-            );
-            return NextResponse.json(result);
-        }
-
-        if (type === "horoscope") {
-            const { sign, date, lat, lng, locale } = data;
-            // For horoscope, we usually just need planetary positions
-            const result = await getFullAstrologyData(new Date(date), lat, lng);
-            return NextResponse.json(result);
-        }
-
-        return NextResponse.json({ error: "Invalid calculation type" }, { status: 400 });
-    } catch (error) {
-        console.error("Astrology API error:", error);
-        return NextResponse.json({ error: "Failed to perform calculation" }, { status: 500 });
+    if (type === 'match') {
+      const { boyDetails, girlDetails } = data;
+      // Convert ISO strings back to Date objects
+      const bDate = new Date(boyDetails.date);
+      const gDate = new Date(girlDetails.date);
+      
+      const result = await performMatchMaking(
+        { ...boyDetails, date: bDate },
+        { ...girlDetails, date: gDate }
+      );
+      return NextResponse.json(result);
     }
+
+    if (type === 'kundli') {
+      const { date, lat, lng } = data;
+      const bDate = new Date(date);
+      const result = await getFullAstrologyData(bDate, lat, lng);
+      return NextResponse.json(result);
+    }
+
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+  } catch (error: any) {
+    console.error('[API Astrology] Error:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
 }

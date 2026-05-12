@@ -11,10 +11,9 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
-import { getFullAstrologyData, performMatchMaking } from "@/lib/astrology/calculator";
 import { generateMatchVerdict, generateAshtakootAnalysis, generateDetailedMatchingReport, analyzeManglikCancellation, generateFullMatchAnalysis } from "@/lib/astrology/prediction-engine";
 import { useLocale, useTranslations } from "next-intl";
-import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
+import { translateSign } from "@/lib/astrology/i18n";
 
 export default function MatchingPage() {
     const locale = useLocale();

@@ -1,6 +1,4 @@
-"use client";
-
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -9,14 +7,20 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Sarvagya } from "@/components/ai/Sarvagya";
 
-export default function Home() {
-  const t = useTranslations("Index");
+export default async function Home(props: { params: Promise<{ locale: string }> }) {
+  const { locale } = await props.params;
+  const t = await getTranslations({ locale, namespace: "Index" });
+
+  const tools = [
+    { title: t("horoscope_title"), desc: t("horoscope_desc"), icon: "♈", href: "/horoscope", color: "from-primary/20" },
+    { title: t("matching_title"), desc: t("matching_desc"), icon: "💑", href: "/kundli/matching", color: "from-accent/20" },
+    { title: t("panchang_title"), desc: t("panchang_desc"), icon: "📜", href: "/kundli", color: "from-sky-500/20" },
+  ];
 
   return (
     <main className="min-h-screen bg-transparent overflow-hidden selection:bg-primary/30">
       <Navbar />
 
-      {/* Hero Component */}
       <Hero />
 
       <div className="relative">
@@ -24,7 +28,6 @@ export default function Home() {
         <FeaturedAstrologers />
       </div>
 
-      {/* Free Services Section */}
       <section className="py-6 md:py-10 container mx-auto px-4 relative">
         <header className="text-center mb-6 space-y-1 animate-slide-up">
           <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gradient">{t("tools_title")}</h2>
@@ -34,11 +37,7 @@ export default function Home() {
         </header>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 max-w-4xl mx-auto">
-          {[
-            { title: t("horoscope_title"), desc: t("horoscope_desc"), icon: "♈", href: "/horoscope", color: "from-primary/20" },
-            { title: t("matching_title"), desc: t("matching_desc"), icon: "💑", href: "/kundli-matching", color: "from-accent/20" },
-            { title: t("panchang_title"), desc: t("panchang_desc"), icon: "📜", href: "/kundli", color: "from-sky-500/20" },
-          ].map((service, i) => (
+          {tools.map((service, i) => (
             <Link key={i} href={service.href} className="group h-full">
               <div className="relative p-3 md:p-4 rounded-xl glass hover:border-accent/30 transition-all duration-300 h-full flex flex-col items-center text-center overflow-hidden border border-white/5 hover:-translate-y-1 shadow-md shadow-black/20">
                 <div className={`absolute -top-10 -left-10 w-16 h-16 bg-gradient-to-br ${service.color} blur-[30px] opacity-30`} />
@@ -54,10 +53,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AI Assistant FAB */}
       <Sarvagya />
 
-      {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 backdrop-blur-3xl -z-10" />
         <div className="container mx-auto px-4 text-center space-y-8">

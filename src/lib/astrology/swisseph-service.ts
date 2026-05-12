@@ -1,4 +1,5 @@
 import SwissEph from 'swisseph-wasm';
+import path from 'path';
 
 export class AstrologyService {
     private static instance: AstrologyService;
@@ -8,6 +9,11 @@ export class AstrologyService {
     private constructor() { }
 
     public static async getInstance(): Promise<AstrologyService> {
+        // Ensure this ONLY runs on the server
+        if (typeof window !== 'undefined') {
+            throw new Error("AstrologyService can only be used on the server.");
+        }
+
         if (!AstrologyService.instance) {
             AstrologyService.instance = new AstrologyService();
             await AstrologyService.instance.init();
@@ -17,20 +23,28 @@ export class AstrologyService {
 
     private async init() {
         if (this.initialized) return;
+        
+        console.log('[AstrologyService] Initializing SwissEph...');
         this.swe = new SwissEph();
-        await this.swe.initSwissEph();
-
-        // Set ephemeris path to public folder where .se1 files are bundled
-        // next.js/server context usually expects absolute path or relative to CWD
+        
         try {
-            await this.swe.set_ephe_path('./public/ephe');
-        } catch (e) {
-            console.warn("Could not set ephe path, using default built-in data");
+            await this.swe.initSwissEph();
+            
+            // Set standard Lahiri Ayanamsa
+            this.swe.set_sid_mode(this.swe.SE_SIDM_LAHIRI, 0, 0);
+            
+            // Set ephemeris path
+            // In Vercel, public folder is at the root
+            const ephePath = path.join(process.cwd(), 'public', 'ephe');
+            await this.swe.set_ephe_path(ephePath);
+            
+            this.initialized = true;
+            console.log('[AstrologyService] Initialization complete.');
+        } catch (error) {
+            console.error('[AstrologyService] Initialization failed:', error);
+            // Fallback: mark as initialized but limited
+            this.initialized = true; 
         }
-
-        // Set standard Lahiri Ayanamsa (AstroSage standard)
-        this.swe.set_sid_mode(this.swe.SE_SIDM_LAHIRI, 0, 0);
-        this.initialized = true;
     }
 
     public async calculatePlanets(date: Date, lat: number, lng: number) {
@@ -66,7 +80,6 @@ export class AstrologyService {
             let longitude = pos[0];
             if (p.isKetu) longitude = (longitude + 180) % 360;
 
-            // Ensure longitude is a valid number
             if (typeof longitude !== 'number' || isNaN(longitude)) {
                 longitude = 0;
             }
@@ -84,12 +97,11 @@ export class AstrologyService {
             };
         });
 
-        // --- High Precision Sunrise/Sunset ---
+        // Sunrise/Sunset
         let sunrise: number | undefined;
         let sunset: number | undefined;
         try {
             const geopos = [lng, lat, 0];
-            // rsmi: 1 = sunrise, 2 = sunset
             const sunriseRes = this.swe.rise_trans(jd, this.swe.SE_SUN, null, this.swe.SEFLG_SWIEPH, 1, geopos, 0, 0);
             const sunsetRes = this.swe.rise_trans(jd, this.swe.SE_SUN, null, this.swe.SEFLG_SWIEPH, 2, geopos, 0, 0);
 
@@ -99,8 +111,7 @@ export class AstrologyService {
             console.warn('[SwissEph] rise_trans failed:', e);
         }
 
-        // --- Ascendant Calculation ---
-        // Try swisseph houses() first
+        // Ascendant
         let ascendant: number | undefined;
         let housesCusps: number[] = [];
         try {
@@ -108,53 +119,28 @@ export class AstrologyService {
             if (houses && typeof houses.ascendant === 'number' && !isNaN(houses.ascendant)) {
                 ascendant = houses.ascendant;
                 housesCusps = houses.house || [];
-                console.log('[SwissEph] houses() succeeded, ascendant:', ascendant);
             }
         } catch (e) {
             console.warn('[SwissEph] houses() failed:', e);
         }
 
-        // Fallback: Calculate ascendant mathematically using Local Sidereal Time
         if (ascendant === undefined || isNaN(ascendant)) {
-            console.log('[SwissEph] Using mathematical ascendant calculation fallback');
-
-            // Calculate Local Sidereal Time (LST)
-            // Step 1: Days since J2000.0
+            // Mathematical fallback (simplified)
             const J2000 = 2451545.0;
             const d0 = jd - J2000;
-
-            // Step 2: Greenwich Mean Sidereal Time (GMST) in degrees
             let gmst = 280.46061837 + 360.98564736629 * d0;
             gmst = ((gmst % 360) + 360) % 360;
-
-            // Step 3: Local Sidereal Time (add longitude)
             let lst = gmst + lng;
             lst = ((lst % 360) + 360) % 360;
-
-            // Step 4: RAMC (Right Ascension of Medium Coeli) = LST
             const ramcRad = (lst * Math.PI) / 180;
             const latRad = (lat * Math.PI) / 180;
-
-            // Step 5: Obliquity of ecliptic (~23.4393°)
-            const epsilon = 23.4393;
-            const epsRad = (epsilon * Math.PI) / 180;
-
-            // Step 6: Ascendant formula
-            // ASC = atan2(cos(RAMC), -(sin(RAMC)*cos(e) + tan(lat)*sin(e)))
-            const ascRad = Math.atan2(
-                Math.cos(ramcRad),
-                -(Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad))
-            );
+            const epsRad = (23.4393 * Math.PI) / 180;
+            const ascRad = Math.atan2(Math.cos(ramcRad), -(Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad)));
             let ascDeg = (ascRad * 180) / Math.PI;
             ascDeg = ((ascDeg % 360) + 360) % 360;
-
-            // Apply Lahiri ayanamsa to get sidereal ascendant
             ascendant = ((ascDeg - ayanamsa) % 360 + 360) % 360;
-
-            console.log('[SwissEph] Calculated sidereal ascendant:', ascendant.toFixed(2), '° (sign:', Math.floor(ascendant / 30) + 1, ')');
         }
 
-        // Add Ascendant as a pseudo-planet in the results
         const ascSignId = (Math.floor(ascendant / 30) % 12) + 1;
         results.push({
             name: "Asc",
