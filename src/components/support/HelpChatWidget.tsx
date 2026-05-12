@@ -35,10 +35,12 @@ export function HelpChatWidget() {
     const [userDetails, setUserDetails] = useState({ name: "", email: "", phone: "" });
     const [loading, setLoading] = useState(false);
 
-    const [messages, setMessages] = useState<ChatMessage[]>([]); // Start empty to avoid hydration mismatch
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        // Set initial message on mount
+        setMounted(true);
+        // Set initial message on mount to avoid hydration mismatch
         setMessages([
             {
                 id: "1",
@@ -68,11 +70,15 @@ export function HelpChatWidget() {
 
         setLoading(true);
         try {
-            await addDoc(collection(db, "leads"), {
-                ...userDetails,
-                source: "help_chat",
-                createdAt: new Date().toISOString()
-            });
+            if (db) {
+                await addDoc(collection(db, "leads"), {
+                    ...userDetails,
+                    source: "help_chat",
+                    createdAt: new Date().toISOString()
+                });
+            } else {
+                console.warn("Firestore not initialized, skipping lead capture.");
+            }
             setHasJoined(true);
             toast.success("Connected to support!");
         } catch (error) {

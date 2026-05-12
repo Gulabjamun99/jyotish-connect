@@ -14,29 +14,37 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app: any;
-let auth: any;
-let db: any;
-let storage: any;
+let app: any = null;
+let auth: any = null;
+let db: any = null;
+let storage: any = null;
 
 try {
-    if (!firebaseConfig.apiKey) {
-        throw new Error("Missing Firebase API Key");
-    }
-    // Initialize Firebase
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-
-    // Ensure network is enabled
     if (typeof window !== 'undefined') {
-        enableNetwork(db).catch(err => console.warn("Network enable failed:", err));
+        if (!firebaseConfig.apiKey) {
+            console.warn("⚠️ Firebase API Key missing. Some features will be disabled.");
+        } else {
+            // Initialize Firebase
+            app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            storage = getStorage(app);
+
+            // Ensure network is enabled
+            enableNetwork(db).catch(err => console.warn("Network enable failed:", err));
+        }
+    } else {
+        // Server side initialization (if needed, though mostly used on client)
+        if (firebaseConfig.apiKey) {
+            app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            storage = getStorage(app);
+        }
     }
 } catch (error) {
     console.error("🔥 Firebase Init Critical Failure:", error);
-    // In production, we WANT this to fail so we know keys are missing
-    throw new Error("Application failed to connect to database. Please check configuration.");
+    // Do not throw here, handle nulls in providers
 }
 
 export { app, auth, db, storage };

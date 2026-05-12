@@ -123,9 +123,10 @@ export default function HoroscopePage() {
         try {
             const dynamicData = await getDynamicPrediction(sign, locale);
             if (dynamicData) {
+                const formattedDate = new Date().toLocaleDateString(locale === 'en' ? 'en-US' : `${locale}-IN`);
                 setPrediction({
                     sign,
-                    date: new Date().toLocaleDateString(locale === 'en' ? 'en-US' : `${locale}-IN`),
+                    date: formattedDate,
                     ...dynamicData
                 });
             }

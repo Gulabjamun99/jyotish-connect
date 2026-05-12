@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { auth } from "@/lib/firebase";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, User as UserIcon, LogOut, Menu, Languages, Home } from "lucide-react";
+import { Moon, Sun, User as UserIcon, LogOut, Menu, Languages, Home, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter, Link } from "@/i18n/navigation";
@@ -29,6 +29,7 @@ export function Navbar() {
     };
 
     const handleLogout = async () => {
+        if (!auth) return;
         try {
             await signOut(auth);
         } catch (error) {

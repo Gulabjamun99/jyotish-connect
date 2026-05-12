@@ -37,13 +37,17 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         return "Hi, I am **Sarvagya** from Jyotish Connect. I can tell you about your current problems according to Jyotish. \n\nTo help you, please provide your **Name, Date of Birth, Time of Birth, and Birth Place**. This is **mandatory** for any astrological analysis.";
     };
 
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "initial",
-            role: "model",
-            content: getInitialMessage()
-        }
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
+    
+    useEffect(() => {
+        setMessages([
+            {
+                id: "initial",
+                role: "model",
+                content: getInitialMessage()
+            }
+        ]);
+    }, []); // Only on mount to avoid hydration mismatch
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -130,17 +134,44 @@ export function Sarvagya({ userData }: SarvagyaProps) {
             const decoder = new TextDecoder();
             
             const modelMessageId = (Date.now() + 1).toString();
+            
+            // Add empty model message first
             setMessages(prev => [...prev, { id: modelMessageId, role: "model", content: "" }]);
+
+            let accumulatedContent = "";
+            let lastUpdateTime = Date.now();
+            const UPDATE_INTERVAL = 80; // Update UI every 80ms
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 
-                const chunk = decoder.decode(value, { stream: true });
-                setMessages(prev => prev.map(m => 
-                    m.id === modelMessageId ? { ...m, content: m.content + chunk } : m
-                ));
+                accumulatedContent += decoder.decode(value, { stream: true });
+                
+                // Throttle UI updates to prevent mobile crashes
+                const currentTime = Date.now();
+                if (currentTime - lastUpdateTime > UPDATE_INTERVAL) {
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        const lastIndex = newMessages.length - 1;
+                        if (newMessages[lastIndex].id === modelMessageId) {
+                            newMessages[lastIndex] = { ...newMessages[lastIndex], content: accumulatedContent };
+                        }
+                        return newMessages;
+                    });
+                    lastUpdateTime = currentTime;
+                }
             }
+
+            // Final update to ensure everything is rendered
+            setMessages(prev => {
+                const newMessages = [...prev];
+                const lastIndex = newMessages.length - 1;
+                if (newMessages[lastIndex].id === modelMessageId) {
+                    newMessages[lastIndex] = { ...newMessages[lastIndex], content: accumulatedContent };
+                }
+                return newMessages;
+            });
         } catch (error: any) {
             console.error("Sarvagya Error:", error);
             setMessages(prev => [...prev, {

@@ -91,6 +91,10 @@ export default function LoginPage() {
             toast.error("Password must be at least 6 characters");
             return;
         }
+        if (!auth) {
+            toast.error("Auth service unavailable. Please check your connection.");
+            return;
+        }
         setLoading(true);
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -112,6 +116,10 @@ export default function LoginPage() {
         e.preventDefault();
         if (!email || !password) {
             toast.error("Please enter email and password");
+            return;
+        }
+        if (!auth) {
+            toast.error("Auth service unavailable. Please check your connection.");
             return;
         }
         setLoading(true);
@@ -138,6 +146,10 @@ export default function LoginPage() {
         e.preventDefault();
         if (!email) {
             toast.error("Please enter your email to reset password.");
+            return;
+        }
+        if (!auth) {
+            toast.error("Auth service unavailable. Please check your connection.");
             return;
         }
         setLoading(true);

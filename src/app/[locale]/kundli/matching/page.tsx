@@ -558,8 +558,7 @@ export default function MatchingPage() {
             {result && (
                 <div 
                     ref={pdfContentRef}
-                    className="absolute left-0 top-0 -z-50 opacity-0 pointer-events-none bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
-                    style={{ clipPath: 'inset(0 0 100% 0)' }}
+                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
                 >
                     {/* Page 1: PERSONAL DETAILS & SUMMARY */}
                     <div id="pdf-match-overview" className="p-16 bg-white min-h-[1100px] border-[16px] border-blue-600/5">

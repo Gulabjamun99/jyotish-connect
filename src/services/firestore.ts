@@ -115,8 +115,8 @@ export interface Astrologer {
 
 export const getAstrologers = async (filters?: any, limitCount: number = 50, lastDoc?: any) => {
     try {
-        if ((db as any).type === 'dummy') {
-            console.warn("Firestore is in dummy mode. Returning empty list.");
+        if (!db) {
+            console.warn("Firestore not initialized. Returning empty list.");
             return { astrologers: [], lastDoc: null };
         }
 
@@ -173,6 +173,7 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
 };
 
 export const getAstrologerById = async (id: string) => {
+    if (!db) return null;
     const docRef = doc(db, "astrologers", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -182,6 +183,7 @@ export const getAstrologerById = async (id: string) => {
 };
 
 export const startConsultation = async (id: string, data: any) => {
+    if (!db) return;
     const docRef = doc(db, "consultations", id);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
@@ -215,6 +217,7 @@ export const listenToConsultation = (id: string, callback: (data: any) => void) 
 
 export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt' | 'status'>) => {
     try {
+        if (!db) throw new Error("Database not available");
         const bookingsRef = collection(db, "bookings");
         const docRef = doc(bookingsRef); // Auto-ID
         const newBooking: Booking = {
@@ -233,6 +236,7 @@ export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt
 
 export const getUserBookings = async (userId: string) => {
     try {
+        if (!db) return [];
         const q = query(collection(db, "bookings"), where("userId", "==", userId));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -316,6 +320,7 @@ export const checkAvailability = async (astrologerId: string, date: Date) => {
 };
 export const getAllAstrologers = async () => {
     try {
+        if (!db) return [];
         const astroRef = collection(db, "astrologers");
         const q = query(astroRef, orderBy("createdAt", "desc")); // Fetch all, newest first
         const snapshot = await getDocs(q);

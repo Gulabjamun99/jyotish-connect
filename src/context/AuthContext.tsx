@@ -29,6 +29,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         let unsubscribeUser: () => void;
         let unsubscribeAstro: () => void;
 
+        if (!auth || !db) {
+            console.error("Auth or DB services not initialized. AuthProvider will be inactive.");
+            setLoading(false);
+            return;
+        }
+
         const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
             setUser(authUser);
             setLoading(true);
@@ -114,7 +120,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // Cleanup function
         return () => {
-            unsubscribeAuth();
+            if (unsubscribeAuth) unsubscribeAuth();
             if (unsubscribeUser) unsubscribeUser();
             if (unsubscribeAstro) unsubscribeAstro();
         };

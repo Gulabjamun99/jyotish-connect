@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result);
     }
 
-    if (type === 'kundli') {
+    if (type === 'kundli' || type === 'horoscope' || type === 'full') {
       const { date, lat, lng } = data;
       const bDate = new Date(date);
       const result = await getFullAstrologyData(bDate, lat, lng);

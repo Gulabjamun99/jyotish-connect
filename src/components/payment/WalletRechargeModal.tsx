@@ -5,8 +5,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "react-hot-toast";
-import { doc, updateDoc, increment, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 
 interface WalletRechargeModalProps {

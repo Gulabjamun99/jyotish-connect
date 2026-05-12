@@ -57,6 +57,12 @@ export async function makeCall(
     disconnectPeer();
 
     return new Promise(async (resolve, reject) => {
+        if (!db) {
+            console.error("❌ [Caller] Firestore not initialized");
+            reject(new Error("Database service is unavailable. Check your connection."));
+            return;
+        }
+
         const timeout = setTimeout(() => {
             console.error("⏱️ Connection timed out after 60s");
             disconnectPeer();
@@ -183,6 +189,11 @@ export function answerCall(
     onRemoteStream: (stream: MediaStream) => void
 ): void {
     disconnectPeer();
+    if (!db) {
+        console.error("❌ [Callee] Firestore not initialized");
+        return;
+    }
+
     console.log('📱 [Callee] Setting up and listening for offer...');
 
     pc = new RTCPeerConnection(configuration);
