@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -629,14 +629,14 @@ export default function KundliPage() {
                                                     {chart.planets.map((p: any, i: number) => (
                                                         <tr key={p.name} className="hover:bg-white/5 transition-colors">
                                                             <td className="px-6 py-4 font-bold text-white flex items-center gap-3">
-                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-white/10 text-white`}>
+                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 text-white">
                                                                     {p.name.charAt(0)}
                                                                 </div>
                                                                 {translatePlanet(p.name, locale)}
                                                             </td>
                                                             <td className="px-6 py-4 font-medium text-white/80">{translateSign(p.sign, locale)}</td>
                                                             <td className="px-6 py-4 font-mono text-xs text-white/40">
-                                                                {Math.floor(p.longitude % 30)}° {Math.floor((p.longitude % 1) * 60)}'
+                                                                {Math.floor(p.longitude % 30)}Â° {Math.floor((p.longitude % 1) * 60)}'
                                                             </td>
                                                             <td className="px-6 py-4 text-sm text-white/60">{getTrans(locale).nakshatras[p.nakshatraId - 1]}</td>
                                                             <td className="px-6 py-4 font-bold text-orange-500">{p.house}</td>
@@ -972,7 +972,6 @@ export default function KundliPage() {
                         </div>
                     </div>
                 </div>
-            )}
                         {/* 20-Page Detailed PDF Hidden Captures */}
                 <div className="hidden">
                     {/* Avakahada / Birth Details */}
@@ -1038,8 +1037,10 @@ export default function KundliPage() {
                         <p className="text-xl leading-relaxed">{chart.predictions?.Education}</p>
                     </div>
                 </div>
+            )}
         </main>
     );
+}
 }
 
 
