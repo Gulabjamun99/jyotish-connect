@@ -723,15 +723,15 @@ export default function KundliPage() {
                                 {activeTab === 'doshas' && (
                                     <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-right-4">
                                         {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
-                                            <div key={key} className={`rounded-[2rem] p-8 border backdrop-blur-xl ${data.present ? "bg-red-500/10 border-red-500/20" : "bg-green-500/10 border-green-500/20"}`}>
+                                            <div key={key} className={"rounded-[2rem] p-8 border backdrop-blur-xl " + (data.present ? "bg-red-500/10 border-red-500/20" : "bg-green-500/10 border-green-500/20") + ""}>
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${data.present ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500"}`}>
+                                                        <div className={"w-12 h-12 rounded-2xl flex items-center justify-center text-xl " + (data.present ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500") + ""}>
                                                             {data.present ? "âš ï¸" : "âœ“"}
                                                         </div>
                                                         <div>
                                                             <h3 className="text-xl font-black text-white">{key}</h3>
-                                                            <div className={`text-xs font-bold uppercase tracking-wider ${data.present ? "text-red-500" : "text-green-500"}`}>
+                                                            <div className={"text-xs font-bold uppercase tracking-wider " + (data.present ? "text-red-500" : "text-green-500") + ""}>
                                                                 {data.present ? l('dosha_present', "Present") : l('dosha_absent', "Absent")}
                                                             </div>
                                                         </div>
@@ -903,13 +903,13 @@ export default function KundliPage() {
                         </h1>
                         <div className="grid grid-cols-1 gap-12">
                             {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
-                                <div key={key} className={`p-8 rounded-3xl border-2 ${data.present ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}>
+                                <div key={key} className={"p-8 rounded-3xl border-2 " + (data.present ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200") + ""}>
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className={`text-2xl ${data.present ? "text-red-600" : "text-green-600"}`}>
+                                        <div className={"text-2xl " + (data.present ? "text-red-600" : "text-green-600") + ""}>
                                             {data.present ? "âš ï¸" : "âœ“"}
                                         </div>
                                         <h2 className="text-2xl font-black text-slate-900">{key}</h2>
-                                        <span className={`ml-auto px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${data.present ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800"}`}>
+                                        <span className={"ml-auto px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest " + (data.present ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800") + ""}>
                                             {data.present ? "Active" : "Safe"}
                                         </span>
                                     </div>
