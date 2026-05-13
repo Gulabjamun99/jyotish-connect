@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -309,26 +309,26 @@ export default function KundliPage() {
         addHeader("Divine Charts");
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(18);
-        doc.text(locale === 'hi' ? "à¤•à¥à¤£à¥à¤¡à¤²à¥€ à¤šà¤¾à¤°à¥à¤Ÿà¥à¤¸ (Charts)" : "Kundli Charts", 15, 40);
+        doc.text(locale === 'hi' ? "Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ Ã Â¤Å¡Ã Â¤Â¾Ã Â¤Â°Ã Â¥ÂÃ Â¤Å¸Ã Â¥ÂÃ Â¤Â¸ (Charts)" : "Kundli Charts", 15, 40);
 
         if (d1Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "à¤²à¤—à¥à¤¨ à¤•à¥à¤£à¥à¤¡à¤²à¥€ (D1)" : "Lagna Chart (D1)", 15, 55);
+            doc.text(locale === 'hi' ? "Ã Â¤Â²Ã Â¤â€”Ã Â¥ÂÃ Â¤Â¨ Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ (D1)" : "Lagna Chart (D1)", 15, 55);
             doc.addImage(d1Img, 'PNG', 15, 60, 85, 85);
         }
         if (d9Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "à¤¨à¤µà¤¾à¤‚à¤¶ à¤•à¥à¤£à¥à¤¡à¤²à¥€ (D9)" : "Navamsa Chart (D9)", 110, 55);
+            doc.text(locale === 'hi' ? "Ã Â¤Â¨Ã Â¤ÂµÃ Â¤Â¾Ã Â¤â€šÃ Â¤Â¶ Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ (D9)" : "Navamsa Chart (D9)", 110, 55);
             doc.addImage(d9Img, 'PNG', 110, 60, 85, 85);
         }
         if (moonImg) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "à¤šà¤¨à¥à¤¦à¥à¤° à¤•à¥à¤£à¥à¤¡à¤²à¥€" : "Moon Chart", 15, 165);
+            doc.text(locale === 'hi' ? "Ã Â¤Å¡Ã Â¤Â¨Ã Â¥ÂÃ Â¤Â¦Ã Â¥ÂÃ Â¤Â° Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬" : "Moon Chart", 15, 165);
             doc.addImage(moonImg, 'PNG', 15, 170, 85, 85);
         }
         if (d10Img) {
             doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "à¤¦à¤¶à¤®à¤¾à¤‚à¤¶ à¤•à¥à¤£à¥à¤¡à¤²à¥€ (D10)" : "Dashamsha Chart (D10)", 110, 165);
+            doc.text(locale === 'hi' ? "Ã Â¤Â¦Ã Â¤Â¶Ã Â¤Â®Ã Â¤Â¾Ã Â¤â€šÃ Â¤Â¶ Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ (D10)" : "Dashamsha Chart (D10)", 110, 165);
             doc.addImage(d10Img, 'PNG', 110, 170, 85, 85);
         }
         addFooter(2);
@@ -637,7 +637,7 @@ export default function KundliPage() {
                                                             </td>
                                                             <td className="px-6 py-4 font-medium text-white/80">{translateSign(p.sign, locale)}</td>
                                                             <td className="px-6 py-4 font-mono text-xs text-white/40">
-                                                                {Math.floor(p.longitude % 30)}Â° {Math.floor((p.longitude % 1) * 60)}'
+                                                                {Math.floor(p.longitude % 30)}Ã‚Â° {Math.floor((p.longitude % 1) * 60)}'
                                                             </td>
                                                             <td className="px-6 py-4 text-sm text-white/60">{getTrans(locale).nakshatras[p.nakshatraId - 1]}</td>
                                                             <td className="px-6 py-4 font-bold text-orange-500">{p.house}</td>
@@ -695,6 +695,9 @@ export default function KundliPage() {
                                                 ))}
                                             </div>
                                         </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* 5. ASHTAKVARGA TAB */}
                                 {activeTab === 'ashtakvarga' && (
@@ -727,7 +730,7 @@ export default function KundliPage() {
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center gap-4">
                                                         <div className={"w-12 h-12 rounded-2xl flex items-center justify-center text-xl " + (data.present ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500") + ""}>
-                                                            {data.present ? "âš ï¸" : "âœ“"}
+                                                            {data.present ? "Ã¢Å¡Â Ã¯Â¸Â" : "Ã¢Å“â€œ"}
                                                         </div>
                                                         <div>
                                                             <h3 className="text-xl font-black text-white">{key}</h3>
@@ -821,7 +824,7 @@ export default function KundliPage() {
                     {/* Page: Predictions */}
                     <div id="pdf-predictions" className="space-y-8 p-10 mb-20 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-orange-600 border-b-4 border-orange-500 pb-2 mb-8">
-                            {locale === 'hi' ? "à¤œà¥€à¤µà¤¨ à¤­à¤µà¤¿à¤·à¥à¤¯à¤µà¤¾à¤£à¤¿à¤¯à¤¾à¤‚" : locale === 'mr' ? "à¤œà¥€à¤µà¤¨ à¤­à¤µà¤¿à¤·à¥à¤¯à¤µà¤¾à¤£à¥€" : locale === 'bn' ? "à¦œà§€à¦¬à¦¨à¦¬à¦¾à¦£à§€" : "Life Predictions"}
+                            {locale === 'hi' ? "Ã Â¤Å“Ã Â¥â‚¬Ã Â¤ÂµÃ Â¤Â¨ Ã Â¤Â­Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â·Ã Â¥ÂÃ Â¤Â¯Ã Â¤ÂµÃ Â¤Â¾Ã Â¤Â£Ã Â¤Â¿Ã Â¤Â¯Ã Â¤Â¾Ã Â¤â€š" : locale === 'mr' ? "Ã Â¤Å“Ã Â¥â‚¬Ã Â¤ÂµÃ Â¤Â¨ Ã Â¤Â­Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â·Ã Â¥ÂÃ Â¤Â¯Ã Â¤ÂµÃ Â¤Â¾Ã Â¤Â£Ã Â¥â‚¬" : locale === 'bn' ? "Ã Â¦Å“Ã Â§â‚¬Ã Â¦Â¬Ã Â¦Â¨Ã Â¦Â¬Ã Â¦Â¾Ã Â¦Â£Ã Â§â‚¬" : "Life Predictions"}
                         </h1>
                         <div className="space-y-10">
                             {Object.entries(chart.predictions || {}).map(([key, value]) => (
@@ -840,7 +843,7 @@ export default function KundliPage() {
                     {/* Page: Birth Details & Panchang */}
                     <div id="pdf-panchang" className="p-10 mb-20 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-2 mb-8">
-                            {locale === 'hi' ? "à¤œà¤¨à¥à¤® à¤µà¤¿à¤µà¤°à¤£ à¤”à¤° à¤ªà¤‚à¤šà¤¾à¤‚à¤—" : locale === 'bn' ? "à¦œà¦¨à§à¦® à¦¬à¦¿à¦¬à¦°à¦£" : "Birth Details & Panchang"}
+                            {locale === 'hi' ? "Ã Â¤Å“Ã Â¤Â¨Ã Â¥ÂÃ Â¤Â® Ã Â¤ÂµÃ Â¤Â¿Ã Â¤ÂµÃ Â¤Â°Ã Â¤Â£ Ã Â¤â€Ã Â¤Â° Ã Â¤ÂªÃ Â¤â€šÃ Â¤Å¡Ã Â¤Â¾Ã Â¤â€šÃ Â¤â€”" : locale === 'bn' ? "Ã Â¦Å“Ã Â¦Â¨Ã Â§ÂÃ Â¦Â® Ã Â¦Â¬Ã Â¦Â¿Ã Â¦Â¬Ã Â¦Â°Ã Â¦Â£" : "Birth Details & Panchang"}
                         </h1>
                         <table className="w-full border-collapse">
                             <thead>
@@ -874,7 +877,7 @@ export default function KundliPage() {
                     {/* Page: Planetary Positions */}
                     <div id="pdf-planets" className="p-10 mb-20 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-2 mb-8">
-                            {locale === 'hi' ? "à¤—à¥à¤°à¤¹ à¤¸à¥à¤¥à¤¿à¤¤à¤¿" : locale === 'bn' ? "à¦—à§à¦°à¦¹à§‡à¦° à¦…à¦¬à¦¸à§à¦¥à¦¾à¦¨" : "Planetary Positions"}
+                            {locale === 'hi' ? "Ã Â¤â€”Ã Â¥ÂÃ Â¤Â°Ã Â¤Â¹ Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¤Â¿Ã Â¤Â¤Ã Â¤Â¿" : locale === 'bn' ? "Ã Â¦â€”Ã Â§ÂÃ Â¦Â°Ã Â¦Â¹Ã Â§â€¡Ã Â¦Â° Ã Â¦â€¦Ã Â¦Â¬Ã Â¦Â¸Ã Â§ÂÃ Â¦Â¥Ã Â¦Â¾Ã Â¦Â¨" : "Planetary Positions"}
                         </h1>
                         <table className="w-full border-collapse">
                             <thead>
@@ -890,7 +893,7 @@ export default function KundliPage() {
                                     <tr key={idx} className={idx % 2 === 0 ? "bg-slate-50" : "bg-white"}>
                                         <td className="p-4 border border-slate-200 font-bold">{translatePlanet(p.name, locale)}</td>
                                         <td className="p-4 border border-slate-200">{translateSign(p.sign, locale)}</td>
-                                        <td className="p-4 border border-slate-200 font-mono text-sm">{Math.floor(p.longitude % 30)}Â° {Math.round((p.longitude % 1) * 60)}'</td>
+                                        <td className="p-4 border border-slate-200 font-mono text-sm">{Math.floor(p.longitude % 30)}Ã‚Â° {Math.round((p.longitude % 1) * 60)}'</td>
                                         <td className="p-4 border border-slate-200 font-bold text-center">{p.house}</td>
                                     </tr>
                                 ))}
@@ -901,14 +904,14 @@ export default function KundliPage() {
                     {/* Page: Doshas */}
                     <div id="pdf-doshas" className="space-y-8 p-10 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-red-600 border-b-4 border-red-500 pb-2 mb-8">
-                            {locale === 'hi' ? "à¤¦à¥‹à¤· à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤£" : "Dosha Analysis"}
+                            {locale === 'hi' ? "Ã Â¤Â¦Ã Â¥â€¹Ã Â¤Â· Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â¶Ã Â¥ÂÃ Â¤Â²Ã Â¥â€¡Ã Â¤Â·Ã Â¤Â£" : "Dosha Analysis"}
                         </h1>
                         <div className="grid grid-cols-1 gap-12">
                             {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
                                 <div key={key} className={"p-8 rounded-3xl border-2 " + (data.present ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200") + ""}>
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className={"text-2xl " + (data.present ? "text-red-600" : "text-green-600") + ""}>
-                                            {data.present ? "âš ï¸" : "âœ“"}
+                                            {data.present ? "Ã¢Å¡Â Ã¯Â¸Â" : "Ã¢Å“â€œ"}
                                         </div>
                                         <h2 className="text-2xl font-black text-slate-900">{key}</h2>
                                         <span className={"ml-auto px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest " + (data.present ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800") + ""}>
@@ -926,7 +929,7 @@ export default function KundliPage() {
                     {/* Page: Remedies */}
                     <div id="pdf-remedies" className="space-y-8 p-10 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-amber-600 border-b-4 border-amber-500 pb-2 mb-8">
-                            {locale === 'hi' ? "à¤‰à¤ªà¤šà¤¾à¤° à¤”à¤° à¤°à¤¤à¥à¤¨" : "Remedies & Gemstones"}
+                            {locale === 'hi' ? "Ã Â¤â€°Ã Â¤ÂªÃ Â¤Å¡Ã Â¤Â¾Ã Â¤Â° Ã Â¤â€Ã Â¤Â° Ã Â¤Â°Ã Â¤Â¤Ã Â¥ÂÃ Â¤Â¨" : "Remedies & Gemstones"}
                         </h1>
                         <div className="grid grid-cols-1 gap-8">
                             {/* Gemstones Section */}
@@ -946,15 +949,15 @@ export default function KundliPage() {
                                 <h3 className="text-2xl font-black text-indigo-900 mb-6">Spiritual Remedies</h3>
                                 <ul className="space-y-4">
                                     <li className="flex gap-4 items-start text-lg text-indigo-900">
-                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">Â·</span>
+                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">Ã‚Â·</span>
                                         Recite the Beej Mantra of your Mahadasha Lord ({chart.dasha?.currentLords?.[0]}) for mental peace.
                                     </li>
                                     <li className="flex gap-4 items-start text-lg text-indigo-900">
-                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">Â·</span>
+                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">Ã‚Â·</span>
                                         Perform charity on Saturdays to appease Saturn's influence in your chart.
                                     </li>
                                     <li className="flex gap-4 items-start text-lg text-indigo-900">
-                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">Â·</span>
+                                        <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">Ã‚Â·</span>
                                         Maintain a vegetarian diet on Tuesdays to strengthen Mars.
                                     </li>
                                 </ul>
