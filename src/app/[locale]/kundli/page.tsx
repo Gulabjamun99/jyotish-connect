@@ -697,8 +697,8 @@ export default function KundliPage() {
                                                             </div>
                                                             <p className="text-white/60 text-sm leading-relaxed">
                                                                 {locale === 'hi'
-                                                                    ? `Effect of ${translatePlanet(p.lord, locale)} lasts for ${Math.round(p.duration)} years.`
-                                                                    : `Period of ${p.lord} lasts for ${Math.round(p.duration)} years.`}
+                                                                    ? "Effect of " + translatePlanet(p.lord, locale) + " lasts for " + Math.round(p.duration) + " years."
+                                                                    : "Period of " + p.lord + " lasts for " + Math.round(p.duration) + " years."}
                                                             </p>
                                                         </div>
                                                     </div>
