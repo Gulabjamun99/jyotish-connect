@@ -19,6 +19,7 @@ import { useLocale } from "next-intl";
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
 
 export default function KundliPage() {
+    const _SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
     const locale = useLocale();
     const kundliData: any = getTrans(locale);
     const [formData, setFormData] = useState({
