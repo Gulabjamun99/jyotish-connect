@@ -125,97 +125,192 @@ export default function MatchingPage() {
     ];
 
     const handleDownloadPDF = async () => {
-        if (!result) return;
+        if (!result || !analysis) return;
 
-        toast.loading("Preparing your divine report...", { id: "pdf-match" });
+        const pdfToast = toast.loading("Preparing your divine report...", { id: "pdf-match" });
 
-        const captureSection = async (elementId: string): Promise<string | null> => {
-            const element = document.getElementById(elementId);
-            if (!element) return null;
-            try {
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff",
-                    logging: false
-                });
-                return canvas.toDataURL('image/jpeg', 0.85);
-            } catch (e) {
-                console.error(`Failed to capture section ${elementId}:`, e);
-                return null;
-            }
-        };
-
-        const doc = new jsPDF('p', 'mm', 'a4');
-        
-        // --- PREPARE ASSETS ---
-        let logoBase64: string | null = null;
         try {
-            const response = await fetch('/logo.png');
-            const blob = await response.blob();
-            logoBase64 = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-            });
-        } catch (e) { console.warn("Logo fetch failed"); }
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
 
-        // --- Capture Sections ---
-        const [overviewImg, detailsImg, compatibilityImg, lifeAreasImg, remediesImg] = await Promise.all([
-            captureSection("pdf-match-overview"),
-            captureSection("pdf-match-details"),
-            captureSection("pdf-match-compatibility"),
-            captureSection("pdf-match-life-areas"),
-            captureSection("pdf-match-findings")
-        ]);
+            // --- 1. COVER PAGE ---
+            // Background Gradient (Simulated)
+            doc.setFillColor(5, 5, 16); // #050510
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            
+            // Branding
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont("helvetica", "bold");
+            doc.text("JYOTISH CONNECT", pageWidth / 2, 40, { align: "center" });
+            
+            doc.setDrawColor(249, 115, 22); // Orange-500
+            doc.setLineWidth(1);
+            doc.line(pageWidth / 2 - 20, 45, pageWidth / 2 + 20, 45);
 
-        const addFooter = (page: number) => {
+            // Title
+            doc.setFontSize(48);
+            doc.setTextColor(255, 255, 255);
+            doc.text("KUNDLI MILAN", pageWidth / 2, 90, { align: "center" });
+            doc.setFontSize(14);
+            doc.setTextColor(200, 200, 200);
+            doc.text("PREMIUM MARRIAGE COMPATIBILITY REPORT", pageWidth / 2, 105, { align: "center" });
+
+            // Score Circle
+            doc.setDrawColor(249, 115, 22);
+            doc.setLineWidth(2);
+            doc.circle(pageWidth / 2, 150, 25, 'D');
+            doc.setFontSize(32);
+            doc.setTextColor(249, 115, 22);
+            doc.text(`${result.milan.totalScore}/36`, pageWidth / 2, 155, { align: "center" });
+            doc.setFontSize(10);
+            doc.text("GUN MILAN SCORE", pageWidth / 2, 180, { align: "center" });
+
+            // Names
+            doc.setFontSize(22);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`${analysis.section1.groom.name} & ${analysis.section1.bride.name}`, pageWidth / 2, 220, { align: "center" });
+            
+            // Footer
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(`Page ${page} | JyotishConnect Certified Match`, 105, 285, { align: "center" });
-        };
+            doc.text("© 2024 JyotishConnect AI - All Rights Reserved", pageWidth / 2, 280, { align: "center" });
 
-        // Page 1: Overview
-        if (overviewImg) {
-            doc.addImage(overviewImg, 'JPEG', 0, 0, 210, 297);
-            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
-            addFooter(1);
-        }
-
-        // Page 2: Details
-        if (detailsImg) {
+            // --- 2. BIRTH DETAILS PAGE ---
             doc.addPage();
-            doc.addImage(detailsImg, 'JPEG', 0, 0, 210, 297);
-            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
-            addFooter(2);
-        }
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            
+            doc.setFontSize(18);
+            doc.setTextColor(5, 5, 16);
+            doc.text("1. PERSONAL BIRTH DETAILS", 20, 30);
+            doc.setDrawColor(249, 115, 22);
+            doc.line(20, 35, 60, 35);
 
-        // Page 3: Compatibility
-        if (compatibilityImg) {
+            const detailsData = [
+                ["Field", "Groom (Male)", "Bride (Female)"],
+                ["Name", analysis.section1.groom.name, analysis.section1.bride.name],
+                ["Date of Birth", analysis.section1.groom.dob, analysis.section1.bride.dob],
+                ["Time of Birth", analysis.section1.groom.tob, analysis.section1.bride.tob],
+                ["Birth Place", analysis.section1.groom.pob, analysis.section1.bride.pob],
+                ["Zodiac Sign", analysis.section1.groom.rashi, analysis.section1.bride.rashi],
+                ["Nakshatra", analysis.section1.groom.nakshatra, analysis.section1.bride.nakshatra],
+                ["Lagna", analysis.section1.groom.lagna, analysis.section1.bride.lagna]
+            ];
+
+            autoTable(doc, {
+                startY: 45,
+                head: [detailsData[0]],
+                body: detailsData.slice(1),
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255], fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 5 },
+                alternateRowStyles: { fillColor: [255, 247, 237] }
+            });
+
+            // --- 3. ASHTAKOOT ANALYSIS ---
+            doc.setFontSize(18);
+            doc.setTextColor(5, 5, 16);
+            const yAfterTable = (doc as any).lastAutoTable.finalY + 20;
+            doc.text("2. ASHTAKOOT GUN MILAN", 20, yAfterTable);
+            doc.line(20, yAfterTable + 5, 60, yAfterTable + 5);
+
+            const gunData = [
+                ["Factor", "Max", "Got", "Interpretation"],
+                ...analysis.section3.table.map((r: any) => [r.name, r.max, r.got, r.interp])
+            ];
+
+            autoTable(doc, {
+                startY: yAfterTable + 15,
+                head: [gunData[0]],
+                body: gunData.slice(1),
+                theme: 'grid',
+                headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+                styles: { fontSize: 9 },
+                columnStyles: {
+                    2: { fontStyle: 'bold', textColor: [249, 115, 22] }
+                }
+            });
+
+            // --- 4. DOSHAS & REMEDIES ---
             doc.addPage();
-            doc.addImage(compatibilityImg, 'JPEG', 0, 0, 210, 297);
-            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
-            addFooter(3);
-        }
+            const currentY = 30;
+            doc.setFontSize(18);
+            doc.setTextColor(5, 5, 16);
+            doc.text("3. RELATIONSHIP DYNAMICS", 20, currentY);
+            doc.setDrawColor(249, 115, 22);
+            doc.line(20, currentY + 5, 60, currentY + 5);
 
-        // Page 4: Life Areas
-        if (lifeAreasImg) {
-            doc.addPage();
-            doc.addImage(lifeAreasImg, 'JPEG', 0, 0, 210, 297);
-            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
-            addFooter(4);
-        }
+            const dynamicReport = generateDetailedMatchingReport(result, locale);
+            if (dynamicReport) {
+                const dynamicsData = [
+                    ["Dimension", "Analysis"],
+                    ["Emotional Bond", dynamicReport.bond.verdict],
+                    ["Nature & Temperament", dynamicReport.nature.verdict],
+                    ["Financial Outlook", dynamicReport.finance.verdict],
+                    ["Family Environment", dynamicReport.family.verdict],
+                    ["Future Forecast", dynamicReport.forecast.verdict]
+                ];
 
-        // Page 5: Findings & Remedies
-        if (remediesImg) {
-            doc.addPage();
-            doc.addImage(remediesImg, 'JPEG', 0, 0, 210, 297);
-            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 30, 9);
-            addFooter(5);
-        }
+                autoTable(doc, {
+                    startY: currentY + 15,
+                    body: dynamicsData.slice(1),
+                    theme: 'striped',
+                    styles: { fontSize: 10, cellPadding: 5 },
+                    columnStyles: {
+                        0: { fontStyle: 'bold', textColor: [30, 41, 59], cellWidth: 40 },
+                        1: { fontStyle: 'italic' }
+                    }
+                });
+            }
 
-        toast.success("Match Report ready!", { id: "pdf-match" });
-        doc.save(`Kundli_Report_${boyData.name.replace(/\s+/g, '_')}_${girlData.name.replace(/\s+/g, '_')}.pdf`);
+            // --- 5. DOSHAS & REMEDIES ---
+            const nextY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 20 : currentY + 80;
+            doc.setFontSize(18);
+            doc.setTextColor(5, 5, 16);
+            doc.text("4. DOSHAS & REMEDIES", 20, nextY);
+            doc.line(20, nextY + 5, 60, nextY + 5);
+
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("Manglik Analysis:", 20, nextY + 20);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Groom: ${analysis.section7.boyStatus}`, 30, nextY + 30);
+            doc.text(`Bride: ${analysis.section7.girlStatus}`, 30, nextY + 40);
+            doc.setTextColor(220, 38, 38); // Red-600
+            doc.text(`Verdict: ${analysis.section7.verdict}`, 30, nextY + 50);
+
+            doc.setTextColor(5, 5, 16);
+            doc.setFont("helvetica", "bold");
+            doc.text("Astrological Remedies:", 20, nextY + 70);
+            doc.setFont("helvetica", "normal");
+            
+            let remedyY = nextY + 80;
+            analysis.section15.boyRemedies.forEach((r: string, i: number) => {
+                doc.text(`• ${r}`, 30, remedyY);
+                remedyY += 10;
+            });
+
+            // --- 6. FINAL VERDICT ---
+            const verdictY = Math.min(remedyY + 20, 240); // Ensure it doesn't overflow
+            doc.setFillColor(249, 115, 22);
+            doc.rect(20, verdictY, pageWidth - 40, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("FINAL ASTROLOGICAL VERDICT", pageWidth / 2, verdictY + 15, { align: "center" });
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "italic");
+            const splitVerdict = doc.splitTextToSize(analysis.finalVerdict.recommendation, pageWidth - 60);
+            doc.text(splitVerdict, pageWidth / 2, verdictY + 25, { align: "center" });
+
+            toast.success("Match Report ready!", { id: "pdf-match" });
+            doc.save(`Kundli_Report_${boyData.name.replace(/\s+/g, '_')}_${girlData.name.replace(/\s+/g, '_')}.pdf`);
+        } catch (err) {
+            console.error("PDF Error:", err);
+            toast.error("Failed to generate PDF. Please try again.", { id: "pdf-match" });
+        }
     };
 
     if (!mounted) return null;
@@ -591,202 +686,30 @@ export default function MatchingPage() {
 
             {/* Hidden PDF Export Content for Matching */}
             {result && analysis && (
-                <div 
-                    ref={pdfContentRef}
-                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
-                >
-                    {/* Page 1: PERSONAL DETAILS & SUMMARY */}
-                    <div id="pdf-match-overview" className="p-16 bg-white min-h-[1100px] border-[16px] border-blue-600/5">
-                        <div className="flex justify-between items-start border-b-8 border-blue-600 pb-10 mb-12">
+                <div ref={pdfContentRef} className="fixed -left-[9999px] top-0 bg-white p-16 text-slate-900 w-[800px]">
+                    <div className="border-[12px] border-orange-600 p-12">
+                        <h1 className="text-5xl font-black uppercase tracking-tight text-orange-600 mb-4">Kundli Milan Report</h1>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mb-12">Premium Marriage Compatibility Analysis</p>
+                        
+                        <div className="grid grid-cols-2 gap-8 mb-12 border-b-2 border-slate-200 pb-12">
                             <div>
-                                <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase mb-2">Kundli Milan</h1>
-                                <p className="text-blue-600 font-black tracking-[0.3em] uppercase text-xs">Premium Marriage Compatibility Analysis</p>
+                                <h2 className="text-sm font-black text-orange-600 uppercase mb-4">Groom Profile</h2>
+                                <div className="text-sm font-bold text-slate-700 space-y-2 uppercase">{analysis.section1.groom.name} • {analysis.section1.groom.rashi} • {analysis.section1.groom.nakshatra}</div>
                             </div>
-                            <div className="text-right">
-                                <div className="text-6xl font-black text-blue-600">{result.milan.totalScore} / 36</div>
-                                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Divine Guna Score</div>
-                            </div>
-                        </div>
-
-                        <div className="mb-12">
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 1 — Personal Details</h2>
-                            <div className="grid grid-cols-2 gap-10">
-                                <div className="space-y-4">
-                                    <h3 className="text-blue-600 font-black text-sm uppercase">Groom: {analysis.section1.groom.name}</h3>
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Date of Birth</span><span className="font-bold text-slate-900">{analysis.section1.groom.dob}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Time of Birth</span><span className="font-bold text-slate-900">{analysis.section1.groom.tob}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Birth Place</span><span className="font-bold text-slate-900">{analysis.section1.groom.pob}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Zodiac Sign</span><span className="font-bold text-slate-900">{analysis.section1.groom.rashi}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Nakshatra</span><span className="font-bold text-slate-900">{analysis.section1.groom.nakshatra}</span></div>
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <h3 className="text-purple-600 font-black text-sm uppercase">Bride: {analysis.section1.bride.name}</h3>
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Date of Birth</span><span className="font-bold text-slate-900">{analysis.section1.bride.dob}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Time of Birth</span><span className="font-bold text-slate-900">{analysis.section1.bride.tob}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Birth Place</span><span className="font-bold text-slate-900">{analysis.section1.bride.pob}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Zodiac Sign</span><span className="font-bold text-slate-900">{analysis.section1.bride.rashi}</span></div>
-                                        <div className="flex justify-between border-b pb-1 text-slate-500"><span>Nakshatra</span><span className="font-bold text-slate-900">{analysis.section1.bride.nakshatra}</span></div>
-                                    </div>
-                                </div>
+                            <div>
+                                <h2 className="text-sm font-black text-red-600 uppercase mb-4">Bride Profile</h2>
+                                <div className="text-sm font-bold text-slate-700 space-y-2 uppercase">{analysis.section1.bride.name} • {analysis.section1.bride.rashi} • {analysis.section1.bride.nakshatra}</div>
                             </div>
                         </div>
 
-                        <div>
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 2 — Overall Match Summary</h2>
-                            <div className="grid grid-cols-2 gap-8 mb-10">
-                                <div className="p-6 bg-slate-50 rounded-2xl">
-                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-4">Core Dimensions</div>
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between"><span>Emotional Bond</span><span className="font-black">{analysis.section2.emotional}</span></div>
-                                        <div className="flex justify-between"><span>Physical Attraction</span><span className="font-black">{analysis.section2.physical}</span></div>
-                                        <div className="flex justify-between"><span>Financial Outlook</span><span className="font-black">{analysis.section2.financial}</span></div>
-                                        <div className="flex justify-between"><span>Family Environment</span><span className="font-black">{analysis.section2.family}</span></div>
-                                    </div>
-                                </div>
-                                <div className="p-6 bg-blue-900 text-white rounded-2xl">
-                                    <div className="text-[10px] font-black text-blue-400 uppercase mb-4">Divine Verdict</div>
-                                    <div className="text-xl font-black mb-2">{analysis.section2.quality}</div>
-                                    <p className="text-xs text-blue-200 italic font-serif">"{analysis.section2.recommendation}"</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Page 2: ASHTAKOOT GUN MILAN ANALYSIS */}
-                    <div id="pdf-match-details" className="p-16 bg-white min-h-[1100px]">
-                        <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 3 — Ashtakoot Gun Milan</h2>
-                        <table className="w-full border-collapse mb-12">
-                            <thead>
-                                <tr className="bg-slate-900 text-white text-[10px]">
-                                    <th className="p-4 text-left border">COMPATIBILITY FACTOR</th>
-                                    <th className="p-4 text-center border">MAX</th>
-                                    <th className="p-4 text-center border">OBTAINED</th>
-                                    <th className="p-4 text-left border">INTERPRETATION</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {analysis.section3.table.map((row: any) => (
-                                    <tr key={row.name} className="text-xs">
-                                        <td className="p-4 border font-black uppercase text-slate-600">{row.name}</td>
-                                        <td className="p-4 border text-center font-bold">{row.max}</td>
-                                        <td className="p-4 border text-center font-black text-blue-600">{row.got}</td>
-                                        <td className="p-4 border italic font-serif text-slate-500">{row.interp}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        <div className="p-8 bg-amber-50 border-l-8 border-amber-500 rounded-xl">
-                            <h4 className="font-black text-amber-900 mb-2 uppercase text-xs">Auspicious Note</h4>
-                            <p className="text-sm italic font-serif text-amber-800">"The Guna Milan of {result.milan.totalScore} points indicates a high degree of cosmic synchronization between the two charts, ensuring a balanced and purposeful union."</p>
-                        </div>
-                    </div>
-
-                    {/* Page 3: PERSONALITY & DYNAMICS */}
-                    <div id="pdf-match-compatibility" className="p-16 bg-white min-h-[1100px]">
-                        <div className="mb-12">
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 4 — Personality Analysis</h2>
-                            <div className="grid grid-cols-2 gap-10">
-                                <div>
-                                    <h4 className="text-blue-600 font-black text-xs uppercase mb-4">Groom Attributes</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {analysis.section4.groomTraits.map((t: string) => <span key={t} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black border border-blue-100">{t}</span>)}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 className="text-purple-600 font-black text-xs uppercase mb-4">Bride Attributes</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {analysis.section4.brideTraits.map((t: string) => <span key={t} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-black border border-purple-100">{t}</span>)}
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="bg-orange-50 p-8 rounded-2xl mb-12">
+                            <h2 className="text-2xl font-black text-orange-900 uppercase mb-6">Ashtakoot Guna Score</h2>
+                            <div className="text-6xl font-black text-orange-600">{result.milan.totalScore} <span className="text-2xl text-orange-400">/ 36</span></div>
                         </div>
 
-                        <div className="mb-12">
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 5 — Relationship Dynamics</h2>
-                            <div className="p-8 bg-slate-50 rounded-3xl space-y-6">
-                                <div>
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Synergy Outlook</h4>
-                                    <p className="text-sm italic font-serif text-slate-700 leading-relaxed">"{generateDetailedMatchingReport(result, locale).bond.verdict}"</p>
-                                </div>
-                                <div>
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nature & Temperament</h4>
-                                    <p className="text-sm italic font-serif text-slate-700 leading-relaxed">"{generateDetailedMatchingReport(result, locale).nature.verdict}"</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 7 — Manglik Dosha Analysis</h2>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className={`p-6 rounded-2xl border-2 ${result.boy.doshas.Manglik.present ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
-                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-2">Groom Status</div>
-                                    <div className="text-lg font-black">{analysis.section7.boyStatus}</div>
-                                </div>
-                                <div className={`p-6 rounded-2xl border-2 ${result.girl.doshas.Manglik.present ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
-                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-2">Bride Status</div>
-                                    <div className="text-lg font-black">{analysis.section7.girlStatus}</div>
-                                </div>
-                            </div>
-                            <div className="mt-8 p-8 bg-slate-900 text-white rounded-3xl">
-                                <h4 className="text-red-500 font-black text-[10px] uppercase tracking-widest mb-4">Martial Consensus</h4>
-                                <p className="text-lg font-black">{analysis.section7.verdict}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Page 4: LIFE AREAS & FUTURE */}
-                    <div id="pdf-match-life-areas" className="p-16 bg-white min-h-[1100px]">
-                        <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 10-13 — Life Dimensions</h2>
-                        <div className="space-y-10">
-                            {['finance', 'family', 'timing'].map((sec) => {
-                                const data = generateDetailedMatchingReport(result, locale)[sec];
-                                return (
-                                    <div key={sec} className="border-b pb-8">
-                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-3">{data.title}</h3>
-                                        <p className="text-sm italic font-serif text-slate-600 leading-relaxed">"{data.verdict}"</p>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <div className="mt-12">
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 14 — Favorable Marriage Period</h2>
-                            <div className="grid grid-cols-2 gap-8">
-                                {analysis.section14.periods.map((p: any) => (
-                                    <div key={p.time} className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between items-center">
-                                        <span className="font-black text-blue-900">{p.time}</span>
-                                        <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg">{p.strength}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Page 5: REMEDIES & FINAL VERDICT */}
-                    <div id="pdf-match-findings" className="p-16 bg-white min-h-[1100px]">
-                        <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 15 — Astrological Remedies</h2>
-                        <div className="grid grid-cols-2 gap-10 mb-12">
-                            <div className="space-y-6">
-                                <h4 className="text-blue-600 font-black text-xs uppercase">Groom Recommendations</h4>
-                                {analysis.section15.boyRemedies.map((r: string) => <div key={r} className="p-4 bg-slate-50 rounded-xl text-xs font-bold italic font-serif">"{r}"</div>)}
-                            </div>
-                            <div className="space-y-6">
-                                <h4 className="text-purple-600 font-black text-xs uppercase">Bride Recommendations</h4>
-                                {analysis.section15.girlRemedies.map((r: string) => <div key={r} className="p-4 bg-slate-50 rounded-xl text-xs font-bold italic font-serif">"{r}"</div>)}
-                            </div>
-                        </div>
-
-                        <div>
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight mb-8 bg-blue-50 py-3 px-6 rounded-xl border-l-8 border-blue-600">Section 16 — Final Astrological Verdict</h2>
-                            <div className="p-12 bg-gradient-to-br from-blue-600 to-indigo-900 text-white rounded-[4rem] text-center shadow-2xl relative overflow-hidden">
-                                <h3 className="text-4xl font-black mb-6">Celestial Union Approved</h3>
-                                <p className="text-2xl font-black italic font-serif text-blue-100 leading-tight">"{analysis.finalVerdict.recommendation}"</p>
-                                <div className="mt-10 pt-10 border-t border-white/20">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">Verified by JyotishConnect AI Engine</p>
-                                </div>
-                            </div>
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-black text-slate-900 uppercase">Final Verdict</h2>
+                            <p className="text-lg font-bold text-slate-600 italic leading-relaxed">"{analysis.finalVerdict.recommendation}"</p>
                         </div>
                     </div>
                 </div>
