@@ -4,7 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sparkles, Heart, User, FileText, CheckCircle2, AlertCircle, LayoutGrid, Zap, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
 import jsPDF from "jspdf";
@@ -38,6 +38,7 @@ export default function MatchingPage() {
 
     const [result, setResult] = useState<any>(null);
     const [analysis, setAnalysis] = useState<any>(null);
+    const [calcStep, setCalcStep] = useState(0);
 
     const calculateMatch = async () => {
         setLoading(true);
@@ -114,7 +115,7 @@ export default function MatchingPage() {
         window.open(`https://wa.me/?text=${text}`, '_blank');
     };
 
-    const [calcStep, setCalcStep] = useState(0);
+
     const steps = [
         "Analyzing planetary positions...",
         "Synchronizing 8-fold compatibility...",
