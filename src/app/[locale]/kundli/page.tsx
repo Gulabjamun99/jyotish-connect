@@ -972,6 +972,7 @@ export default function KundliPage() {
                         <p className="text-xl leading-relaxed">{chart.predictions?.Education}</p>
                     </div>
                 </div>
+            </>
             )}
         </main>
     );
