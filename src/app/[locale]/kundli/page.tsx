@@ -304,61 +304,6 @@ export default function KundliPage() {
         toast.success("Divine Report Downloaded!", { id: "pdf-gen" });
     };
 
-    const captureSection = async (elementId: string): Promise<string | null> => {
-        doc.addPage();
-        addHeader("Divine Charts");
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(18);
-        doc.text(locale === 'hi' ? "Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ Ã Â¤Å¡Ã Â¤Â¾Ã Â¤Â°Ã Â¥ÂÃ Â¤Å¸Ã Â¥ÂÃ Â¤Â¸ (Charts)" : "Kundli Charts", 15, 40);
-
-        if (d1Img) {
-            doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "Ã Â¤Â²Ã Â¤â€”Ã Â¥ÂÃ Â¤Â¨ Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ (D1)" : "Lagna Chart (D1)", 15, 55);
-            doc.addImage(d1Img, 'PNG', 15, 60, 85, 85);
-        }
-        if (d9Img) {
-            doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "Ã Â¤Â¨Ã Â¤ÂµÃ Â¤Â¾Ã Â¤â€šÃ Â¤Â¶ Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ (D9)" : "Navamsa Chart (D9)", 110, 55);
-            doc.addImage(d9Img, 'PNG', 110, 60, 85, 85);
-        }
-        if (moonImg) {
-            doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "Ã Â¤Å¡Ã Â¤Â¨Ã Â¥ÂÃ Â¤Â¦Ã Â¥ÂÃ Â¤Â° Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬" : "Moon Chart", 15, 165);
-            doc.addImage(moonImg, 'PNG', 15, 170, 85, 85);
-        }
-        if (d10Img) {
-            doc.setFontSize(11);
-            doc.text(locale === 'hi' ? "Ã Â¤Â¦Ã Â¤Â¶Ã Â¤Â®Ã Â¤Â¾Ã Â¤â€šÃ Â¤Â¶ Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â£Ã Â¥ÂÃ Â¤Â¡Ã Â¤Â²Ã Â¥â‚¬ (D10)" : "Dashamsha Chart (D10)", 110, 165);
-            doc.addImage(d10Img, 'PNG', 110, 170, 85, 85);
-        }
-        addFooter(2);
-
-        // --- SNAPSHOT PAGES ---
-        const images = [
-            { img: panchangImg, title: "Panchang" },
-            { img: planetsImg, title: "Planets" },
-            { img: doshasImg, title: "Dosha Analysis" },
-            { img: predictionsImg, title: "Life Predictions" },
-            { img: remediesImg, title: "Remedies & Gemstones" }
-        ];
-
-        images.forEach((item, idx) => {
-            if (item.img) {
-                doc.addPage();
-                // We add the image directly covering the page for snapshot sections
-                doc.addImage(item.img, 'JPEG', 0, 0, 210, 297);
-                // Overlay a small header to maintain branding
-                if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 5, 25, 8);
-                doc.setFontSize(7);
-                doc.setTextColor(150, 150, 150);
-                doc.text(item.title, 195, 10, { align: "right" });
-                addFooter(idx + 3);
-            }
-        });
-
-        toast.success("Report ready for download!", { id: "pdf-gen" });
-            doc.save("Kundli_Report_" + formData.name.replace(/\s+/g, "_") + ".pdf");
-    };
 
 
 
