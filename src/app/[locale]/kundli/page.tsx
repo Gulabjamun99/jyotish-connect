@@ -744,8 +744,6 @@ export default function KundliPage() {
                                 )}
                             </div>
                         </div>
-                            </div>
-                        </div>
                     ) : (
                         <div className="lg:col-span-8 flex flex-col items-center justify-center text-center p-12 glass rounded-[2.5rem] border-slate-200">
                             <div className="w-24 h-24 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center p-6 mb-6 animate-pulse">
