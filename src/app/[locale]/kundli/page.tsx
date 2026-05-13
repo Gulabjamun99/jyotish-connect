@@ -514,8 +514,7 @@ export default function KundliPage() {
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
                                             ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 scale-100"
-                                            : "text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 scale-95"
-                                            }}
+                                            : "text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 scale-95"`}
                                     >
                                         <tab.icon className="w-4 h-4" /> {l(tab.id, tab.label)}
                                     </button>
@@ -796,7 +795,7 @@ export default function KundliPage() {
                                                     ].map((item, i) => (
                                                         <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50">
                                                             <div className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center justify-between">
-                                                                {l(item.label.toLowerCase().replace(' ', '_'), item.label)}
+                                                                {l(item.label.toLowerCase().replace(" ", "_"), item.label)}
                                                                 <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]">{item.planet}</span>
                                                             </div>
                                                             <div className="text-lg font-black text-slate-900">{item.stone || "Consult Astrologer"}</div>
@@ -807,17 +806,6 @@ export default function KundliPage() {
                                         </div>
                                     </div>
                                 )}
-                            </div>
-��ए धारण करें" : locale === 'mr' ? "समृद्धीसाठी परिधान करा" : "Worn for prosperity"}</div>
-                                                        </div>
-                                                    ));
-                                                })()}
-                                            </div>
-                                            <p className="text-xs text-amber-800/60 mt-6 text-center italic">* Note: Gemstones should only be worn after consultation with an expert astrologer.</p>
-                                        </div>
-                                    </div>
-                                )}
-
                             </div>
                         </div>
                     ) : (
@@ -832,7 +820,7 @@ export default function KundliPage() {
                 </div>
             </div>
             <Footer />
-            
+
             {/* Hidden PDF Export Content */}
             {chart && (
                 <div 
@@ -1053,6 +1041,8 @@ export default function KundliPage() {
         </main>
     );
 }
+
+
 
 
 
