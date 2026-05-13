@@ -84,37 +84,33 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
             <div className="relative">
                 <Input
                     ref={inputRef}
-                    className="h-16 pl-12 pr-6 bg-primary/5 border-primary/10 rounded-2xl focus:border-primary/50 transition-all font-bold text-lg placeholder:text-foreground/10 text-foreground"
+                    className="h-14 pl-12 pr-6 bg-white/5 border-white/10 rounded-xl focus:border-orange-500 transition-all font-bold text-lg placeholder:text-white/20 text-white shadow-inner"
                     placeholder="Search city or location..."
                     value={value}
                     onChange={(e) => {
-                        // When typing, we might diverge from the selected location.
-                        // However, we don't strictly need to clear 'selectedLocation' here 
-                        // because the strict equality check in useEffect will naturally fail
-                        // as soon as 'value' differs from 'selectedLocation'.
                         onChange(e.target.value);
                     }}
                     required={required}
                     autoComplete="off"
                 />
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/20" />
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
                 {loading && (
-                    <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary animate-spin" />
+                    <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
                 )}
             </div>
 
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-50 w-full mt-2 glass border border-primary/20 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-2 bg-[#0a0a1a] backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto no-scrollbar">
                     {suggestions.map((suggestion, index) => (
                         <button
                             key={index}
                             type="button"
                             onClick={() => handleSelect(suggestion)}
-                            className="w-full px-4 py-3 text-left hover:bg-primary/10 transition-colors border-b border-primary/5 last:border-0 flex items-start gap-3"
+                            className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 flex items-start gap-3 group"
                         >
-                            <MapPin className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
-                            <span className="text-sm text-foreground">{suggestion.description}</span>
+                            <MapPin className="w-4 h-4 text-orange-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm text-white/80 group-hover:text-white transition-colors">{suggestion.description}</span>
                         </button>
                     ))}
                 </div>
@@ -122,11 +118,11 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
 
             {/* Coordinates Display */}
             {coordinates && (
-                <div className="mt-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                    <div className="flex items-center gap-2 text-xs">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="text-green-600 font-medium">
-                            📍 Coordinates: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
+                <div className="mt-2 px-3 py-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                    <div className="flex items-center gap-2 text-[10px]">
+                        <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+                        <span className="text-orange-500 font-black uppercase tracking-widest">
+                            📍 Coordinates Found: {coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
                         </span>
                     </div>
                 </div>
