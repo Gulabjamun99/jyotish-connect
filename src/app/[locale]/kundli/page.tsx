@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -697,7 +697,7 @@ export default function KundliPage() {
                                                             </div>
                                                             <p className="text-white/60 text-sm leading-relaxed">
                                                                 {locale === 'hi'
-                                                                    ? `${translatePlanet(p.lord, locale)} का प्रभाव ${Math.round(p.duration)} वर्षों तक रहेगा।`
+                                                                    ? `Effect of ${translatePlanet(p.lord, locale)} lasts for ${Math.round(p.duration)} years.`
                                                                     : `Period of ${p.lord} lasts for ${Math.round(p.duration)} years.`}
                                                             </p>
                                                         </div>
