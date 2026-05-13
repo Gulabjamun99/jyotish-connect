@@ -708,9 +708,9 @@ export default function KundliPage() {
                                                 return (
                                                     <div key={idx} className="bg-white/5 p-4 rounded-2xl border border-white/10 text-center group hover:bg-white/10 transition-colors">
                                                         <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">{translateSign(sign, locale)}</div>
-                                                        <div className={`text-2xl font-black ${points >= 28 ? "text-green-500" : "text-orange-500"}`}>{points}</div>
+                                                         <div className={"text-2xl font-black " + (points >= 28 ? "text-green-500" : "text-orange-500")}>{points}</div>
                                                         <div className="w-full h-1 bg-white/10 mt-2 rounded-full overflow-hidden">
-                                                            <div className={`h-full ${points >= 28 ? "bg-green-500" : "bg-orange-500"}`} style={{ width: `${(points / 56) * 100}%` }} />
+                                                             <div className={"h-full " + (points >= 28 ? "bg-green-500" : "bg-orange-500")} style={{ width: ((points / 56) * 100) + "%" }} />
                                                         </div>
                                                     </div>
                                                 );
