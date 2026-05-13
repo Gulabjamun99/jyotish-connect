@@ -7,9 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useRef } from "react";
 import { Sparkles, MapPin, Clock3, Calendar, User, Star, Zap, Activity, Heart, Briefcase, GraduationCap, LayoutGrid, FileText, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import html2canvas from "html2canvas";
+import { generateKundliPDF } from "@/lib/astrology/generateKundliPDF";
 import { LocationInput } from "@/components/kundli/LocationInput";
 import { LagnaChart } from "@/components/kundli/LagnaChart";
 import { DetailCard, DetailRow } from "@/components/kundli/DetailCard";
@@ -130,178 +128,40 @@ export default function KundliPage() {
 
             const handleDownloadPDF = async () => {
         if (!chart) return;
+        toast.loading("Generating Premium Report...", { id: "pdf-gen" });
 
-        const captureChartImage = async (ref: React.RefObject<HTMLDivElement | null>): Promise<string | null> => {
+        const captureSvg = async (ref: React.RefObject<HTMLDivElement | null>): Promise<string | null> => {
             try {
                 const svgEl = ref.current?.querySelector('svg');
                 if (!svgEl) return null;
-                const clonedSvg = svgEl.cloneNode(true) as SVGSVGElement;
-                clonedSvg.setAttribute('width', '800');
-                clonedSvg.setAttribute('height', '800');
-                const svgData = new XMLSerializer().serializeToString(clonedSvg);
-                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                const svgUrl = URL.createObjectURL(svgBlob);
-                return await new Promise<string>((resolve, reject) => {
+                const clone = svgEl.cloneNode(true) as SVGSVGElement;
+                clone.setAttribute('width', '600'); clone.setAttribute('height', '600');
+                const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' }));
+                return await new Promise<string>((res, rej) => {
                     const img = new Image();
                     img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 800;
-                        canvas.height = 800;
-                        const ctx = canvas.getContext('2d')!;
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, 800, 800);
-                        ctx.drawImage(img, 0, 0, 800, 800);
-                        URL.revokeObjectURL(svgUrl);
-                        resolve(canvas.toDataURL('image/png'));
+                        const c = document.createElement('canvas'); c.width = 600; c.height = 600;
+                        const ctx = c.getContext('2d')!; ctx.fillStyle = '#fff'; ctx.fillRect(0,0,600,600);
+                        ctx.drawImage(img, 0, 0, 600, 600); URL.revokeObjectURL(url); res(c.toDataURL('image/png'));
                     };
-                    img.onerror = () => { URL.revokeObjectURL(svgUrl); reject(null); };
-                    img.src = svgUrl;
+                    img.onerror = () => { URL.revokeObjectURL(url); rej(null); };
+                    img.src = url;
                 });
-            } catch (e) { return null; }
+            } catch { return null; }
         };
 
-        const captureSection = async (elementId: string): Promise<string | null> => {
-            const element = document.getElementById(elementId);
-            if (!element) return null;
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-                return canvas.toDataURL('image/jpeg', 0.85);
-            } catch (e) { return null; }
-        };
-
-        const doc = new jsPDF('p', 'mm', 'a4');
-        toast.loading("Generating 20-page Premium Report...", { id: "pdf-gen" });
-
-        // Assets
-        const [d1Img, d9Img, moonImg, d10Img, basicImg, panchangImg, planetsImg, dashaImg, ashtakImg, doshaImg, predCareer, predHealth, predMarriage, predWealth, predEdu, remediesImg] = await Promise.all([
-            captureChartImage(lagnaChartRef),
-            captureChartImage(d9ChartRef),
-            captureChartImage(moonChartRef),
-            captureChartImage(d10ChartRef),
-            captureSection("pdf-birth-details"),
-            captureSection("pdf-panchang"),
-            captureSection("pdf-planets"),
-            captureSection("pdf-dasha-detailed"),
-            captureSection("pdf-ashtakvarga"),
-            captureSection("pdf-doshas"),
-            captureSection("pdf-pred-career"),
-            captureSection("pdf-pred-health"),
-            captureSection("pdf-pred-marriage"),
-            captureSection("pdf-pred-wealth"),
-            captureSection("pdf-pred-edu"),
-            captureSection("pdf-remedies")
+        const [d1Img, d9Img, moonImg, d10Img] = await Promise.all([
+            captureSvg(lagnaChartRef), captureSvg(d9ChartRef),
+            captureSvg(moonChartRef), captureSvg(d10ChartRef),
         ]);
 
-        const addHeader = (title: string) => {
-            doc.setFontSize(8);
-            doc.setTextColor(150, 150, 150);
-            doc.text("JyotishConnect Premium Report | " + title, 195, 15, { align: "right" });
-            doc.line(15, 20, 195, 20);
-        };
-
-        const addFooter = (page: number) => {
-            doc.setFontSize(8);
-            doc.text("Page " + page + " of 20", 105, 285, { align: "center" });
-        };
-
-        // Page 1: Cover
-        doc.setFillColor(15, 15, 35);
-        doc.rect(0, 0, 210, 297, 'F');
-        doc.setTextColor(249, 115, 22);
-        doc.setFontSize(40);
-        doc.text("JyotishConnect", 105, 100, { align: "center" });
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(20);
-        doc.text("Premium Vedic Astrology Report", 105, 115, { align: "center" });
-        doc.setFontSize(14);
-        doc.text(formData.name, 105, 150, { align: "center" });
-        doc.text(formData.dob + " | " + formData.birthplace, 105, 160, { align: "center" });
-
-        // Page 2: Birth Details
-        doc.addPage(); addHeader("Birth Attributes");
-        if (basicImg) doc.addImage(basicImg, 'JPEG', 15, 30, 180, 120);
-        addFooter(2);
-
-        // Page 3: Panchang
-        doc.addPage(); addHeader("Daily Panchang");
-        if (panchangImg) doc.addImage(panchangImg, 'JPEG', 15, 30, 180, 200);
-        addFooter(3);
-
-        // Page 4: Lagna Chart
-        doc.addPage(); addHeader("Lagna Chart (D1)");
-        if (d1Img) doc.addImage(d1Img, 'PNG', 35, 40, 140, 140);
-        addFooter(4);
-
-        // Page 5: Navamsa Chart
-        doc.addPage(); addHeader("Navamsa Chart (D9)");
-        if (d9Img) doc.addImage(d9Img, 'PNG', 35, 40, 140, 140);
-        addFooter(5);
-
-        // Page 6: Moon Chart
-        doc.addPage(); addHeader("Moon Chart (Chandra)");
-        if (moonImg) doc.addImage(moonImg, 'PNG', 35, 40, 140, 140);
-        addFooter(6);
-
-        // Page 7: Dasamsa Chart
-        doc.addPage(); addHeader("Dasamsa Chart (D10)");
-        if (d10Img) doc.addImage(d10Img, 'PNG', 35, 40, 140, 140);
-        addFooter(7);
-
-        // Page 8: Planetary Positions
-        doc.addPage(); addHeader("Planetary Positions");
-        if (planetsImg) doc.addImage(planetsImg, 'JPEG', 15, 30, 180, 220);
-        addFooter(8);
-
-        // Page 9-11: Dasha Timeline
-        doc.addPage(); addHeader("Vimshottari Dasha");
-        if (dashaImg) doc.addImage(dashaImg, 'JPEG', 15, 30, 180, 240);
-        addFooter(9);
-
-        // Page 12: Ashtakvarga
-        doc.addPage(); addHeader("Ashtakvarga Analysis");
-        if (ashtakImg) doc.addImage(ashtakImg, 'JPEG', 15, 30, 180, 150);
-        addFooter(12);
-
-        // Page 13: Doshas
-        doc.addPage(); addHeader("Dosha Analysis");
-        if (doshaImg) doc.addImage(doshaImg, 'JPEG', 15, 30, 180, 230);
-        addFooter(13);
-
-        // Page 14-18: Predictions
-        doc.addPage(); addHeader("Career Prediction");
-        if (predCareer) doc.addImage(predCareer, 'JPEG', 15, 30, 180, 100);
-        addFooter(14);
-
-        doc.addPage(); addHeader("Health Prediction");
-        if (predHealth) doc.addImage(predHealth, 'JPEG', 15, 30, 180, 100);
-        addFooter(15);
-
-        doc.addPage(); addHeader("Marriage Prediction");
-        if (predMarriage) doc.addImage(predMarriage, 'JPEG', 15, 30, 180, 100);
-        addFooter(16);
-
-        doc.addPage(); addHeader("Wealth Prediction");
-        if (predWealth) doc.addImage(predWealth, 'JPEG', 15, 30, 180, 100);
-        addFooter(17);
-
-        doc.addPage(); addHeader("Education Prediction");
-        if (predEdu) doc.addImage(predEdu, 'JPEG', 15, 30, 180, 100);
-        addFooter(18);
-
-        // Page 19: Remedies
-        doc.addPage(); addHeader("Divine Remedies");
-        if (remediesImg) doc.addImage(remediesImg, 'JPEG', 15, 30, 180, 200);
-        addFooter(19);
-
-        // Page 20: Final Conclusion
-        doc.addPage(); addHeader("Conclusion");
-        doc.setFontSize(16); doc.text("Blessings & Guidance", 105, 50, { align: "center" });
-        doc.setFontSize(11);
-        doc.text("May the celestial alignments guide you towards peace and prosperity.", 105, 70, { align: "center" });
-        addFooter(20);
-
-        doc.save("Kundli_Report_" + formData.name + ".pdf");
-        toast.success("Divine Report Downloaded!", { id: "pdf-gen" });
+        try {
+            await generateKundliPDF(chart, formData, locale, { d1: d1Img, d9: d9Img, moon: moonImg, d10: d10Img });
+            toast.success("Premium PDF Downloaded!", { id: "pdf-gen" });
+        } catch (e) {
+            console.error(e);
+            toast.error("PDF generation failed. Please try again.", { id: "pdf-gen" });
+        }
     };
 
 
