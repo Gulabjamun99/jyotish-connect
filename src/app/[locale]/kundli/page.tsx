@@ -759,6 +759,7 @@ export default function KundliPage() {
 
             {/* Hidden PDF Export Content */}
             {chart && (
+                <>
                 <div 
                     ref={pdfContentRef}
                     className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
