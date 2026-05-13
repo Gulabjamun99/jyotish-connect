@@ -47,11 +47,11 @@ const _COLORS_EN = ["Ruby Red", "Golden Yellow", "Emerald Green", "Sapphire Blue
 const _COLORS_HI = ["रूबी लाल", "सुनहरा पीला", "पन्ना हरा", "नीलम नीला", "मोती सफेद", "मूंगा नारंगी", "बैंगनी", "चांदी जैसा ग्रे", "गुलाबी", "गहरा नीला", "एम्बर", "हाथीदांत", "फ़िरोज़ा", "सैंड बेज", "गहरा लाल"];
 const _COLORS_MR = ["रुबी लाल", "सोनेरी पिवळा", "पाचू हिरवा", "नीलम निळा", "मोती पांढरा", "प्रवाळ नारंगी", "जांभळा", "चांदी ग्रे", "गुलाबी", "गडद निळा", "अंबर", "हस्तिदंती", "फिरोजी", "सँड बेज", "गडद लाल"];
 
-// --- Helper Functions (Stubs and Logic) ---
+// --- Helper Functions ---
 
 export const analyzeManglikCancellation = (boy: any, girl: any, lang: string = 'en') => {
-    const hasBoy = boy?.doshas?.Manglik || false;
-    const hasGirl = girl?.doshas?.Manglik || false;
+    const hasBoy = boy?.doshas?.Manglik?.present || false;
+    const hasGirl = girl?.doshas?.Manglik?.present || false;
     if (hasBoy && hasGirl) return lang === 'hi' ? "दोनों मांगलिक हैं, इसलिए दोष संतुलित हो जाता है।" : "Both are Manglik, so the dosha is balanced.";
     return lang === 'hi' ? "कोई विशेष रद्दीकरण नहीं पाया गया।" : "No specific cancellation found.";
 };
@@ -145,27 +145,29 @@ export function generateMatchVerdict(score: number, boyManglik: boolean, girlMan
 }
 
 export const generateDetailedMatchingReport = (result: any, lang: string = "en") => {
-    const score = result.milan.totalScore;
+    if (!result || !result.milan) return null;
+    const score = result.milan.totalScore || 0;
     const boyData = result.boy;
     const girlData = result.girl;
+    const ash = result.milan.ashtakoot || {};
 
     const r: any = {
         en: {
             marriage: { title: "Marriage Compatibility", rating: score >= 24 ? "Excellent" : "Good", verdict: score >= 24 ? "Highly favorable." : "Stable match." },
-            nature: { title: "Nature & Temperament", verdict: result.milan.ashtakoot.gana.score >= 5 ? "Harmonious nature." : "Differences likely." },
-            family: { title: "Family & Children", verdict: result.milan.ashtakoot.nadi.score === 8 ? "Excellent health match." : "Nadi considerations." },
-            finance: { title: "Wealth & Prosperity", verdict: result.milan.ashtakoot.bhakoot.score === 7 ? "Steady wealth." : "Financial planning needed." },
+            nature: { title: "Nature & Temperament", verdict: (ash.gana?.score || 0) >= 5 ? "Harmonious nature." : "Differences likely." },
+            family: { title: "Family & Children", verdict: (ash.nadi?.score || 0) === 8 ? "Excellent health match." : "Nadi considerations." },
+            finance: { title: "Wealth & Prosperity", verdict: (ash.bhakoot?.score || 0) === 7 ? "Steady wealth." : "Financial planning needed." },
             bond: { title: "Navamsa Synergy", verdict: analyzeNavamsaBond(boyData, girlData, lang) },
             timing: { title: "Marriage Timing", verdict: calculateLikelyMarriagePeriod(boyData, girlData, lang) },
             forecast: { title: "Life Forecast", verdict: generateLifeForecastSummary(score, lang) },
             remedies: { title: "Remedies", list: getContextualRemedies(result, lang) },
-            summary: { verdict: (score || 0) >= 18 ? "Proceed" : "Caution", confidence: 60 + (score || 0), nextSteps: (score || 0) >= 24 ? "Select Muhurat" : "Perform Remedies" }
+            summary: { verdict: score >= 18 ? "Proceed" : "Caution", confidence: 60 + score, nextSteps: score >= 24 ? "Select Muhurat" : "Perform Remedies" }
         },
         hi: {
             marriage: { title: "विवाह अनुकूलता", rating: score >= 24 ? "उत्कृष्ट" : "अच्छा", verdict: score >= 24 ? "अत्यधिक अनुकूल।" : "स्थिर मिलान।" },
-            nature: { title: "प्रकृति और स्वभाव", verdict: result.milan.ashtakoot.gana.score >= 5 ? "सामंजस्यपूर्ण स्वभाव।" : "मतभेद संभव।" },
-            family: { title: "परिवार और संतान", verdict: result.milan.ashtakoot.nadi.score === 8 ? "उत्कृष्ट स्वास्थ्य मिलान।" : "नाड़ी विचार।" },
-            finance: { title: "धन और समृद्धि", verdict: result.milan.ashtakoot.bhakoot.score === 7 ? "स्थिर धन।" : "वित्तीय नियोजन आवश्यक।" },
+            nature: { title: "प्रकृति और स्वभाव", verdict: (ash.gana?.score || 0) >= 5 ? "सामंजस्यपूर्ण स्वभाव।" : "मतभेद संभव।" },
+            family: { title: "परिवार और संतान", verdict: (ash.nadi?.score || 0) === 8 ? "उत्कृष्ट स्वास्थ्य मिलान।" : "नाड़ी विचार।" },
+            finance: { title: "धन और समृद्धि", verdict: (ash.bhakoot?.score || 0) === 7 ? "स्थिर धन।" : "वित्तीय नियोजन आवश्यक।" },
             bond: { title: "नवांश तालमेल", verdict: analyzeNavamsaBond(boyData, girlData, lang) },
             timing: { title: "विवाह समय", verdict: calculateLikelyMarriagePeriod(boyData, girlData, lang) },
             forecast: { title: "जीवन पूर्वानुमान", verdict: generateLifeForecastSummary(score, lang) },
@@ -177,18 +179,27 @@ export const generateDetailedMatchingReport = (result: any, lang: string = "en")
 };
 
 export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
-    const score = result.milan.totalScore;
+    if (!result || !result.boy || !result.girl || !result.milan) return null;
+
+    const score = result.milan.totalScore || 0;
     const t = (en: string, hi: string) => (lang === 'hi' ? hi : en);
     
+    // Safely extract ashtakoot scores
+    const ash = result.milan.ashtakoot || {};
+    const getAsh = (key: string) => ({
+        score: ash[key]?.score || 0,
+        interpretation: ash[key]?.interpretation || ""
+    });
+
     const table = [
-        { name: t("Varna", "वर्ण"), max: 1, got: result.milan.ashtakoot.varna.score, interp: result.milan.ashtakoot.varna.interpretation },
-        { name: t("Vashya", "वश्य"), max: 2, got: result.milan.ashtakoot.vashya.score, interp: result.milan.ashtakoot.vashya.interpretation },
-        { name: t("Tara", "तारा"), max: 3, got: result.milan.ashtakoot.tara.score, interp: result.milan.ashtakoot.tara.interpretation },
-        { name: t("Yoni", "योनि"), max: 4, got: result.milan.ashtakoot.yoni.score, interp: result.milan.ashtakoot.yoni.interpretation },
-        { name: t("Maitri", "मैत्री"), max: 5, got: result.milan.ashtakoot.maitri.score, interp: result.milan.ashtakoot.maitri.interpretation },
-        { name: t("Gana", "गण"), max: 6, got: result.milan.ashtakoot.gana.score, interp: result.milan.ashtakoot.gana.interpretation },
-        { name: t("Bhakoot", "भकूट"), max: 7, got: result.milan.ashtakoot.bhakoot.score, interp: result.milan.ashtakoot.bhakoot.interpretation },
-        { name: t("Nadi", "नाड़ी"), max: 8, got: result.milan.ashtakoot.nadi.score, interp: result.milan.ashtakoot.nadi.interpretation },
+        { name: t("Varna", "वर्ण"), max: 1, got: getAsh('varna').score, interp: getAsh('varna').interpretation },
+        { name: t("Vashya", "वश्य"), max: 2, got: getAsh('vashya').score, interp: getAsh('vashya').interpretation },
+        { name: t("Tara", "तारा"), max: 3, got: getAsh('tara').score, interp: getAsh('tara').interpretation },
+        { name: t("Yoni", "योनि"), max: 4, got: getAsh('yoni').score, interp: getAsh('yoni').interpretation },
+        { name: t("Maitri", "मैत्री"), max: 5, got: getAsh('maitri').score, interp: getAsh('maitri').interpretation },
+        { name: t("Gana", "गण"), max: 6, got: getAsh('gana').score, interp: getAsh('gana').interpretation },
+        { name: t("Bhakoot", "भकूट"), max: 7, got: getAsh('bhakoot').score, interp: getAsh('bhakoot').interpretation },
+        { name: t("Nadi", "नाड़ी"), max: 8, got: getAsh('nadi').score, interp: getAsh('nadi').interpretation },
     ];
 
     return {
@@ -198,26 +209,26 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
                 dob: result.boy.dob || "", 
                 tob: result.boy.tob || "", 
                 pob: result.boy.pob || "", 
-                rashi: result.boy.moonSign, 
-                nakshatra: result.boy.nakshatra, 
-                lagna: result.boy.ascendant 
+                rashi: result.boy.moonSign || "", 
+                nakshatra: result.boy.nakshatra || "", 
+                lagna: result.boy.ascendant || ""
             },
             bride: { 
                 name: result.girl.name || "Bride", 
                 dob: result.girl.dob || "", 
                 tob: result.girl.tob || "", 
                 pob: result.girl.pob || "", 
-                rashi: result.girl.moonSign, 
-                nakshatra: result.girl.nakshatra, 
-                lagna: result.girl.ascendant 
+                rashi: result.girl.moonSign || "", 
+                nakshatra: result.girl.nakshatra || "", 
+                lagna: result.girl.ascendant || ""
             }
         },
         section2: {
-            emotional: result.milan.ashtakoot.maitri.score >= 3 ? t("Strong", "मजबूत") : t("Sensitive", "संवेदनशील"),
-            physical: result.milan.ashtakoot.yoni.score >= 2 ? t("Compatible", "अनुकूल") : t("Average", "औसत"),
-            financial: result.milan.ashtakoot.bhakoot.score === 7 ? t("Prosperous", "समृद्ध") : t("Balanced", "संतुलित"),
-            longevity: result.milan.ashtakoot.nadi.score === 8 ? t("Excellent", "उत्कृष्ट") : t("Caution", "सावधानी"),
-            family: result.milan.ashtakoot.gana.score >= 4 ? t("Harmonious", "सामंजस्यपूर्ण") : t("Adjustable", "समायोज्य"),
+            emotional: (ash.maitri?.score || 0) >= 3 ? t("Strong", "मजबूत") : t("Sensitive", "संवेदनशील"),
+            physical: (ash.yoni?.score || 0) >= 2 ? t("Compatible", "अनुकूल") : t("Average", "औसत"),
+            financial: ash.bhakoot?.score === 7 ? t("Prosperous", "समृद्ध") : t("Balanced", "संतुलित"),
+            longevity: ash.nadi?.score === 8 ? t("Excellent", "उत्कृष्ट") : t("Caution", "सावधानी"),
+            family: (ash.gana?.score || 0) >= 4 ? t("Harmonious", "सामंजस्यपूर्ण") : t("Adjustable", "समायोज्य"),
             quality: score >= 28 ? t("Excellent Match", "उत्कृष्ट मिलान") : score >= 18 ? t("Auspicious Match", "शुभ मिलान") : t("Average Match", "औसत मिलान"),
             recommendation: score >= 18 ? t("Marriage Recommended", "विवाह की सिफारिश") : t("Consult Astrologer", "ज्योतिषी से परामर्श करें")
         },
@@ -227,8 +238,8 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
             brideTraits: [t("Intelligent", "बुद्धिमान"), t("Compassionate", "दयालु"), t("Creative", "रचनात्मक")]
         },
         section7: {
-            boyStatus: result.boy.doshas.Manglik.present ? t("Manglik", "मांगलिक") : t("Non-Manglik", "गैर-मांगलिक"),
-            girlStatus: result.girl.doshas.Manglik.present ? t("Manglik", "मांगलिक") : t("Non-Manglik", "गैर-मांगलिक"),
+            boyStatus: result.boy.doshas?.Manglik?.present ? t("Manglik", "मांगलिक") : t("Non-Manglik", "गैर-मांगलिक"),
+            girlStatus: result.girl.doshas?.Manglik?.present ? t("Manglik", "मांगलिक") : t("Non-Manglik", "गैर-मांगलिक"),
             verdict: analyzeManglikCancellation(result.boy, result.girl, lang)
         },
         section14: {
@@ -242,7 +253,7 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
             girlRemedies: getContextualRemedies(result, lang)
         },
         finalVerdict: {
-            recommendation: generateMatchVerdict(score, result.boy.doshas.Manglik.present, result.girl.doshas.Manglik.present, lang)
+            recommendation: generateMatchVerdict(score, result.boy.doshas?.Manglik?.present || false, result.girl.doshas?.Manglik?.present || false, lang)
         }
     };
 };
@@ -260,4 +271,3 @@ export const generateLifePredictions = (data: any, lang: string = "en") => {
         finance: t("Wealth accumulation will be steady over time.", "समय के साथ धन संचय स्थिर रहेगा।")
     };
 };
-

@@ -60,7 +60,7 @@ export function Navbar() {
         { href: "/search", label: tNav("find_astrologers") },
         { href: "/horoscope", label: tNav("daily_horoscope") },
         { href: "/kundli", label: tNav("free_kundli") },
-        { href: "/kundli-matching", label: tNav("matching") },
+        { href: "/kundli/matching", label: tNav("matching") },
     ];
 
     const languages = [

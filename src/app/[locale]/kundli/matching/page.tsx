@@ -21,6 +21,11 @@ export default function MatchingPage() {
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
     const pdfContentRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Boy's Data
     const [boyData, setBoyData] = useState({
@@ -212,6 +217,8 @@ export default function MatchingPage() {
         doc.save(`Kundli_Report_${boyData.name.replace(/\s+/g, '_')}_${girlData.name.replace(/\s+/g, '_')}.pdf`);
     };
 
+    if (!mounted) return null;
+
     return (
         <main className="min-h-screen bg-[#F0F7FF] dark:bg-slate-950 overflow-x-hidden selection:bg-blue-500/30">
             <Navbar />
@@ -282,7 +289,7 @@ export default function MatchingPage() {
 
                     {/* Results Section */}
                     <div className="lg:col-span-8">
-                        {result ? (
+                        {result && analysis ? (
                             <div id="results" className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
                                 {/* Enhanced Hero Score Card */}
                                 <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 shadow-2xl border border-blue-100 dark:border-slate-800 relative overflow-hidden group">
@@ -555,7 +562,7 @@ export default function MatchingPage() {
             <Footer />
 
             {/* Hidden PDF Export Content for Matching */}
-            {result && (
+            {result && analysis && (
                 <div 
                     ref={pdfContentRef}
                     className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
