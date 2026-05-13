@@ -677,36 +677,23 @@ export default function KundliPage() {
                                         </div>
 
                                         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
+                                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/10 animate-in fade-in slide-in-from-left-4">
                                             <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-3">
                                                 <Clock3 className="w-6 h-6 text-orange-500" />
-                                                {l('mahadasha_timeline', 'Mahadasha Analysis (Timeline)')}
+                                                Mahadasha Timeline
                                             </h3>
-
-                                            <div className="relative border-l-2 border-white/10 ml-4 space-y-8 pb-4">
-                                                {chart.dasha?.periods?.filter((p: any) => new Date(p.end).getFullYear() >= new Date().getFullYear() - 1).map((p: any, i: number) => (
-                                                    <div key={i} className="pl-8 relative group">
-                                                        <span className="absolute -left-[9px] top-6 w-4 h-4 rounded-full border-4 border-[#050510] bg-white/20 group-hover:bg-orange-500 transition-colors" />
-                                                        <div className="bg-white/5 hover:bg-white/10 p-6 rounded-2xl border border-white/5 group-hover:border-orange-500/30 transition-all">
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <h4 className="text-lg font-black text-white">
-                                                                    {translatePlanet(p.lord, locale)} {l('mahadasha', 'Mahadasha')}
-                                                                </h4>
-                                                                <span className="text-xs font-bold bg-white/10 px-3 py-1 rounded-full border border-white/10 text-white/60">
-                                                                    {new Date(p.start).getFullYear()} - {new Date(p.end).getFullYear()}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-white/60 text-sm leading-relaxed">
-                                                                {locale === 'hi'
-                                                                    ? "Effect of " + translatePlanet(p.lord, locale) + " lasts for " + Math.round(p.duration) + " years."
-                                                                    : "Period of " + p.lord + " lasts for " + Math.round(p.duration) + " years."}
-                                                            </p>
+                                            <div className="space-y-4">
+                                                {chart.dasha?.periods?.map((p: any, i: number) => (
+                                                    <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/10 flex justify-between items-center">
+                                                        <div>
+                                                            <div className="font-bold text-white">{p.lord} Mahadasha</div>
+                                                            <div className="text-sm text-white/40">{new Date(p.start).getFullYear()} - {new Date(p.end).getFullYear()}</div>
                                                         </div>
+                                                        <div className="text-orange-500 font-bold">{Math.round(p.duration)} Years</div>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                    </div>
-                                )}
 
                                 {/* 5. ASHTAKVARGA TAB */}
                                 {activeTab === 'ashtakvarga' && (
