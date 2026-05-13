@@ -55,7 +55,7 @@ export default function KundliPage() {
         setLoading(true);
 
         try {
-            const dateStr = `${formData.dob}T${formData.tob || "12:00"}`;
+            const dateStr = formData.dob + "T" + (formData.tob || "12:00");
             const birthDate = new Date(dateStr);
 
             if (isNaN(birthDate.getTime())) {
@@ -195,13 +195,13 @@ export default function KundliPage() {
         const addHeader = (title: string) => {
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(`JyotishConnect Premium Report | ${title}`, 195, 15, { align: "right" });
+            doc.text("JyotishConnect Premium Report | " + title, 195, 15, { align: "right" });
             doc.line(15, 20, 195, 20);
         };
 
         const addFooter = (page: number) => {
             doc.setFontSize(8);
-            doc.text(`Page ${page} of 20`, 105, 285, { align: "center" });
+            doc.text("Page " + page + " of 20", 105, 285, { align: "center" });
         };
 
         // Page 1: Cover
@@ -215,7 +215,7 @@ export default function KundliPage() {
         doc.text("Premium Vedic Astrology Report", 105, 115, { align: "center" });
         doc.setFontSize(14);
         doc.text(formData.name, 105, 150, { align: "center" });
-        doc.text(`${formData.dob} | ${formData.birthplace}`, 105, 160, { align: "center" });
+        doc.text(formData.dob + " | " + formData.birthplace, 105, 160, { align: "center" });
 
         // Page 2: Birth Details
         doc.addPage(); addHeader("Birth Attributes");
@@ -300,7 +300,7 @@ export default function KundliPage() {
         doc.text("May the celestial alignments guide you towards peace and prosperity.", 105, 70, { align: "center" });
         addFooter(20);
 
-        doc.save(`Kundli_Report_${formData.name}.pdf`);
+        doc.save("Kundli_Report_" + formData.name + ".pdf");
         toast.success("Divine Report Downloaded!", { id: "pdf-gen" });
     };
 
@@ -357,7 +357,7 @@ export default function KundliPage() {
         });
 
         toast.success("Report ready for download!", { id: "pdf-gen" });
-        doc.save(`Kundli_Report_${formData.name.replace(/\s+/g, '_')}.pdf`);
+            doc.save("Kundli_Report_" + formData.name.replace(/\s+/g, "_") + ".pdf");
     };
 
 
@@ -513,9 +513,9 @@ export default function KundliPage() {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 scale-100"
-                                            : "text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 scale-95"`}
+                                        className={"flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all " + (activeTab === tab.id ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 scale-100" : "text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 scale-95")}
+
+
                                     >
                                         <tab.icon className="w-4 h-4" /> {l(tab.id, tab.label)}
                                     </button>
