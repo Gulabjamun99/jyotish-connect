@@ -127,7 +127,7 @@ export default function KundliPage() {
         }
     };
 
-        const handleDownloadPDF = async () => {
+            const handleDownloadPDF = async () => {
         if (!chart) return;
 
         const captureChartImage = async (ref: React.RefObject<HTMLDivElement | null>): Promise<string | null> => {
@@ -194,13 +194,13 @@ export default function KundliPage() {
         const addHeader = (title: string) => {
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(JyotishConnect Premium Report | , 195, 15, { align: "right" });
+            doc.text(`JyotishConnect Premium Report | ${title}`, 195, 15, { align: "right" });
             doc.line(15, 20, 195, 20);
         };
 
         const addFooter = (page: number) => {
             doc.setFontSize(8);
-            doc.text(Page  of 20, 105, 285, { align: "center" });
+            doc.text(`Page ${page} of 20`, 105, 285, { align: "center" });
         };
 
         // Page 1: Cover
@@ -214,7 +214,7 @@ export default function KundliPage() {
         doc.text("Premium Vedic Astrology Report", 105, 115, { align: "center" });
         doc.setFontSize(14);
         doc.text(formData.name, 105, 150, { align: "center" });
-        doc.text(${formData.dob} | , 105, 160, { align: "center" });
+        doc.text(`${formData.dob} | ${formData.birthplace}`, 105, 160, { align: "center" });
 
         // Page 2: Birth Details
         doc.addPage(); addHeader("Birth Attributes");
@@ -299,7 +299,7 @@ export default function KundliPage() {
         doc.text("May the celestial alignments guide you towards peace and prosperity.", 105, 70, { align: "center" });
         addFooter(20);
 
-        doc.save(Kundli_Report_.pdf);
+        doc.save(`Kundli_Report_${formData.name}.pdf`);
         toast.success("Divine Report Downloaded!", { id: "pdf-gen" });
     };
 
@@ -1053,5 +1053,9 @@ export default function KundliPage() {
         </main>
     );
 }
+
+
+
+
 
 
