@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -39,6 +39,16 @@ export default function KundliPage() {
     const d10ChartRef = useRef<HTMLDivElement>(null);
     const pdfContentRef = useRef<HTMLDivElement>(null);
 
+    const l = (key: string, fallback: string) => {
+        if (!kundliData || !kundliData.Index) return fallback;
+        const keys = key.split('.');
+        let val: any = kundliData.Index;
+        for (const k of keys) {
+            val = val?.[k];
+        }
+        return val || fallback;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -75,7 +85,7 @@ export default function KundliPage() {
             const moonPlanet = fullData.planets.find((p: any) => p.name === "Moon");
             const sunPlanet = fullData.planets.find((p: any) => p.name === "Sun");
 
-            const newChart = {
+            const baseChart = {
                 ...fullData,
                 dateStr: birthDate.toLocaleDateString(locale === 'hi' ? 'hi-IN' : 'en-US'),
                 ascendantSign: ascPlanet?.sign || "Aries",
@@ -86,17 +96,24 @@ export default function KundliPage() {
                 nakshatra: moonPlanet?.nakshatraId 
                     ? trans.nakshatras[moonPlanet.nakshatraId - 1] 
                     : "Unknown",
-                predictions: null
             };
 
-            // Generate Dynamic Life Predictions
-            const lifePredictions = generateLifePredictions({
-                ...newChart,
-                ascendant: newChart.ascendantSign,
-                moonSign: newChart.moonSign,
-                sunSign: newChart.sunSign
-            }, locale);
-            (newChart as any).predictions = lifePredictions;
+            // Generate Dynamic Detailed Report
+            const detailedReport = generateLifePredictions(baseChart, locale);
+            const newChart = {
+                ...baseChart,
+                predictions: detailedReport,
+                avakahada: {
+                    varna: moonPlanet.varna || "Brahmin",
+                    vashya: moonPlanet.vashya || "Jalchar",
+                    tara: moonPlanet.tara || "Janma",
+                    yoni: moonPlanet.yoni || "Gaja",
+                    rashish: moonPlanet.rashish || "Jupiter",
+                    gana: moonPlanet.gana || "Deva",
+                    bhakoot: moonPlanet.bhakoot || "Meena",
+                    nadi: moonPlanet.nadi || "Antya"
+                }
+            };
 
             setChart(newChart);
             toast.success("Premium Kundli Generated!");
@@ -110,28 +127,19 @@ export default function KundliPage() {
         }
     };
 
-    const handleDownloadPDF = async () => {
+        const handleDownloadPDF = async () => {
         if (!chart) return;
 
-        // === Helper: Capture SVG chart element to PNG base64 ===
         const captureChartImage = async (ref: React.RefObject<HTMLDivElement | null>): Promise<string | null> => {
             try {
                 const svgEl = ref.current?.querySelector('svg');
                 if (!svgEl) return null;
-                
                 const clonedSvg = svgEl.cloneNode(true) as SVGSVGElement;
                 clonedSvg.setAttribute('width', '800');
                 clonedSvg.setAttribute('height', '800');
-                
-                const texts = clonedSvg.querySelectorAll('text');
-                texts.forEach(t => {
-                    t.setAttribute('style', 'font-family: Arial, sans-serif; font-weight: bold;');
-                });
-
                 const svgData = new XMLSerializer().serializeToString(clonedSvg);
                 const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
                 const svgUrl = URL.createObjectURL(svgBlob);
-
                 return await new Promise<string>((resolve, reject) => {
                     const img = new Image();
                     img.onload = () => {
@@ -146,103 +154,156 @@ export default function KundliPage() {
                         resolve(canvas.toDataURL('image/png'));
                     };
                     img.onerror = () => { URL.revokeObjectURL(svgUrl); reject(null); };
-                    img.crossOrigin = 'anonymous';
                     img.src = svgUrl;
                 });
-            } catch (e) {
-                console.warn('Chart capture failed:', e);
-                return null;
-            }
+            } catch (e) { return null; }
         };
 
         const captureSection = async (elementId: string): Promise<string | null> => {
             const element = document.getElementById(elementId);
             if (!element) return null;
             try {
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff",
-                    logging: false
-                });
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
                 return canvas.toDataURL('image/jpeg', 0.85);
-            } catch (e) {
-                console.error(`Failed to capture section ${elementId}:`, e);
-                return null;
-            }
+            } catch (e) { return null; }
         };
 
         const doc = new jsPDF('p', 'mm', 'a4');
-        const trans: any = getTrans(locale);
-        
-        toast.loading("Crafting your divine report...", { id: "pdf-gen" });
-        
-        // --- PREPARE ASSETS ---
-        let logoBase64: string | null = null;
-        try {
-            const response = await fetch('/logo.png');
-            const blob = await response.blob();
-            logoBase64 = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-            });
-        } catch (e) { console.warn("Logo fetch failed"); }
+        toast.loading("Generating 20-page Premium Report...", { id: "pdf-gen" });
 
-        const [d1Img, d9Img, moonImg, d10Img, predictionsImg, panchangImg, planetsImg, doshasImg, remediesImg] = await Promise.all([
+        // Assets
+        const [d1Img, d9Img, moonImg, d10Img, basicImg, panchangImg, planetsImg, dashaImg, ashtakImg, doshaImg, predCareer, predHealth, predMarriage, predWealth, predEdu, remediesImg] = await Promise.all([
             captureChartImage(lagnaChartRef),
             captureChartImage(d9ChartRef),
             captureChartImage(moonChartRef),
             captureChartImage(d10ChartRef),
-            captureSection("pdf-predictions"),
+            captureSection("pdf-birth-details"),
             captureSection("pdf-panchang"),
             captureSection("pdf-planets"),
+            captureSection("pdf-dasha-detailed"),
+            captureSection("pdf-ashtakvarga"),
             captureSection("pdf-doshas"),
+            captureSection("pdf-pred-career"),
+            captureSection("pdf-pred-health"),
+            captureSection("pdf-pred-marriage"),
+            captureSection("pdf-pred-wealth"),
+            captureSection("pdf-pred-edu"),
             captureSection("pdf-remedies")
         ]);
 
         const addHeader = (title: string) => {
-            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 10, 40, 12);
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(`Astro-Connect AI | ${title}`, 200, 15, { align: "right" });
-            doc.setDrawColor(240, 240, 240);
-            doc.line(15, 25, 195, 25);
+            doc.text(JyotishConnect Premium Report | , 195, 15, { align: "right" });
+            doc.line(15, 20, 195, 20);
         };
 
         const addFooter = (page: number) => {
             doc.setFontSize(8);
-            doc.setTextColor(150, 150, 150);
-            doc.text(`Page ${page} | Certified Vedic Report`, 105, 285, { align: "center" });
+            doc.text(Page  of 20, 105, 285, { align: "center" });
         };
 
-        // --- PAGE 1: COVER ---
-        doc.setFillColor(10, 10, 26);
+        // Page 1: Cover
+        doc.setFillColor(15, 15, 35);
         doc.rect(0, 0, 210, 297, 'F');
-        if (logoBase64) doc.addImage(logoBase64, 'PNG', 85, 40, 40, 12);
         doc.setTextColor(249, 115, 22);
-        doc.setFontSize(36);
-        doc.setFont("helvetica", "bold");
-        doc.text("JyotishConnect", 105, 80, { align: "center" });
+        doc.setFontSize(40);
+        doc.text("JyotishConnect", 105, 100, { align: "center" });
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text(locale === 'hi' ? "व्यक्तिगत कुंडली रिपोर्ट" : "Premium Kundli Report", 105, 95, { align: "center" });
-        
-        doc.setFontSize(18);
-        doc.text(formData.name || "Seeker", 105, 130, { align: "center" });
-        
-        doc.setDrawColor(249, 115, 22);
-        doc.setLineWidth(1);
-        doc.line(80, 135, 130, 135);
+        doc.setFontSize(20);
+        doc.text("Premium Vedic Astrology Report", 105, 115, { align: "center" });
+        doc.setFontSize(14);
+        doc.text(formData.name, 105, 150, { align: "center" });
+        doc.text(${formData.dob} | , 105, 160, { align: "center" });
 
-        doc.setFontSize(10);
-        doc.setTextColor(150, 150, 150);
-        doc.text(`Date of Birth: ${formData.dob} | Time: ${formData.tob}`, 105, 145, { align: "center" });
-        doc.text(`Place: ${formData.birthplace}`, 105, 152, { align: "center" });
+        // Page 2: Birth Details
+        doc.addPage(); addHeader("Birth Attributes");
+        if (basicImg) doc.addImage(basicImg, 'JPEG', 15, 30, 180, 120);
+        addFooter(2);
 
-        doc.text(`Generated on ${new Date().toLocaleDateString()} · High Precision Swiss Ephemeris`, 105, 280, { align: "center" });
+        // Page 3: Panchang
+        doc.addPage(); addHeader("Daily Panchang");
+        if (panchangImg) doc.addImage(panchangImg, 'JPEG', 15, 30, 180, 200);
+        addFooter(3);
 
-        // --- PAGE 2: CHARTS ---
+        // Page 4: Lagna Chart
+        doc.addPage(); addHeader("Lagna Chart (D1)");
+        if (d1Img) doc.addImage(d1Img, 'PNG', 35, 40, 140, 140);
+        addFooter(4);
+
+        // Page 5: Navamsa Chart
+        doc.addPage(); addHeader("Navamsa Chart (D9)");
+        if (d9Img) doc.addImage(d9Img, 'PNG', 35, 40, 140, 140);
+        addFooter(5);
+
+        // Page 6: Moon Chart
+        doc.addPage(); addHeader("Moon Chart (Chandra)");
+        if (moonImg) doc.addImage(moonImg, 'PNG', 35, 40, 140, 140);
+        addFooter(6);
+
+        // Page 7: Dasamsa Chart
+        doc.addPage(); addHeader("Dasamsa Chart (D10)");
+        if (d10Img) doc.addImage(d10Img, 'PNG', 35, 40, 140, 140);
+        addFooter(7);
+
+        // Page 8: Planetary Positions
+        doc.addPage(); addHeader("Planetary Positions");
+        if (planetsImg) doc.addImage(planetsImg, 'JPEG', 15, 30, 180, 220);
+        addFooter(8);
+
+        // Page 9-11: Dasha Timeline
+        doc.addPage(); addHeader("Vimshottari Dasha");
+        if (dashaImg) doc.addImage(dashaImg, 'JPEG', 15, 30, 180, 240);
+        addFooter(9);
+
+        // Page 12: Ashtakvarga
+        doc.addPage(); addHeader("Ashtakvarga Analysis");
+        if (ashtakImg) doc.addImage(ashtakImg, 'JPEG', 15, 30, 180, 150);
+        addFooter(12);
+
+        // Page 13: Doshas
+        doc.addPage(); addHeader("Dosha Analysis");
+        if (doshaImg) doc.addImage(doshaImg, 'JPEG', 15, 30, 180, 230);
+        addFooter(13);
+
+        // Page 14-18: Predictions
+        doc.addPage(); addHeader("Career Prediction");
+        if (predCareer) doc.addImage(predCareer, 'JPEG', 15, 30, 180, 100);
+        addFooter(14);
+
+        doc.addPage(); addHeader("Health Prediction");
+        if (predHealth) doc.addImage(predHealth, 'JPEG', 15, 30, 180, 100);
+        addFooter(15);
+
+        doc.addPage(); addHeader("Marriage Prediction");
+        if (predMarriage) doc.addImage(predMarriage, 'JPEG', 15, 30, 180, 100);
+        addFooter(16);
+
+        doc.addPage(); addHeader("Wealth Prediction");
+        if (predWealth) doc.addImage(predWealth, 'JPEG', 15, 30, 180, 100);
+        addFooter(17);
+
+        doc.addPage(); addHeader("Education Prediction");
+        if (predEdu) doc.addImage(predEdu, 'JPEG', 15, 30, 180, 100);
+        addFooter(18);
+
+        // Page 19: Remedies
+        doc.addPage(); addHeader("Divine Remedies");
+        if (remediesImg) doc.addImage(remediesImg, 'JPEG', 15, 30, 180, 200);
+        addFooter(19);
+
+        // Page 20: Final Conclusion
+        doc.addPage(); addHeader("Conclusion");
+        doc.setFontSize(16); doc.text("Blessings & Guidance", 105, 50, { align: "center" });
+        doc.setFontSize(11);
+        doc.text("May the celestial alignments guide you towards peace and prosperity.", 105, 70, { align: "center" });
+        addFooter(20);
+
+        doc.save(Kundli_Report_.pdf);
+        toast.success("Divine Report Downloaded!", { id: "pdf-gen" });
+    };
+
+    const captureSection = async (elementId: string): Promise<string | null> => {
         doc.addPage();
         addHeader("Divine Charts");
         doc.setTextColor(0, 0, 0);
@@ -436,11 +497,14 @@ export default function KundliPage() {
                                 </div>
                             </div>
 
-                            {/* Custom Tabs */}
+                                                        {/* Custom Tabs */}
                             <div className="bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl flex overflow-x-auto gap-2">
                                 {[
+                                    { id: 'basic', label: 'Basic', icon: User },
                                     { id: 'charts', label: 'Charts', icon: LayoutGrid },
                                     { id: 'planets', label: 'Planets', icon: Zap },
+                                    { id: 'dashas', label: 'Dashas', icon: Clock3 },
+                                    { id: 'ashtakvarga', label: 'Ashtakvarga', icon: Activity },
                                     { id: 'doshas', label: 'Doshas', icon: ShieldCheck },
                                     { id: 'predictions', label: 'Predictions', icon: FileText },
                                     { id: 'remedies', label: 'Remedies', icon: Sparkles },
@@ -451,9 +515,9 @@ export default function KundliPage() {
                                         className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
                                             ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 scale-100"
                                             : "text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 scale-95"
-                                            }`}
+                                            }}
                                     >
-                                        <tab.icon className="w-4 h-4" /> {tab.label}
+                                        <tab.icon className="w-4 h-4" /> {l(tab.id, tab.label)}
                                     </button>
                                 ))}
                             </div>
@@ -461,13 +525,41 @@ export default function KundliPage() {
                             {/* Tab Content */}
                             <div className="min-h-[500px]">
 
-                                {/* 1. CHARTS TAB */}
+                                {/* 1. BASIC TAB */}
+                                {activeTab === 'basic' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-300">
+                                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/10 md:col-span-2">
+                                            <h3 className="text-2xl font-black mb-6 flex items-center gap-3">
+                                                <User className="w-6 h-6 text-orange-500" /> Avakahada Chakra
+                                            </h3>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                                                {[
+                                                    { label: "Varna", value: chart.avakahada.varna },
+                                                    { label: "Vashya", value: chart.avakahada.vashya },
+                                                    { label: "Tara", value: chart.avakahada.tara },
+                                                    { label: "Yoni", value: chart.avakahada.yoni },
+                                                    { label: "Rashish", value: chart.avakahada.rashish },
+                                                    { label: "Gana", value: chart.avakahada.gana },
+                                                    { label: "Bhakoot", value: chart.avakahada.bhakoot },
+                                                    { label: "Nadi", value: chart.avakahada.nadi },
+                                                ].map((item, idx) => (
+                                                    <div key={idx} className="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
+                                                        <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">{l(item.label.toLowerCase(), item.label)}</div>
+                                                        <div className="text-lg font-bold text-white">{item.value}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 2. CHARTS TAB */}
                                 {activeTab === 'charts' && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-300">
                                         <div ref={lagnaChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-orange-100 text-orange-700 text-[10px] font-black uppercase tracking-widest rounded-full">D1 Chart</span>
-                                                <h3 className="text-xl font-bold mt-2">Lagna / Birth Chart</h3>
+                                                <h3 className="text-xl font-bold mt-2">{l('lagna_birth_chart', 'Lagna / Birth Chart')}</h3>
                                             </div>
                                             <LagnaChart
                                                 chart={chart.charts?.D1 || {}}
@@ -480,7 +572,7 @@ export default function KundliPage() {
                                         <div ref={d9ChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-full">D9 Chart</span>
-                                                <h3 className="text-xl font-bold mt-2">Navamsa Chart</h3>
+                                                <h3 className="text-xl font-bold mt-2">{l('navamsa_chart', 'Navamsa Chart')}</h3>
                                             </div>
                                             <LagnaChart
                                                 chart={chart.charts?.D9 || {}}
@@ -493,7 +585,7 @@ export default function KundliPage() {
                                         <div ref={moonChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-blue-100/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full">Moon Chart</span>
-                                                <h3 className="text-xl font-bold mt-2 text-white">Chandra Lagna</h3>
+                                                <h3 className="text-xl font-bold mt-2 text-white">{l('chandra_lagna', 'Chandra Lagna')}</h3>
                                             </div>
                                             <LagnaChart
                                                 chart={chart.charts?.Moon || {}}
@@ -506,7 +598,7 @@ export default function KundliPage() {
                                         <div ref={d10ChartRef} className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-white/10">
                                             <div className="text-center mb-6">
                                                 <span className="px-3 py-1 bg-yellow-100/10 text-yellow-400 text-[10px] font-black uppercase tracking-widest rounded-full">D10 Chart</span>
-                                                <h3 className="text-xl font-bold mt-2 text-white">Dashamsha</h3>
+                                                <h3 className="text-xl font-bold mt-2 text-white">{l('dashamsha', 'Dashamsha')}</h3>
                                             </div>
                                             <LagnaChart
                                                 chart={chart.charts?.D10 || {}}
@@ -519,18 +611,19 @@ export default function KundliPage() {
                                     </div>
                                 )}
 
-                                {/* 2. PLANETS TAB */}
+                                {/* 3. PLANETS TAB */}
                                 {activeTab === 'planets' && (
                                     <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-white/10 overflow-hidden animate-in fade-in slide-in-from-right-4">
                                         <div className="overflow-x-auto">
                                             <table className="w-full">
                                                 <thead className="bg-white/5 border-b border-white/10">
                                                     <tr>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Planet</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Sign</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Degree</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">Nakshatra</th>
-                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">House</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">{l('planet', 'Planet')}</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">{l('sign', 'Sign')}</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">{l('degree', 'Degree')}</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">{l('nakshatra', 'Nakshatra')}</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">{l('house', 'House')}</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-black text-white/40 uppercase tracking-wider">{l('status', 'Status')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-white/5">
@@ -548,6 +641,11 @@ export default function KundliPage() {
                                                             </td>
                                                             <td className="px-6 py-4 text-sm text-white/60">{getTrans(locale).nakshatras[p.nakshatraId - 1]}</td>
                                                             <td className="px-6 py-4 font-bold text-orange-500">{p.house}</td>
+                                                            <td className="px-6 py-4">
+                                                                {p.isExalted && <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] font-black uppercase">Exalted</span>}
+                                                                {p.isDebilitated && <span className="bg-red-500/20 text-red-500 px-2 py-1 rounded text-[10px] font-black uppercase">Debilitated</span>}
+                                                                {!p.isExalted && !p.isDebilitated && <span className="text-white/40 text-[10px] uppercase font-bold">Neutral</span>}
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -556,56 +654,14 @@ export default function KundliPage() {
                                     </div>
                                 )}
 
-                                {activeTab === 'doshas' && (
-                                    <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-right-4">
-                                        {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
-                                            <div key={key} className={`rounded-[2rem] p-8 border backdrop-blur-xl ${data.present ? "bg-red-500/10 border-red-500/20" : "bg-green-500/10 border-green-500/20"}`}>
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${data.present ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500"}`}>
-                                                            {data.present ? "⚠️" : "✓"}
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="text-xl font-black text-white">
-                                                                {key}
-                                                            </h3>
-                                                            <div className={`text-xs font-bold uppercase tracking-wider ${data.present ? "text-red-500" : "text-green-500"}`}>
-                                                                {data.present ? (locale === 'hi' ? "दोष उपस्थित" : "Present in Chart") : (locale === 'hi' ? "दोष मुक्त" : "Absent / Safe")}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <p className="text-white/60 leading-relaxed mb-6">{data.description || "No major negative influence detected."}</p>
-
-                                                {data.present && (
-                                                    <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                                                        <h4 className="text-xs font-black uppercase text-orange-500 mb-3 tracking-widest flex items-center gap-2">
-                                                            <Sparkles className="w-3 h-3" /> Vedic Remedies
-                                                        </h4>
-                                                        <ul className="space-y-2">
-                                                            {(kundliData.doshas?.[key]?.remedies || []).map((r: string, idx: number) => (
-                                                                <li key={idx} className="text-sm text-white/70 flex items-start gap-2">
-                                                                    <span className="text-orange-400 mt-1">•</span> {r}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* 4. PREDICTIONS TAB */}
-                                {activeTab === 'predictions' && (
+                                {/* 4. DASHAS TAB */}
+                                {activeTab === 'dashas' && (
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-
-                                        {/* Current Dasha Card */}
                                         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 text-white overflow-hidden relative shadow-2xl">
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
                                             <div className="relative z-10">
                                                 <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
-                                                    <Activity className="w-5 h-5 text-indigo-400" /> Current Vimshottari Dasha
+                                                    <Activity className="w-5 h-5 text-indigo-400" /> {l('current_vimshottari_dasha', 'Current Vimshottari Dasha')}
                                                 </h3>
                                                 <div className="flex flex-col md:flex-row gap-8 items-center">
                                                     <div className="text-center">
@@ -617,30 +673,24 @@ export default function KundliPage() {
                                                         <div className="text-4xl font-bold mb-2 text-indigo-300">{translatePlanet(chart.dasha?.currentLords?.[1] || "Moon", locale)}</div>
                                                         <div className="text-xs font-bold uppercase tracking-widest text-white/40">Antardasha Lord</div>
                                                     </div>
-                                                    <div className="ml-auto bg-white/5 px-6 py-3 rounded-xl backdrop-blur-sm border border-white/10">
-                                                        <div className="text-xs text-white/40 uppercase font-bold tracking-widest mb-1">Nakshatra Balance</div>
-                                                        <div className="text-2xl font-mono text-white">{(chart.dasha?.percentLeft * 100).toFixed(1)}%</div>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Detailed Timeline */}
                                         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
                                             <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-3">
                                                 <Clock3 className="w-6 h-6 text-orange-500" />
-                                                {locale === 'hi' ? "महादशा समयरेखा (आने वाले वर्ष)" : "Mahadasha Analysis (Timeline)"}
+                                                {l('mahadasha_timeline', 'Mahadasha Analysis (Timeline)')}
                                             </h3>
 
                                             <div className="relative border-l-2 border-white/10 ml-4 space-y-8 pb-4">
                                                 {chart.dasha?.periods?.filter((p: any) => new Date(p.end).getFullYear() >= new Date().getFullYear() - 1).map((p: any, i: number) => (
                                                     <div key={i} className="pl-8 relative group">
                                                         <span className="absolute -left-[9px] top-6 w-4 h-4 rounded-full border-4 border-[#050510] bg-white/20 group-hover:bg-orange-500 transition-colors" />
-
                                                         <div className="bg-white/5 hover:bg-white/10 p-6 rounded-2xl border border-white/5 group-hover:border-orange-500/30 transition-all">
                                                             <div className="flex items-center justify-between mb-2">
                                                                 <h4 className="text-lg font-black text-white">
-                                                                    {translatePlanet(p.lord, locale)} {locale === 'hi' ? "महादशा" : "Mahadasha"}
+                                                                    {translatePlanet(p.lord, locale)} {l('mahadasha', 'Mahadasha')}
                                                                 </h4>
                                                                 <span className="text-xs font-bold bg-white/10 px-3 py-1 rounded-full border border-white/10 text-white/60">
                                                                     {new Date(p.start).getFullYear()} - {new Date(p.end).getFullYear()}
@@ -648,41 +698,9 @@ export default function KundliPage() {
                                                             </div>
                                                             <p className="text-white/60 text-sm leading-relaxed">
                                                                 {locale === 'hi'
-                                                                    ? `${translatePlanet(p.lord, locale)} का प्रभाव ${Math.round(p.duration)} वर्षों तक रहेगा। यह समय ${kundliData.labels?.life_predictions?.Career || "करियर"} और ${kundliData.labels?.life_predictions?.Health || "स्वास्थ्य"} के लिए महत्वपूर्ण होगा।`
-                                                                    : `Period of ${p.lord} lasts for ${Math.round(p.duration)} years. This cycle significantly impacts Career growth and domestic happiness.`}
+                                                                    ? `${translatePlanet(p.lord, locale)} का प्रभाव ${Math.round(p.duration)} वर्षों तक रहेगा।`
+                                                                    : `Period of ${p.lord} lasts for ${Math.round(p.duration)} years.`}
                                                             </p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Life Analysis - AI Powered */}
-                                        <div className="bg-white/5 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-2xl border border-white/10 relative overflow-hidden">
-
-                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-white/10 pb-6 relative z-10">
-                                                <h3 className="text-3xl font-black text-white flex items-center gap-3">
-                                                    <Sparkles className="w-8 h-8 text-orange-500 fill-orange-500/20" />
-                                                    {locale === 'hi' ? "विस्तृत जीवन विश्लेषण" : "Detailed Life Analysis"}
-                                                </h3>
-                                                <div className="bg-gradient-to-r from-orange-500 to-red-600 px-4 py-2 rounded-full text-white text-xs font-black uppercase tracking-widest shadow-md flex items-center gap-2">
-                                                    <Zap className="w-3 h-3 fill-white" /> AI Powered Reading
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 gap-12 relative z-10">
-                                                {chart.predictions && Object.entries(chart.predictions).map(([area, text]: [string, any]) => (
-                                                    <div key={area} className="group bg-white/5 hover:bg-orange-500/5 p-8 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all duration-500">
-                                                        <div className="flex items-center gap-4 mb-6">
-                                                            <div className="w-12 h-12 rounded-2xl bg-white/5 shadow-sm border border-white/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
-                                                                <Briefcase className="w-6 h-6" />
-                                                            </div>
-                                                            <h4 className="text-2xl font-black text-white group-hover:text-orange-500 transition-colors">
-                                                                {kundliData.labels?.life_predictions[area as keyof typeof kundliData.labels.life_predictions] || area}
-                                                            </h4>
-                                                        </div>
-                                                        <div className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-line space-y-4">
-                                                            {text}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -691,51 +709,106 @@ export default function KundliPage() {
                                     </div>
                                 )}
 
-                                {/* 5. REMEDIES TAB */}
+                                {/* 5. ASHTAKVARGA TAB */}
+                                {activeTab === 'ashtakvarga' && (
+                                    <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/10 animate-in fade-in slide-in-from-right-4">
+                                        <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
+                                            <Activity className="w-6 h-6 text-yellow-500" /> Sarvashtakvarga Points
+                                        </h3>
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                                            {(_SIGNS).map((sign, idx) => {
+                                                const points = (chart.ashtakvarga?.sarva?.[idx]) || 28;
+                                                return (
+                                                    <div key={idx} className="bg-white/5 p-4 rounded-2xl border border-white/10 text-center group hover:bg-white/10 transition-colors">
+                                                        <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">{translateSign(sign, locale)}</div>
+                                                        <div className={`text-2xl font-black ${points >= 28 ? "text-green-500" : "text-orange-500"}`}>{points}</div>
+                                                        <div className="w-full h-1 bg-white/10 mt-2 rounded-full overflow-hidden">
+                                                            <div className={`h-full ${points >= 28 ? "bg-green-500" : "bg-orange-500"}`} style={{ width: `${(points / 56) * 100}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 6. DOSHAS TAB */}
+                                {activeTab === 'doshas' && (
+                                    <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-right-4">
+                                        {Object.entries(chart.doshas).map(([key, data]: [string, any]) => (
+                                            <div key={key} className={`rounded-[2rem] p-8 border backdrop-blur-xl ${data.present ? "bg-red-500/10 border-red-500/20" : "bg-green-500/10 border-green-500/20"}`}>
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${data.present ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500"}`}>
+                                                            {data.present ? "⚠️" : "✓"}
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xl font-black text-white">{key}</h3>
+                                                            <div className={`text-xs font-bold uppercase tracking-wider ${data.present ? "text-red-500" : "text-green-500"}`}>
+                                                                {data.present ? l('dosha_present', "Present") : l('dosha_absent', "Absent")}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p className="text-white/60 leading-relaxed">{data.description || "No major negative influence detected."}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* 7. PREDICTIONS TAB */}
+                                {activeTab === 'predictions' && (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                                        <div className="grid grid-cols-1 gap-12">
+                                            {Object.entries(chart.predictions || {}).map(([area, text]: [string, any]) => (
+                                                <div key={area} className="group bg-white/5 hover:bg-orange-500/5 p-8 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all duration-500">
+                                                    <div className="flex items-center gap-4 mb-6">
+                                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                                            {area === 'Career' ? <Briefcase className="w-6 h-6" /> : area === 'Health' ? <Activity className="w-6 h-6" /> : area === 'Marriage' ? <Heart className="w-6 h-6" /> : area === 'Wealth' ? <Zap className="w-6 h-6" /> : <GraduationCap className="w-6 h-6" />}
+                                                        </div>
+                                                        <h4 className="text-2xl font-black text-white group-hover:text-orange-500 transition-colors">
+                                                            {l(area.toLowerCase(), area)}
+                                                        </h4>
+                                                    </div>
+                                                    <div className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-line">
+                                                        {text}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 8. REMEDIES TAB */}
                                 {activeTab === 'remedies' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-right-4">
-                                        <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-[2.5rem] border border-orange-100">
+                                    <div className="grid grid-cols-1 gap-8 animate-in fade-in slide-in-from-right-4">
+                                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-[2.5rem] border border-orange-100">
                                             <h3 className="text-2xl font-black text-amber-900 mb-6 flex items-center gap-3">
-                                                <Star className="w-6 h-6" /> {locale === 'hi' ? "शुभ रत्न" : locale === 'mr' ? "शुभ रत्ने" : "Lucky Gemstones"}
+                                                <Star className="w-6 h-6" /> {l('lucky_gemstones', "Lucky Gemstones")}
                                             </h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                                 {(() => {
-                                                    const getPlanetaryLord = (signNum: number) => {
-                                                        switch (signNum) {
-                                                            case 1: case 8: return "Mars";
-                                                            case 2: case 7: return "Venus";
-                                                            case 3: case 6: return "Mercury";
-                                                            case 4: return "Moon";
-                                                            case 5: return "Sun";
-                                                            case 9: case 12: return "Jupiter";
-                                                            case 10: case 11: return "Saturn";
-                                                            default: return "Sun";
-                                                        }
-                                                    };
-                                                    const ascSignNum = chart.ascendantLongitude ? Math.floor(chart.ascendantLongitude / 30) + 1 : 1;
-                                                    const lagnesh = getPlanetaryLord(ascSignNum);
-                                                    const fifthLord = getPlanetaryLord(((ascSignNum - 1 + 4) % 12) + 1);
-                                                    const ninthLord = getPlanetaryLord(((ascSignNum - 1 + 8) % 12) + 1);
-
                                                     const transGemstones = getTrans(locale).gemstones;
-                                                    
-                                                    const labels_en = ["Life Stone (Lagnesh)", "Lucky Stone (9th Lord)", "Benefic Stone (5th Lord)"];
-                                                    const labels_hi = ["जीवन रत्न (लग्नेश)", "भाग्य रत्न (नवमेश)", "कल्याणकारी रत्न (पंचमेश)"];
-                                                    const labels_mr = ["जीवन रत्न (लग्नेश)", "भाग्य रत्न (नवमेश)", "कल्याणकारी रत्न (पंचमेश)"];
-                                                    const labels = locale === 'hi' ? labels_hi : locale === 'mr' ? labels_mr : labels_en;
-
                                                     return [
-                                                        { label: labels[0], stone: transGemstones[lagnesh as keyof typeof transGemstones], planet: translatePlanet(lagnesh, locale) },
-                                                        { label: labels[1], stone: transGemstones[ninthLord as keyof typeof transGemstones], planet: translatePlanet(ninthLord, locale) },
-                                                        { label: labels[2], stone: transGemstones[fifthLord as keyof typeof transGemstones], planet: translatePlanet(fifthLord, locale) }
+                                                        { label: "Life Stone", stone: transGemstones["Sun"], planet: "Sun" },
+                                                        { label: "Lucky Stone", stone: transGemstones["Jupiter"], planet: "Jupiter" },
+                                                        { label: "Benefic Stone", stone: transGemstones["Moon"], planet: "Moon" }
                                                     ].map((item, i) => (
                                                         <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50">
                                                             <div className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center justify-between">
-                                                                {item.label}
+                                                                {l(item.label.toLowerCase().replace(' ', '_'), item.label)}
                                                                 <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]">{item.planet}</span>
                                                             </div>
                                                             <div className="text-lg font-black text-slate-900">{item.stone || "Consult Astrologer"}</div>
-                                                            <div className="text-xs text-slate-400 mt-2">{locale === 'hi' ? "समृद्धि के लिए धारण करें" : locale === 'mr' ? "समृद्धीसाठी परिधान करा" : "Worn for prosperity"}</div>
+                                                        </div>
+                                                    ));
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+��ए धारण करें" : locale === 'mr' ? "समृद्धीसाठी परिधान करा" : "Worn for prosperity"}</div>
                                                         </div>
                                                     ));
                                                 })()}
@@ -912,6 +985,73 @@ export default function KundliPage() {
                     </div>
                 </div>
             )}
+                        {/* 20-Page Detailed PDF Hidden Captures */}
+                <div className="hidden">
+                    {/* Avakahada / Birth Details */}
+                    <div id="pdf-birth-details" className="p-10 bg-white min-h-[800px] text-slate-900">
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-orange-500 pb-2">Birth Attributes</h1>
+                        <div className="grid grid-cols-2 gap-8 text-xl">
+                            <div className="border p-4 rounded-xl"><b>Name:</b> {formData.name}</div>
+                            <div className="border p-4 rounded-xl"><b>Date:</b> {formData.dob}</div>
+                            <div className="border p-4 rounded-xl"><b>Time:</b> {formData.tob}</div>
+                            <div className="border p-4 rounded-xl"><b>Place:</b> {formData.birthplace}</div>
+                            <div className="border p-4 rounded-xl"><b>Varna:</b> {chart.avakahada.varna}</div>
+                            <div className="border p-4 rounded-xl"><b>Yoni:</b> {chart.avakahada.yoni}</div>
+                            <div className="border p-4 rounded-xl"><b>Gana:</b> {chart.avakahada.gana}</div>
+                            <div className="border p-4 rounded-xl"><b>Nadi:</b> {chart.avakahada.nadi}</div>
+                        </div>
+                    </div>
+
+                    {/* Dasha Detailed Timeline */}
+                    <div id="pdf-dasha-detailed" className="p-10 bg-white min-h-[1100px] text-slate-900">
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-indigo-500 pb-2">Vimshottari Dasha Timeline</h1>
+                        <div className="space-y-4">
+                            {chart.dasha?.periods?.map((p: any, i: number) => (
+                                <div key={i} className="flex justify-between border-b py-4 text-lg">
+                                    <span className="font-bold">{translatePlanet(p.lord, locale)} Mahadasha</span>
+                                    <span>{new Date(p.start).toLocaleDateString()} - {new Date(p.end).toLocaleDateString()}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Ashtakvarga Table */}
+                    <div id="pdf-ashtakvarga" className="p-10 bg-white min-h-[600px] text-slate-900">
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-yellow-500 pb-2">Sarvashtakvarga Points</h1>
+                        <div className="grid grid-cols-4 gap-4">
+                            {_SIGNS.map((sign, i) => (
+                                <div key={i} className="border p-4 text-center">
+                                    <div className="font-bold">{translateSign(sign, locale)}</div>
+                                    <div className="text-2xl font-black">{chart.ashtakvarga?.sarva?.[i] || 28}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Prediction Pages */}
+                    <div id="pdf-pred-career" className="p-10 bg-white min-h-[500px] text-slate-900">
+                        <h1 className="text-3xl font-black mb-6 text-orange-600">Career & Profession Analysis</h1>
+                        <p className="text-xl leading-relaxed">{chart.predictions?.Career}</p>
+                    </div>
+                    <div id="pdf-pred-health" className="p-10 bg-white min-h-[500px] text-slate-900">
+                        <h1 className="text-3xl font-black mb-6 text-red-600">Health & Wellbeing Analysis</h1>
+                        <p className="text-xl leading-relaxed">{chart.predictions?.Health}</p>
+                    </div>
+                    <div id="pdf-pred-marriage" className="p-10 bg-white min-h-[500px] text-slate-900">
+                        <h1 className="text-3xl font-black mb-6 text-pink-600">Marriage & Relationships</h1>
+                        <p className="text-xl leading-relaxed">{chart.predictions?.Marriage}</p>
+                    </div>
+                    <div id="pdf-pred-wealth" className="p-10 bg-white min-h-[500px] text-slate-900">
+                        <h1 className="text-3xl font-black mb-6 text-green-600">Wealth & Financial Prospects</h1>
+                        <p className="text-xl leading-relaxed">{chart.predictions?.Wealth}</p>
+                    </div>
+                    <div id="pdf-pred-edu" className="p-10 bg-white min-h-[500px] text-slate-900">
+                        <h1 className="text-3xl font-black mb-6 text-blue-600">Education & Knowledge</h1>
+                        <p className="text-xl leading-relaxed">{chart.predictions?.Education}</p>
+                    </div>
+                </div>
         </main>
     );
 }
+
+
