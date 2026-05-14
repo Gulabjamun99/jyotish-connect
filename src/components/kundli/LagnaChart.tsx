@@ -86,12 +86,12 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
         { house: 12, points: "200,0 300,100 400,0",            cx: 300, cy: 40  },
     ];
 
-    // Position of house-number label inside each section (near edge corner)
+    // Position of sign-number label inside each section (near outer edges)
     const houseNumPos: Record<number,[number,number]> = {
-        1:  [200,  22],  2:  [20,  20],  3:  [14, 105],
-        4:  [20,  196],  5:  [14, 360],  6:  [40, 392],
-        7:  [200, 392],  8:  [362,392],  9:  [386,360],
-        10: [380, 196], 11: [386,  50], 12: [378,  20],
+        1:  [200,  18],  2:  [100,  15],  3:  [15, 100],
+        4:  [20,  200],  5:  [15, 300],  6:  [100, 385],
+        7:  [200, 382],  8:  [300, 385],  9:  [385, 300],
+        10: [380, 200], 11: [385, 100], 12: [300,  15],
     };
 
     return (
@@ -117,7 +117,6 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
                         const isHovered = hoveredHouse === house;
                         const housePlanets = chart[house] || [];
                         const signNumber = getHouseSign(house);
-                        const signAbbr = signNumber ? SIGN_ABBR[signNumber - 1] : '';
                         const [hnx, hny] = houseNumPos[house] || [cx - 16, cy - 16];
 
                         return (
@@ -135,29 +134,16 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
                                     strokeWidth="1.5"
                                 />
 
-                                {/* House number — orange, always visible */}
+                                {/* Sign number — orange, always visible */}
                                 <text
                                     x={hnx} y={hny}
                                     textAnchor="middle"
                                     fill="#f97316"
-                                    fontSize="10"
+                                    fontSize="12"
                                     fontWeight="900"
                                 >
-                                    {house}
+                                    {signNumber || house}
                                 </text>
-
-                                {/* Sign abbreviation — small, grey */}
-                                {signAbbr && (
-                                    <text
-                                        x={hnx} y={hny + 10}
-                                        textAnchor="middle"
-                                        fill="#475569"
-                                        fontSize="7.5"
-                                        fontWeight="700"
-                                    >
-                                        {signAbbr}
-                                    </text>
-                                )}
 
                                 {/* Planets — centred in house area */}
                                 {housePlanets.map((planet, idx) => {
