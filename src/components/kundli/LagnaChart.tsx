@@ -22,6 +22,8 @@ interface LagnaChartProps {
     subTitle?: string;
 }
 
+const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Ca', 'Le', 'Vi', 'Li', 'Sc', 'Sa', 'Cp', 'Aq', 'Pi'];
+
 export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitle = "D1 Chart" }: LagnaChartProps) {
     const locale = useLocale();
     const [hoveredHouse, setHoveredHouse] = useState<number | null>(null);
@@ -54,14 +56,15 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
         return colors[planet] || "#ffffff";
     };
 
-    const getPlanetShort = (planetName: string) => {
+    const getPlanetShort = (planetName?: string) => {
+        if (!planetName) return "";
         // Standard Vedic abbreviations
         const vedicShort: Record<string,string> = {
             Sun:'Su', Moon:'Mo', Mars:'Ma', Mercury:'Me',
             Jupiter:'Ju', Venus:'Ve', Saturn:'Sa',
             Rahu:'Ra', Ketu:'Ke', Asc:'As'
         };
-        if (locale === 'en' || !planetName) {
+        if (locale === 'en') {
             return vedicShort[planetName] || planetName.substring(0,2);
         }
         // For non-English locales, show translated name (full — Indic ligatures are short)

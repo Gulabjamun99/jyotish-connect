@@ -386,7 +386,7 @@ export default function KundliPage() {
                                             <LagnaChart
                                                 chart={chart.charts?.D9 || {}}
                                                 planets={chart.planets}
-                                                ascendant={chart.ascendantLongitude}
+                                                ascendant={chart.d9Ascendant}
                                                 title="Navamsa"
                                                 subTitle="D9 Chart"
                                             />
@@ -412,7 +412,7 @@ export default function KundliPage() {
                                             <LagnaChart
                                                 chart={chart.charts?.D10 || {}}
                                                 planets={chart.planets}
-                                                ascendant={chart.ascendantLongitude}
+                                                ascendant={chart.d10Ascendant}
                                                 title="Dasamsa"
                                                 subTitle="D10 Chart"
                                             />
@@ -440,7 +440,7 @@ export default function KundliPage() {
                                                         <tr key={p.name} className="hover:bg-white/5 transition-colors">
                                                             <td className="px-6 py-4 font-bold text-white flex items-center gap-3">
                                                                 <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 text-white">
-                                                                    {p.name.charAt(0)}
+                                                                    {(p.name || "").substring(0, 2)}
                                                                 </div>
                                                                 {translatePlanet(p.name, locale)}
                                                             </td>

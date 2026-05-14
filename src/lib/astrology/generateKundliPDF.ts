@@ -110,9 +110,9 @@ export async function generateKundliPDF(
     // Tithi & Yoga may be index-based — resolve to name
     const safeStr = (v: any) => (typeof v === 'string' && /^[\x00-\x7F]*$/.test(v)) ? v : '';
     const resolveIdx = (arr: string[]|undefined, v: any) => typeof v === 'number' ? (arr?.[v] || `#${v}`) : safeStr(v);
-    const tithiVal = resolveIdx(EN.panchang?.tithi, chart.panchang?.tithi) || '—';
-    const yogaVal  = resolveIdx(EN.panchang?.yoga,  chart.panchang?.yoga)  || '—';
-    const karanVal = resolveIdx(EN.panchang?.karan, chart.panchang?.karana)|| '—';
+    const tithiVal = resolveIdx(EN.panchang?.tithi, chart.panchang?.tithiId) || '—';
+    const yogaVal  = resolveIdx(EN.panchang?.yoga,  chart.panchang?.yogaId)  || '—';
+    const karanVal = resolveIdx(EN.panchang?.karan, chart.panchang?.karanaId)|| '—';
     const varaVal  = resolveIdx(EN.panchang?.vara,  chart.panchang?.vara)  || '—';
     autoTable(doc,{
         startY:37, margin:{left:15},
@@ -233,7 +233,8 @@ export async function generateKundliPDF(
             // Draw chart programmatically from chart data
             const chartKey = pg===4?'D1':pg===5?'D9':pg===6?'Moon':'D10';
             const houseData = chart.charts?.[chartKey] || {};
-            drawNIChart(houseData, chart.ascendantLongitude||0, 35, 38, 140);
+            const ascLong = chartKey === 'D9' ? (chart.d9Ascendant || 0) : chartKey === 'D10' ? (chart.d10Ascendant || 0) : chartKey === 'Moon' ? (chart.moonLongitude || 0) : (chart.ascendantLongitude || 0);
+            drawNIChart(houseData, ascLong, 35, 38, 140);
             // Planet legend below chart
             const legendPlanets = [['Su','Sun',[249,115,22]],['Mo','Moon',[96,165,250]],['Ma','Mars',[248,113,113]],['Me','Mercury',[74,222,128]],['Ju','Jupiter',[250,204,21]],['Ve','Venus',[244,114,182]],['Sa','Saturn',[167,139,250]],['Ra','Rahu',[148,163,184]],['Ke','Ketu',[100,116,139]]];
             let lx=15; const ly=190;
@@ -432,57 +433,50 @@ export async function generateKundliPDF(
         yD+=boxH+6;
     });
 
-    // PAGES 12-16: Life Predictions — combine all on fewer pages with planet house summary
+    // PAGES 12+: Life Predictions
     const predData = chart.predictionsEn || chart.predictions || {};
     const predEntries = Object.entries(predData);
-    // Put all predictions on 2 pages max
-    doc.addPage(); H(doc,'Life Predictions — Part 1',12,TP);
+    
+    doc.addPage(); H(doc,'Life Predictions',12,TP);
     ST(doc,'Life Area Predictions',32,79,70,229);
     let predY = 40;
-    predEntries.slice(0,3).forEach(([area,text]:any)=>{
-        const label=(EN.labels?.life_predictions as any)?.[area]||area;
-        doc.setFontSize(10); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
-        doc.text(label, 15, predY); predY+=5;
-        doc.setFillColor(249,115,22); doc.rect(15,predY,180,0.4,'F'); predY+=4;
-        doc.setFontSize(9.5); doc.setTextColor(40,40,40); doc.setFont('helvetica','normal');
-        const safeT = typeof text==='string'&&/^[\x00-\xFF]*$/.test(text)?text:'See website for details.';
-        const lines=doc.splitTextToSize(safeT,175); doc.text(lines,15,predY); predY+=lines.length*5+8;
-        if(predY>265){predY=265;}
+    
+    predEntries.forEach(([area, text]: any) => {
+        const label = (EN.labels?.life_predictions as any)?.[area] || area;
+        const safeT = typeof text === 'string' && /^[\x00-\xFF]*$/.test(text) ? text : 'See website for details.';
+        
+        doc.setFontSize(11); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
+        doc.text(label, 15, predY); predY += 6;
+        
+        doc.setFillColor(249,115,22); doc.rect(15, predY, 180, 0.5, 'F'); predY += 5;
+        
+        doc.setFontSize(10); doc.setTextColor(40,40,40); doc.setFont('helvetica','normal');
+        const lines = doc.splitTextToSize(safeT, 175);
+        
+        // Check if we need a new page
+        if (predY + (lines.length * 5) > 280) {
+            doc.addPage(); H(doc,'Life Predictions (Continued)', 13, TP);
+            predY = 30;
+        }
+        
+        doc.text(lines, 15, predY);
+        predY += lines.length * 5 + 10;
     });
-    // Planetary house summary fills blank space
-    if(predY<220){
-        ST(doc,'Planetary House Summary',predY,30,90,180); predY+=8;
-        const hSummary=(chart.planets||[]).slice(0,9).map((p:any)=>[
-            pl(p.name), sg(p.sign), p.house||'—',
-            p.isExalted?'Exalted':p.isDebilitated?'Debilitated':'Neutral'
-        ]);
-        autoTable(doc,{startY:predY,margin:{left:15},
-            head:[['Planet','Sign','House','Status']],body:hSummary,
-            styles:{fontSize:8.5,cellPadding:2.5},
-            headStyles:{fillColor:[30,90,180],textColor:255},
-            alternateRowStyles:{fillColor:[245,248,255]},
-        });
-    }
-    doc.addPage(); H(doc,'Life Predictions — Part 2',13,TP);
-    ST(doc,'Life Area Predictions (Continued)',32,79,70,229);
-    predY=40;
-    predEntries.slice(3).forEach(([area,text]:any)=>{
-        const label=(EN.labels?.life_predictions as any)?.[area]||area;
-        doc.setFontSize(10); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
-        doc.text(label,15,predY); predY+=5;
-        doc.setFillColor(249,115,22); doc.rect(15,predY,180,0.4,'F'); predY+=4;
-        doc.setFontSize(9.5); doc.setTextColor(40,40,40); doc.setFont('helvetica','normal');
-        const safeT=typeof text==='string'&&/^[\x00-\xFF]*$/.test(text)?text:'See website for details.';
-        const lines=doc.splitTextToSize(safeT,175); doc.text(lines,15,predY); predY+=lines.length*5+8;
-    });
-    // Yoga list fills remaining space
-    if(predY<200&&(chart.yogas||[]).length>0){
-        ST(doc,'Yogas Detected in Your Chart',predY,161,98,7); predY+=8;
-        autoTable(doc,{startY:predY,margin:{left:15},
-            head:[['Yoga Name','Effect']],
-            body:(chart.yogas||[]).map((y:any)=>[y.name||'—',y.effects||y.description||'—']),
-            styles:{fontSize:8.5,cellPadding:3},
-            headStyles:{fillColor:[161,98,7],textColor:255},
+
+    // Add Yogas if there is space, otherwise new page
+    if (chart.yogas && chart.yogas.length > 0) {
+        if (predY > 220) {
+            doc.addPage(); H(doc,'Important Yogas', 14, TP);
+            predY = 30;
+        }
+        ST(doc,'Yogas Detected in Your Chart', predY, 161, 98, 7); predY += 8;
+        autoTable(doc, {
+            startY: predY, margin: { left: 15 },
+            head: [['Yoga Name', 'Effect']],
+            body: chart.yogas.map((y: any) => [y.name || '—', y.effects || y.description || '—']),
+            styles: { fontSize: 9, cellPadding: 4 },
+            headStyles: { fillColor: [161, 98, 7], textColor: 255 },
+            alternateRowStyles: { fillColor: [255, 251, 235] },
         });
     }
 

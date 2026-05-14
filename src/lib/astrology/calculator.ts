@@ -164,8 +164,25 @@ export function calculateVimshottari(nakshatraId: number, longitude: number, bir
         lordIdx = (lordIdx + 1) % 9;
     }
 
+    const nowMs = Date.now();
+    let currentLords = ['—', '—', '—'];
+    const activeMaha = mahadashas.find(m => {
+        const s = new Date(m.start).getTime(), e = new Date(m.end).getTime();
+        return nowMs >= s && nowMs <= e;
+    }) || mahadashas[0];
+    
+    if (activeMaha) {
+        const activeAntar = activeMaha.antardashas?.find((a: any) => {
+            const s = new Date(a.start).getTime(), e = new Date(a.end).getTime();
+            return nowMs >= s && nowMs <= e;
+        }) || activeMaha.antardashas?.[0];
+        currentLords = [activeMaha.lord, activeAntar?.lord || '—', '—'];
+    }
+
     return {
         mahadashas,
+        periods: mahadashas,
+        currentLords,
         percentLeft: 1 - percentDone
     };
 }
@@ -291,6 +308,15 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     // Div Charts for the native
     const buildHouseChart = (planets: any[], key: 'house' | 'sign' | 'D9' | 'D10') => {
         const chart: { [house: number]: string[] } = {};
+        
+        let divAscSign = 1; // Default to Aries
+        if (key === 'D9' || key === 'D10') {
+            const ascPlanet = planets.find(p => p.name === 'Asc');
+            if (ascPlanet) {
+                divAscSign = ascPlanet.divisions[key];
+            }
+        }
+
         planets.forEach(p => {
             let houseNum: number;
             if (key === 'house') {
@@ -298,7 +324,8 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
             } else if (key === 'sign') {
                 houseNum = p.signId;
             } else {
-                houseNum = p.divisions[key];
+                const pSign = p.divisions[key];
+                houseNum = (pSign - divAscSign + 12) % 12 + 1;
             }
 
             if (!chart[houseNum]) {
@@ -319,19 +346,24 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
         })), 'house')
     };
 
+    const d9Asc = planetsWithVaisheshika.find(p => p.name === 'Asc')?.divisions.D9 || 1;
+    const d10Asc = planetsWithVaisheshika.find(p => p.name === 'Asc')?.divisions.D10 || 1;
+
     return {
         ...data,
         name: "Self",
         moonSign: moon?.sign || "Unknown",
         nakshatra: moon?.nakshatra || "Unknown",
-        ascendant: signs[ascSignId - 1],
+        ascendantSign: signs[ascSignId],
         planets: planetsWithVaisheshika,
         panchang,
         dasha,
         doshas,
         yogas,
         remedies,
-        charts
+        charts,
+        d9Ascendant: (d9Asc - 1) * 30,
+        d10Ascendant: (d10Asc - 1) * 30,
     };
 }
 
