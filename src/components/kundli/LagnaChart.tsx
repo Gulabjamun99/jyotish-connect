@@ -69,19 +69,27 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
     };
 
     const housePolygons = [
-        { house: 1, points: "200,0 100,100 200,200 300,100", cx: 200, cy: 100 },
-        { house: 2, points: "0,0 100,100 200,0", cx: 100, cy: 40 },
-        { house: 3, points: "0,0 0,200 100,100", cx: 40, cy: 100 },
-        { house: 4, points: "0,200 100,300 200,200 100,100", cx: 100, cy: 200 },
-        { house: 5, points: "0,200 100,300 0,400", cx: 40, cy: 300 },
-        { house: 6, points: "0,400 200,400 100,300", cx: 100, cy: 360 },
-        { house: 7, points: "200,400 300,300 200,200 100,300", cx: 200, cy: 300 },
-        { house: 8, points: "200,400 300,300 400,400", cx: 300, cy: 360 },
-        { house: 9, points: "400,200 400,400 300,300", cx: 360, cy: 300 },
-        { house: 10, points: "400,200 300,100 200,200 300,300", cx: 300, cy: 200 },
-        { house: 11, points: "400,0 400,200 300,100", cx: 360, cy: 100 },
-        { house: 12, points: "200,0 300,100 400,0", cx: 300, cy: 40 },
+        { house: 1,  points: "200,0 100,100 200,200 300,100",  cx: 200, cy: 100 },
+        { house: 2,  points: "0,0 100,100 200,0",              cx: 100, cy: 40  },
+        { house: 3,  points: "0,0 0,200 100,100",              cx: 40,  cy: 100 },
+        { house: 4,  points: "0,200 100,300 200,200 100,100",  cx: 100, cy: 200 },
+        { house: 5,  points: "0,200 100,300 0,400",            cx: 40,  cy: 300 },
+        { house: 6,  points: "0,400 200,400 100,300",          cx: 100, cy: 360 },
+        { house: 7,  points: "200,400 300,300 200,200 100,300",cx: 200, cy: 300 },
+        { house: 8,  points: "200,400 300,300 400,400",        cx: 300, cy: 360 },
+        { house: 9,  points: "400,200 400,400 300,300",        cx: 360, cy: 300 },
+        { house: 10, points: "400,200 300,100 200,200 300,300",cx: 300, cy: 200 },
+        { house: 11, points: "400,0 400,200 300,100",          cx: 360, cy: 100 },
+        { house: 12, points: "200,0 300,100 400,0",            cx: 300, cy: 40  },
     ];
+
+    // Position of house-number label inside each section (near edge corner)
+    const houseNumPos: Record<number,[number,number]> = {
+        1:  [200,  22],  2:  [20,  20],  3:  [14, 105],
+        4:  [20,  196],  5:  [14, 360],  6:  [40, 392],
+        7:  [200, 392],  8:  [362,392],  9:  [386,360],
+        10: [380, 196], 11: [386,  50], 12: [378,  20],
+    };
 
     return (
         <div className="w-full max-w-[500px] mx-auto bg-white/5 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-2xl border border-white/10">
@@ -94,17 +102,20 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
 
             <div className="relative w-full aspect-square border border-white/10 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center p-2 lg:p-4">
                 <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-sm">
+                    {/* Outer border */}
                     <rect x="0" y="0" width="400" height="400" fill="transparent" stroke="#f97316" strokeWidth="1.5" strokeOpacity="0.5" />
-
-                    <line x1="0" y1="0" x2="400" y2="400" stroke="#fbd38d" strokeWidth="2" strokeOpacity="0.8" />
-                    <line x1="400" y1="0" x2="0" y2="400" stroke="#fbd38d" strokeWidth="2" strokeOpacity="0.8" />
-
-                    <polygon points="200,0 400,200 200,400 0,200" fill="transparent" stroke="#f97316" strokeWidth="2.5" />
+                    {/* Diagonals */}
+                    <line x1="0" y1="0" x2="400" y2="400" stroke="#f97316" strokeWidth="1.5" strokeOpacity="0.6" />
+                    <line x1="400" y1="0" x2="0" y2="400" stroke="#f97316" strokeWidth="1.5" strokeOpacity="0.6" />
+                    {/* Inner diamond */}
+                    <polygon points="200,0 400,200 200,400 0,200" fill="transparent" stroke="#f97316" strokeWidth="2" />
 
                     {housePolygons.map(({ house, points, cx, cy }) => {
                         const isHovered = hoveredHouse === house;
                         const housePlanets = chart[house] || [];
                         const signNumber = getHouseSign(house);
+                        const signAbbr = signNumber ? SIGN_ABBR[signNumber - 1] : '';
+                        const [hnx, hny] = houseNumPos[house] || [cx - 16, cy - 16];
 
                         return (
                             <g
@@ -113,29 +124,43 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
                                 onMouseLeave={() => setHoveredHouse(null)}
                                 className="cursor-pointer transition-all duration-300"
                             >
+                                {/* Hover fill */}
                                 <polygon
                                     points={points}
-                                    fill={isHovered ? "rgba(249, 115, 22, 0.08)" : "transparent"}
+                                    fill={isHovered ? "rgba(249,115,22,0.12)" : "transparent"}
                                     stroke={isHovered ? "#ea580c" : "transparent"}
-                                    strokeWidth="2"
+                                    strokeWidth="1.5"
                                 />
 
-                                {signNumber && (
+                                {/* House number — orange, always visible */}
+                                <text
+                                    x={hnx} y={hny}
+                                    textAnchor="middle"
+                                    fill="#f97316"
+                                    fontSize="10"
+                                    fontWeight="900"
+                                >
+                                    {house}
+                                </text>
+
+                                {/* Sign abbreviation — small, grey */}
+                                {signAbbr && (
                                     <text
-                                        x={cx} y={cy - 20}
+                                        x={hnx} y={hny + 10}
                                         textAnchor="middle"
-                                        fill="#94a3b8"
-                                        fontSize="12"
-                                        fontWeight="600"
+                                        fill="#475569"
+                                        fontSize="7.5"
+                                        fontWeight="700"
                                     >
-                                        {signNumber}
+                                        {signAbbr}
                                     </text>
                                 )}
 
+                                {/* Planets — centred in house area */}
                                 {housePlanets.map((planet, idx) => {
-                                    const yOffset = cy + (idx * 16) - ((housePlanets.length - 1) * 8);
-                                    const planetData = getPlanetData(planet);
-                                    let retro = planetData?.isRetrograde ? "(R)" : "";
+                                    const total = housePlanets.length;
+                                    const yOffset = cy - ((total - 1) * 9) + idx * 18;
+                                    const retro = getPlanetData(planet)?.isRetrograde ? "*" : "";
                                     return (
                                         <text
                                             key={idx}
@@ -143,7 +168,7 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
                                             y={yOffset}
                                             textAnchor="middle"
                                             fill={getPlanetColor(planet)}
-                                            fontSize="15"
+                                            fontSize="13"
                                             fontWeight="800"
                                         >
                                             {getPlanetShort(planet)}{retro}
