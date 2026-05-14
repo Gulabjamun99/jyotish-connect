@@ -84,24 +84,28 @@ export default function KundliPage() {
             const moonPlanet = fullData.planets.find((p: any) => p.name === "Moon");
             const sunPlanet = fullData.planets.find((p: any) => p.name === "Sun");
 
+            const EN_trans: any = getTrans('en');
+            const nakshatraId = moonPlanet?.nakshatraId || 0;
             const baseChart = {
                 ...fullData,
-                dateStr: birthDate.toLocaleDateString(locale === 'hi' ? 'hi-IN' : 'en-US'),
+                dateStr: birthDate.toLocaleDateString('en-IN'),
                 ascendantSign: ascPlanet?.sign || "Aries",
                 ascendantLongitude: fullData.ascendant || (ascPlanet?.longitude ?? 0),
                 moonSign: moonPlanet?.sign || "Aries",
                 moonLongitude: moonPlanet?.longitude ?? 0,
                 sunSign: sunPlanet?.sign || "Pisces",
-                nakshatra: moonPlanet?.nakshatraId 
-                    ? trans.nakshatras[moonPlanet.nakshatraId - 1] 
-                    : "Unknown",
+                nakshatraId,
+                nakshatra: nakshatraId ? trans.nakshatras[nakshatraId - 1] : "Unknown",
+                nakshatra_en: nakshatraId ? EN_trans.nakshatras[nakshatraId - 1] : "Unknown",
             };
 
-            // Generate Dynamic Detailed Report
+            // Generate predictions in user's locale AND always in English for PDF
             const detailedReport = generateLifePredictions(baseChart, locale);
+            const detailedReportEn = generateLifePredictions(baseChart, 'en');
             const newChart = {
                 ...baseChart,
                 predictions: detailedReport,
+                predictionsEn: detailedReportEn,
                 avakahada: {
                     varna: moonPlanet.varna || "Brahmin",
                     vashya: moonPlanet.vashya || "Jalchar",
