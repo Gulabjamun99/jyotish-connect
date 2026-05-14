@@ -81,7 +81,7 @@ export async function generateKundliPDF(
             ['Moon Sign (Rasi)', sg(chart.moonSign)],
             ['Nakshatra (Birth Star)', nakshatraEn],
             ['Nakshatra Pada', chart.nakshatraPada ? `Pada ${chart.nakshatraPada}` : '—'],
-            ['Nakshatra Number', chart.nakshatraId ? `#${chart.nakshatraId}` : '—'],
+            ['Nakshatra Number', chart.nakshatraId ? String(chart.nakshatraId) : '—'],
             ['Report Language', langLabel],
         ],
         styles:{fontSize:10,cellPadding:4},
@@ -138,16 +138,112 @@ export async function generateKundliPDF(
         {img:imgs.moon,label:'Chandra Lagna (Moon Chart)',pg:6},
         {img:imgs.d10,label:'Dasamsa Chart (D10)',      pg:7},
     ];
+    // Helper: Draw North Indian Kundli chart programmatically in jsPDF
+    const drawNIChart = (houseData: {[h:number]:string[]}, ascLong: number, ox: number, oy: number, size: number) => {
+        const s = size; const h = s/2; const q = s/4;
+        // Outer border
+        doc.setDrawColor(249,115,22); doc.setLineWidth(0.5);
+        doc.rect(ox, oy, s, s);
+        // Inner diamond
+        doc.line(ox+h, oy,     ox+s, oy+h);
+        doc.line(ox+s, oy+h,   ox+h, oy+s);
+        doc.line(ox+h, oy+s,   ox,   oy+h);
+        doc.line(ox,   oy+h,   ox+h, oy);
+        // Cross lines
+        doc.line(ox,oy,   ox+s,oy+s);
+        doc.line(ox+s,oy, ox,oy+s);
+        // House centers [cx,cy] for houses 1-12 (North Indian layout)
+        const hc:number[][] = [
+            [ox+h,   oy+h],   // 1
+            [ox+q,   oy+q],   // 2
+            [ox,     oy],     // 3  (top-left corner, approx)
+            [ox+q,   oy+h],   // 4  (left middle)
+            [ox,     oy+s],   // 5
+            [ox+q,   oy+3*q], // 6
+            [ox+h,   oy+h],   // 7 same center as 1 - adjust
+            [ox+3*q, oy+3*q], // 8
+            [ox+s,   oy+s],   // 9
+            [ox+3*q, oy+h],   // 10
+            [ox+s,   oy],     // 11
+            [ox+3*q, oy+q],   // 12
+        ];
+        // Proper North Indian house positions
+        const pos:Array<[number,number]> = [
+            [ox+h,   oy+q*0.7],  // 1  top center
+            [ox+q*0.7, oy+q*0.7],// 2  top-left
+            [ox+q*0.3, oy+h],    // 3  left-top
+            [ox+q*0.7, oy+3*q],  // 4  left-bottom 
+            [ox+h,   oy+s-q*0.7],// 5  bottom center
+            [ox+3*q+q*0.3,oy+3*q],//6  right-bottom
+            [ox+s-q*0.7,oy+h],   // 7  right-top -- not right, but ok
+            [ox+3*q+q*0.3,oy+q*0.7],//8 right-top area
+            [ox+s-q*0.3,oy+q*0.3], //9 top-right corner
+            [ox+3*q,oy+h],       // 10 right-center
+            [ox+s-q*0.3,oy+s-q*0.3],//11 bottom-right
+            [ox+3*q,oy+3*q],     // 12
+        ];
+        // Correct simple positions for North Indian chart
+        const hPos:Array<[number,number]> = [
+            [ox+h,    oy+h*0.45],    // H1  top
+            [ox+h*0.45,oy+h*0.45],  // H2  top-left
+            [ox+h*0.15,oy+h],       // H3  left
+            [ox+h*0.45,oy+h*1.55],  // H4  bottom-left
+            [ox+h,    oy+h*1.55],   // H5  bottom
+            [ox+h*1.55,oy+h*1.55],  // H6  bottom-right
+            [ox+h*1.85,oy+h],       // H7  right
+            [ox+h*1.55,oy+h*0.45],  // H8  top-right
+            [ox+h*1.85,oy+h*0.15],  // H9  top-right corner
+            [ox+h*1.55,oy+h],       // H10 right-center
+            [ox+h*1.85,oy+h*1.85],  // H11 bottom-right corner
+            [ox+h*0.45,oy+h*0.15],  // H12 top-left corner
+        ];
+        // Planet colors
+        const pColors:Record<string,number[]> = {
+            Sun:[249,115,22],Moon:[96,165,250],Mars:[248,113,113],
+            Mercury:[74,222,128],Jupiter:[250,204,21],Venus:[244,114,182],
+            Saturn:[167,139,250],Rahu:[148,163,184],Ketu:[100,116,139],Asc:[249,115,22]
+        };
+        const ascSign = Math.floor((ascLong||0)/30);
+        // Draw house numbers and planets
+        for(let h=1;h<=12;h++){
+            const [cx,cy] = hPos[h-1];
+            const signNum = ((ascSign + h - 1) % 12) + 1;
+            // House number (small)
+            doc.setFontSize(6.5); doc.setTextColor(150,150,150); doc.setFont('helvetica','normal');
+            doc.text(String(signNum), cx, cy-4, {align:'center'});
+            // Planets in this house
+            const planets = houseData[h] || [];
+            planets.forEach((pName, idx) => {
+                const col = pColors[pName] || [80,80,80];
+                doc.setTextColor(col[0],col[1],col[2]);
+                doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+                const short = pName==='Asc'?'As':pName==='Rahu'?'Ra':pName==='Ketu'?'Ke':pName.substring(0,2);
+                doc.text(short, cx, cy+3+(idx*8), {align:'center'});
+            });
+        }
+        doc.setFont('helvetica','normal');
+    };
+
     chartDefs.forEach(({img,label,pg})=>{
         doc.addPage(); H(doc,label,pg,TP);
         ST(doc,label,32);
         if(img){
             doc.addImage(img,'PNG',35,42,140,140);
         } else {
-            doc.setFontSize(10); doc.setTextColor(120,120,120);
-            doc.text('Chart image: switch to the Charts tab on the website, then re-download.', 105,120,{align:'center'});
-            doc.setFontSize(9); doc.setTextColor(160,160,160);
-            doc.text('(SVG charts render only when visible in the browser)', 105,132,{align:'center'});
+            // Draw chart programmatically from chart data
+            const chartKey = pg===4?'D1':pg===5?'D9':pg===6?'Moon':'D10';
+            const houseData = chart.charts?.[chartKey] || {};
+            drawNIChart(houseData, chart.ascendantLongitude||0, 35, 38, 140);
+            // Planet legend below chart
+            const legendPlanets = [['Su','Sun',[249,115,22]],['Mo','Moon',[96,165,250]],['Ma','Mars',[248,113,113]],['Me','Mercury',[74,222,128]],['Ju','Jupiter',[250,204,21]],['Ve','Venus',[244,114,182]],['Sa','Saturn',[167,139,250]],['Ra','Rahu',[148,163,184]],['Ke','Ketu',[100,116,139]]];
+            let lx=15; const ly=190;
+            legendPlanets.forEach(([short,name,col]:any)=>{
+                doc.setFillColor(col[0],col[1],col[2]); doc.circle(lx+2,ly-1,1.5,'F');
+                doc.setFontSize(7); doc.setTextColor(60,60,60);
+                doc.text(`${short}=${name}`,lx+5,ly);
+                lx+=28;
+                if(lx>185){lx=15;}
+            });
         }
     });
 
@@ -176,65 +272,98 @@ export async function generateKundliPDF(
         },
     });
 
-    // PAGE 9: Dasha Timeline
+    // PAGE 9: Dasha Timeline — API returns dasha.mahadashas[]
     doc.addPage(); H(doc,'Vimshottari Dasha',9,TP);
+    const nowMs = Date.now();
+    const mahadashas: any[] = chart.dasha?.mahadashas || [];
+    // Find active mahadasha
+    const activeMaha = mahadashas.find((m:any) => {
+        const s=new Date(m.start).getTime(), e=new Date(m.end).getTime();
+        return nowMs>=s && nowMs<=e;
+    }) || mahadashas[0];
+    // Find active antardasha within active mahadasha
+    const activeAntar = activeMaha?.antardashas?.find((a:any) => {
+        const s=new Date(a.start).getTime(), e=new Date(a.end).getTime();
+        return nowMs>=s && nowMs<=e;
+    }) || activeMaha?.antardashas?.[0];
+    const maha = activeMaha?.lord || '—';
+    const antar = activeAntar?.lord || '—';
     ST(doc,'Current Active Dasha',32);
-    // currentLords may be strings or array — normalise
-    const rawLords = chart.dasha?.currentLords || [];
-    const lords = Array.isArray(rawLords) ? rawLords : [];
-    // Also try deriving from periods array if currentLords empty
-    const now = Date.now();
-    const activePeriod = (chart.dasha?.periods||[]).find((p:any) => {
-        const s = new Date(p.start).getTime(), e = new Date(p.end).getTime();
-        return now >= s && now <= e;
-    });
-    const maha = lords[0] || activePeriod?.lord || '—';
-    const antar = lords[1] || '—';
-    const pratyantar = lords[2] || '—';
     autoTable(doc,{
-        startY:38, margin:{left:15}, tableWidth:120,
-        head:[['Dasha Level','Planet Lord']],
+        startY:38, margin:{left:15}, tableWidth:130,
+        head:[['Dasha Level','Planet Lord','Period']],
         body:[
-            ['Mahadasha (Major Period)',  pl(maha)],
-            ['Antardasha (Sub Period)',   pl(antar)],
-            ['Pratyantardasha (Minor)',   pl(pratyantar)],
+            ['Mahadasha (Major)', pl(maha),
+                activeMaha ? `${new Date(activeMaha.start).getFullYear()} — ${new Date(activeMaha.end).getFullYear()}` : '—'],
+            ['Antardasha (Sub)', pl(antar),
+                activeAntar ? `${new Date(activeAntar.start).toLocaleDateString('en-IN',{month:'short',year:'numeric'})} — ${new Date(activeAntar.end).toLocaleDateString('en-IN',{month:'short',year:'numeric'})}` : '—'],
+            ['Pratyantardasha','—','—'],
         ],
-        styles:{fontSize:11,cellPadding:5},
+        styles:{fontSize:10,cellPadding:5},
         headStyles:{fillColor:[249,115,22],textColor:255},
     });
     const y9=(doc as any).lastAutoTable.finalY+10;
-    ST(doc,'Full Mahadasha Timeline (Vimshottari — 120 Year Cycle)',y9,79,70,229);
-    const periods = chart.dasha?.periods || [];
-    if(periods.length===0){
+    ST(doc,'Full Vimshottari Dasha Timeline (120 Year Cycle)',y9,79,70,229);
+    if(mahadashas.length===0){
         doc.setFontSize(10); doc.setTextColor(120,120,120);
-        doc.text('Dasha period data not available. Please regenerate the Kundli.', 15, y9+12);
+        doc.text('Dasha data not available. Please regenerate the Kundli.', 15, y9+12);
     } else {
         autoTable(doc,{
             startY:y9+5, margin:{left:15},
-            head:[['Planet','Start','End','Duration','Status']],
-            body:periods.map((p:any)=>{
-                const now=Date.now();
-                const s=new Date(p.start), e=new Date(p.end);
-                const active=now>=s.getTime()&&now<=e.getTime();
-                const past=now>e.getTime();
+            head:[['Planet','Start','End','Yrs','Active Antardasha','Status']],
+            body:mahadashas.map((m:any)=>{
+                const s=new Date(m.start), e=new Date(m.end);
+                const isActive=nowMs>=s.getTime()&&nowMs<=e.getTime();
+                const isPast=nowMs>e.getTime();
+                const dur=((e.getTime()-s.getTime())/(365.25*24*3600*1000)).toFixed(1);
+                const curAD=m.antardashas?.find((a:any)=>nowMs>=new Date(a.start).getTime()&&nowMs<=new Date(a.end).getTime());
                 return[
-                    pl(p.lord),
+                    pl(m.lord),
                     s.toLocaleDateString('en-IN',{year:'numeric',month:'short'}),
                     e.toLocaleDateString('en-IN',{year:'numeric',month:'short'}),
-                    `${Math.round(p.duration)} yrs`,
-                    active?'>> ACTIVE NOW':past?'Completed':'Upcoming',
+                    dur,
+                    curAD ? pl(curAD.lord) : '—',
+                    isActive?'ACTIVE':isPast?'Done':'Future',
                 ];
             }),
-            styles:{fontSize:9,cellPadding:3},
+            styles:{fontSize:8.5,cellPadding:3},
             headStyles:{fillColor:[79,70,229],textColor:255},
             alternateRowStyles:{fillColor:[248,248,255]},
             didParseCell:(data:any)=>{
-                if(data.column.index===4&&String(data.cell.raw).includes('ACTIVE')){
+                if(data.column.index===5&&data.cell.raw==='ACTIVE'){
                     data.cell.styles.textColor=[249,115,22];
                     data.cell.styles.fontStyle='bold';
                 }
             },
         });
+        // Antardasha detail for active mahadasha
+        if(activeMaha?.antardashas?.length>0){
+            const yAD=(doc as any).lastAutoTable.finalY+8;
+            if(yAD<260){
+                ST(doc,`Antardasha Schedule — ${pl(maha)} Mahadasha`,yAD,109,40,217);
+                autoTable(doc,{
+                    startY:yAD+5, margin:{left:15},
+                    head:[['Sub-Lord','Start','End','Status']],
+                    body:activeMaha.antardashas.map((a:any)=>{
+                        const as=new Date(a.start),ae=new Date(a.end);
+                        const ia=nowMs>=as.getTime()&&nowMs<=ae.getTime();
+                        const ip=nowMs>ae.getTime();
+                        return[pl(a.lord),
+                            as.toLocaleDateString('en-IN',{month:'short',year:'numeric'}),
+                            ae.toLocaleDateString('en-IN',{month:'short',year:'numeric'}),
+                            ia?'ACTIVE':ip?'Done':'Upcoming'];
+                    }),
+                    styles:{fontSize:8,cellPadding:2.5},
+                    headStyles:{fillColor:[109,40,217],textColor:255},
+                    didParseCell:(data:any)=>{
+                        if(data.column.index===3&&data.cell.raw==='ACTIVE'){
+                            data.cell.styles.textColor=[249,115,22];
+                            data.cell.styles.fontStyle='bold';
+                        }
+                    },
+                });
+            }
+        }
     }
 
     // PAGE 10: Ashtakvarga
@@ -303,24 +432,59 @@ export async function generateKundliPDF(
         yD+=boxH+6;
     });
 
-    // PAGES 12-16: Life Predictions — always use English predictions for PDF
+    // PAGES 12-16: Life Predictions — combine all on fewer pages with planet house summary
     const predData = chart.predictionsEn || chart.predictions || {};
-    Object.entries(predData).forEach(([area,text]:any,pi)=>{
-        doc.addPage();
+    const predEntries = Object.entries(predData);
+    // Put all predictions on 2 pages max
+    doc.addPage(); H(doc,'Life Predictions — Part 1',12,TP);
+    ST(doc,'Life Area Predictions',32,79,70,229);
+    let predY = 40;
+    predEntries.slice(0,3).forEach(([area,text]:any)=>{
         const label=(EN.labels?.life_predictions as any)?.[area]||area;
-        H(doc,label,12+pi,TP);
-        ST(doc,label,32,79,70,229);
-        // Add language note for non-English users
-        if(locale !== 'en') {
-            doc.setFontSize(8); doc.setTextColor(120,100,60);
-            doc.text(`Note: Predictions shown in English. Native ${langLabel} version available on website.`, 15, 40);
-        }
-        doc.setFontSize(11); doc.setTextColor(40,40,40);
-        const safeText = typeof text === 'string' && /^[\x00-\xFF]*$/.test(text)
-            ? text : 'Prediction data not available. Please view on website for native language.';
-        const lines=doc.splitTextToSize(safeText, 175);
-        doc.text(lines, 15, locale !== 'en' ? 46 : 44);
+        doc.setFontSize(10); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
+        doc.text(label, 15, predY); predY+=5;
+        doc.setFillColor(249,115,22); doc.rect(15,predY,180,0.4,'F'); predY+=4;
+        doc.setFontSize(9.5); doc.setTextColor(40,40,40); doc.setFont('helvetica','normal');
+        const safeT = typeof text==='string'&&/^[\x00-\xFF]*$/.test(text)?text:'See website for details.';
+        const lines=doc.splitTextToSize(safeT,175); doc.text(lines,15,predY); predY+=lines.length*5+8;
+        if(predY>265){predY=265;}
     });
+    // Planetary house summary fills blank space
+    if(predY<220){
+        ST(doc,'Planetary House Summary',predY,30,90,180); predY+=8;
+        const hSummary=(chart.planets||[]).slice(0,9).map((p:any)=>[
+            pl(p.name), sg(p.sign), p.house||'—',
+            p.isExalted?'Exalted':p.isDebilitated?'Debilitated':'Neutral'
+        ]);
+        autoTable(doc,{startY:predY,margin:{left:15},
+            head:[['Planet','Sign','House','Status']],body:hSummary,
+            styles:{fontSize:8.5,cellPadding:2.5},
+            headStyles:{fillColor:[30,90,180],textColor:255},
+            alternateRowStyles:{fillColor:[245,248,255]},
+        });
+    }
+    doc.addPage(); H(doc,'Life Predictions — Part 2',13,TP);
+    ST(doc,'Life Area Predictions (Continued)',32,79,70,229);
+    predY=40;
+    predEntries.slice(3).forEach(([area,text]:any)=>{
+        const label=(EN.labels?.life_predictions as any)?.[area]||area;
+        doc.setFontSize(10); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
+        doc.text(label,15,predY); predY+=5;
+        doc.setFillColor(249,115,22); doc.rect(15,predY,180,0.4,'F'); predY+=4;
+        doc.setFontSize(9.5); doc.setTextColor(40,40,40); doc.setFont('helvetica','normal');
+        const safeT=typeof text==='string'&&/^[\x00-\xFF]*$/.test(text)?text:'See website for details.';
+        const lines=doc.splitTextToSize(safeT,175); doc.text(lines,15,predY); predY+=lines.length*5+8;
+    });
+    // Yoga list fills remaining space
+    if(predY<200&&(chart.yogas||[]).length>0){
+        ST(doc,'Yogas Detected in Your Chart',predY,161,98,7); predY+=8;
+        autoTable(doc,{startY:predY,margin:{left:15},
+            head:[['Yoga Name','Effect']],
+            body:(chart.yogas||[]).map((y:any)=>[y.name||'—',y.effects||y.description||'—']),
+            styles:{fontSize:8.5,cellPadding:3},
+            headStyles:{fillColor:[161,98,7],textColor:255},
+        });
+    }
 
     // PAGE 17: Remedies & Gemstones
     doc.addPage(); H(doc,'Remedies & Gemstones',17,TP);
