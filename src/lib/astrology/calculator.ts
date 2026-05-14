@@ -174,22 +174,25 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     const service = await AstrologyService.getInstance();
     const data = await service.calculatePlanets(date, lat, lng);
 
-    const ascSignId = Math.floor(data.ascendant / 30) + 1;
+    const ascSignId = Math.floor(data.ascendant / 30); // 0-indexed, e.g. Leo=4
 
     const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
     const nakshatras = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
 
     const planetsWithVaisheshika = data.planets.map(p => {
-        const signId = (Math.floor(p.longitude / 30) % 12) + 1;
-        const nakshatraId = (Math.floor(p.longitude / (360 / 27)) % 27) + 1;
+        const planetSignId0 = Math.floor(p.longitude / 30) % 12; // 0-indexed sign
+        const nakshatraId = Math.floor(p.longitude / (360 / 27)) % 27 + 1;
+
+        // WHOLE SIGN house: house = (planet_sign - lagna_sign + 12) % 12 + 1
+        const house = (planetSignId0 - ascSignId + 12) % 12 + 1;
 
         return {
             ...p,
-            signId,
-            sign: signs[signId - 1],
+            signId: planetSignId0 + 1,        // 1-indexed
+            sign: signs[planetSignId0],
             nakshatraId,
             nakshatra: nakshatras[nakshatraId - 1],
-            house: ((signId - ascSignId + 12) % 12) + 1,
+            house,
             divisions: calculateAllDivisions(p.longitude)
         };
     });

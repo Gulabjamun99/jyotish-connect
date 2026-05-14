@@ -40,36 +40,32 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
 
     const getPlanetColor = (planet: string) => {
         const colors: Record<string, string> = {
-            "Sun": "#fb923c", // Orange-400
-            "Moon": "#60a5fa", // Blue-400
-            "Mars": "#f87171", // Red-400
-            "Mercury": "#4ade80", // Green-400
-            "Jupiter": "#facc15", // Yellow-400
-            "Venus": "#f472b6", // Pink-400
-            "Saturn": "#a78bfa", // Purple-400
-            "Rahu": "#cbd5e1", // Slate-300
-            "Ketu": "#94a3b8", // Slate-400
+            "Sun": "#fb923c",
+            "Moon": "#60a5fa",
+            "Mars": "#f87171",
+            "Mercury": "#4ade80",
+            "Jupiter": "#facc15",
+            "Venus": "#f472b6",
+            "Saturn": "#a78bfa",
+            "Rahu": "#cbd5e1",
+            "Ketu": "#94a3b8",
             "Asc": "#f97316"
         };
         return colors[planet] || "#ffffff";
     };
 
     const getPlanetShort = (planetName: string) => {
-        if (planetName === "Asc") {
-            return locale === 'en' ? "As" : translatePlanet("Asc", locale);
+        // Standard Vedic abbreviations
+        const vedicShort: Record<string,string> = {
+            Sun:'Su', Moon:'Mo', Mars:'Ma', Mercury:'Me',
+            Jupiter:'Ju', Venus:'Ve', Saturn:'Sa',
+            Rahu:'Ra', Ketu:'Ke', Asc:'As'
+        };
+        if (locale === 'en' || !planetName) {
+            return vedicShort[planetName] || planetName.substring(0,2);
         }
-
-        const translated = translatePlanet(planetName, locale);
-
-        // English safely uses 2-letter abbreviation
-        if (locale === 'en') {
-            return translated.substring(0, 2);
-        }
-
-        // Indic languages have complex ligatures and combining characters.
-        // Substringing them breaks the characters (leaves floating vowels).
-        // Luckily, most planetary names in these languages are visually short enough.
-        return translated;
+        // For non-English locales, show translated name (full — Indic ligatures are short)
+        return translatePlanet(planetName, locale);
     };
 
     const housePolygons = [
@@ -187,15 +183,15 @@ export function LagnaChart({ chart, planets, ascendant, title = "Lagna", subTitl
 
             <div className="mt-8 flex flex-wrap justify-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">
                 {[
-                    { name: "Sun", color: "bg-[#ea580c]" },
-                    { name: "Moon", color: "bg-[#2563eb]" },
-                    { name: "Mars", color: "bg-[#dc2626]" },
+            { name: "Sun",     color: "bg-[#ea580c]" },
+                    { name: "Moon",    color: "bg-[#2563eb]" },
+                    { name: "Mars",    color: "bg-[#dc2626]" },
                     { name: "Mercury", color: "bg-[#16a34a]" },
                     { name: "Jupiter", color: "bg-[#ca8a04]" },
-                    { name: "Venus", color: "bg-[#db2777]" },
-                    { name: "Saturn", color: "bg-[#7e22ce]" },
-                    { name: "Rahu", color: "bg-[#334155]" },
-                    { name: "Ketu", color: "bg-[#475569]" },
+                    { name: "Venus",   color: "bg-[#db2777]" },
+                    { name: "Saturn",  color: "bg-[#7e22ce]" },
+                    { name: "Rahu",    color: "bg-[#334155]" },
+                    { name: "Ketu",    color: "bg-[#475569]" },
                 ].map(p => (
                     <div key={p.name} className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
                         <div className={`w-2.5 h-2.5 rounded-full ${p.color} shadow-inner`} />

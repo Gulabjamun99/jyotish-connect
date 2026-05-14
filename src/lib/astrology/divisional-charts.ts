@@ -18,14 +18,15 @@ export function getDivisionalSign(longitude: number, division: number): number {
             const startSignsD9 = [0, 9, 6, 3]; // 0=Aries, 9=Cap, 6=Lib, 3=Can (0-indexed)
             resultSignId = (startSignsD9[signId % 4] + part) % 12;
             break;
-        case 10: // Dashamsha
-            // Odd signs: Count from same sign
-            // Even signs: Count from 9th from same sign
-            if (signId % 2 === 0) { // Aries is 0 (Even-indexed, but it's 1st sign -> Odd)
-                // Wait, signId 0 is Aries (Sign 1 - Odd)
+        case 10: // Dashamsha (D10)
+            // Vedic Rule: Odd signs (1,3,5,7,9,11) count from the same sign
+            //             Even signs (2,4,6,8,10,12) count from the 9th sign
+            // signId is 0-indexed: 0=Aries(1st=odd), 1=Taurus(2nd=even)...
+            const signNum = signId + 1; // 1-based sign number
+            if (signNum % 2 === 1) { // Odd sign
                 resultSignId = (signId + part) % 12;
-            } else {
-                resultSignId = ((signId + 8) % 12 + part) % 12;
+            } else { // Even sign — start from 9th sign (index+8)
+                resultSignId = ((signId + 8) + part) % 12;
             }
             break;
         case 16: // Shodashamsha

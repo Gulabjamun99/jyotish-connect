@@ -75,27 +75,63 @@ export class AstrologyService {
 
         const ayanamsa = this.swe.get_ayanamsa(jd);
 
-        const results = planets.map(p => {
+        const results: any[] = [];
+
+        // Calculate each planet
+        const planetDefs = [
+            { id: this.swe.SE_SUN,     name: "Sun" },
+            { id: this.swe.SE_MOON,    name: "Moon" },
+            { id: this.swe.SE_MERCURY, name: "Mercury" },
+            { id: this.swe.SE_VENUS,   name: "Venus" },
+            { id: this.swe.SE_MARS,    name: "Mars" },
+            { id: this.swe.SE_JUPITER, name: "Jupiter" },
+            { id: this.swe.SE_SATURN,  name: "Saturn" },
+            { id: this.swe.SE_URANUS,  name: "Uranus" },
+            { id: this.swe.SE_NEPTUNE, name: "Neptune" },
+            { id: this.swe.SE_PLUTO,   name: "Pluto" },
+            { id: this.swe.SE_TRUE_NODE, name: "Rahu" },
+        ];
+
+        for (const p of planetDefs) {
             const pos = this.swe.calc_ut(jd, p.id, flags);
             let longitude = pos[0];
-            if (p.isKetu) longitude = (longitude + 180) % 360;
 
             if (typeof longitude !== 'number' || isNaN(longitude)) {
                 longitude = 0;
             }
 
-            const signId = (Math.floor(longitude / 30) % 12) + 1;
-            const deg = longitude % 30;
+            // Ensure longitude is in 0-360 range
+            longitude = ((longitude % 360) + 360) % 360;
 
-            return {
+            const speed = pos[3] || 0;
+            // Sun and Moon are NEVER retrograde - guard against calculation artifacts
+            const isRetrograde = (p.name === 'Sun' || p.name === 'Moon')
+                ? false
+                : speed < 0;
+
+            results.push({
                 name: p.name,
                 longitude,
-                signId,
-                degree: deg,
-                speed: pos[3] || 0,
-                isRetrograde: (pos[3] || 0) < 0
-            };
+                signId: (Math.floor(longitude / 30) % 12) + 1,
+                degree: longitude % 30,
+                speed,
+                isRetrograde
+            });
+        }
+
+        // Ketu = Rahu + 180 degrees (always exactly opposite)
+        const rahu = results.find(r => r.name === 'Rahu')!;
+        const ketuLong = ((rahu.longitude + 180) % 360);
+        results.push({
+            name: 'Ketu',
+            longitude: ketuLong,
+            signId: (Math.floor(ketuLong / 30) % 12) + 1,
+            degree: ketuLong % 30,
+            speed: rahu.speed,      // Rahu/Ketu move together
+            isRetrograde: true      // Rahu/Ketu always retrograde by convention in Vedic
         });
+        // Also mark Rahu as retrograde by convention
+        rahu.isRetrograde = true;
 
         // Sunrise/Sunset
         let sunrise: number | undefined;
@@ -111,13 +147,16 @@ export class AstrologyService {
             console.warn('[SwissEph] rise_trans failed:', e);
         }
 
-        // Ascendant
+        // Ascendant & Houses — Vedic uses WHOLE SIGN house system
+        // 'W' = Whole Sign, 'P' = Placidus, 'B' = Alcabitius (wrong for Vedic)
         let ascendant: number | undefined;
         let housesCusps: number[] = [];
         try {
-            const houses = this.swe.houses(jd, lat, lng, 'B');
+            // Use Whole Sign houses for Vedic astrology
+            const houses = this.swe.houses(jd, lat, lng, 'W');
             if (houses && typeof houses.ascendant === 'number' && !isNaN(houses.ascendant)) {
-                ascendant = houses.ascendant;
+                // houses.ascendant from sidereal flag is already sidereal
+                ascendant = ((houses.ascendant % 360) + 360) % 360;
                 housesCusps = houses.house || [];
             }
         } catch (e) {
@@ -125,7 +164,7 @@ export class AstrologyService {
         }
 
         if (ascendant === undefined || isNaN(ascendant)) {
-            // Mathematical fallback (simplified)
+            // Mathematical fallback for Sidereal Ascendant
             const J2000 = 2451545.0;
             const d0 = jd - J2000;
             let gmst = 280.46061837 + 360.98564736629 * d0;
@@ -136,16 +175,26 @@ export class AstrologyService {
             const latRad = (lat * Math.PI) / 180;
             const epsRad = (23.4393 * Math.PI) / 180;
             const ascRad = Math.atan2(Math.cos(ramcRad), -(Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad)));
-            let ascDeg = (ascRad * 180) / Math.PI;
-            ascDeg = ((ascDeg % 360) + 360) % 360;
-            ascendant = ((ascDeg - ayanamsa) % 360 + 360) % 360;
+            let ascTropical = (ascRad * 180) / Math.PI;
+            ascTropical = ((ascTropical % 360) + 360) % 360;
+            // Apply ayanamsa to convert tropical to sidereal
+            ascendant = ((ascTropical - ayanamsa) % 360 + 360) % 360;
+            console.warn('[SwissEph] Using fallback ascendant calculation, ayanamsa:', ayanamsa);
         }
 
-        const ascSignId = (Math.floor(ascendant / 30) % 12) + 1;
+        // In Whole Sign system, house cusps are simply every 30° from ascendant sign start
+        const ascSignId = Math.floor(ascendant / 30); // 0-indexed sign of lagna
+        if (housesCusps.length === 0) {
+            // Build whole sign house cusps: H1 starts at the beginning of Lagna's sign
+            for (let h = 0; h < 12; h++) {
+                housesCusps.push(((ascSignId + h) % 12) * 30);
+            }
+        }
+
         results.push({
             name: "Asc",
             longitude: ascendant,
-            signId: ascSignId,
+            signId: (Math.floor(ascendant / 30) % 12) + 1,
             degree: ascendant % 30,
             speed: 0,
             isRetrograde: false
