@@ -112,14 +112,23 @@ export default function MatchingPage() {
         try {
             const captureSection = async (elementId: string): Promise<string | null> => {
                 const element = document.getElementById(elementId);
-                if (!element) return null;
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff",
-                    logging: false
-                });
-                return canvas.toDataURL('image/jpeg', 0.9);
+                if (!element) {
+                    console.warn(`Section ${elementId} not found`);
+                    return null;
+                }
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: "#ffffff",
+                        logging: true,
+                        windowWidth: 800
+                    });
+                    return canvas.toDataURL('image/png', 1.0);
+                } catch (e) {
+                    console.error(`Failed to capture section ${elementId}:`, e);
+                    return null;
+                }
             };
 
             const doc = new jsPDF('p', 'mm', 'a4');
@@ -152,14 +161,17 @@ export default function MatchingPage() {
             doc.text(`Generated on ${new Date().toLocaleDateString()} · Vedic AI`, pageWidth / 2, 280, { align: "center" });
 
             // --- PAGE 2+: CAPTURED SECTIONS ---
-            const sections = ['pdf-details', 'pdf-ashtakoot', 'pdf-dynamics', 'pdf-verdict'];
-            for (const sectionId of sections) {
-                const imgData = await captureSection(sectionId);
-                if (imgData) {
-                    doc.addPage();
-                    doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
-                }
-            }
+            const [detailsImg, ashtakootImg, dynamicsImg, verdictImg] = await Promise.all([
+                captureSection('pdf-details'),
+                captureSection('pdf-ashtakoot'),
+                captureSection('pdf-dynamics'),
+                captureSection('pdf-verdict')
+            ]);
+
+            if (detailsImg) { doc.addPage(); doc.addImage(detailsImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
+            if (ashtakootImg) { doc.addPage(); doc.addImage(ashtakootImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
+            if (dynamicsImg) { doc.addPage(); doc.addImage(dynamicsImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
+            if (verdictImg) { doc.addPage(); doc.addImage(verdictImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
 
             toast.success(l('downloadReport', "Report ready!"), { id: "pdf-match" });
             doc.save(`Milan_Report_${boyData.name.replace(/\s+/g, '_')}.pdf`);
@@ -174,7 +186,7 @@ export default function MatchingPage() {
     const dynamicReport = result ? generateDetailedMatchingReport(result, locale) : null;
 
     return (
-        <main className="min-h-screen bg-[#050510] text-white overflow-x-hidden selection:bg-orange-500/30 font-inter">
+        <main className="min-h-screen bg-[#050510] text-white overflow-x-hidden selection:bg-orange-500/30">
             <Navbar />
             <div className="container mx-auto px-4 py-8 md:py-12 relative z-10">
                 <header className="text-center mb-12 space-y-4">

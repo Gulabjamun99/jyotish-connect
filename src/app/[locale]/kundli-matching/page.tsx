@@ -108,40 +108,62 @@ export default function KundliMatchingPage() {
     const handleDownloadPDF = async () => {
         if (!result || !detailedReport) return;
 
-        toast.loading("Preparing your divine report...", { id: "pdf-match" });
+        toast.loading(locale === 'hi' ? "आपका दिव्य प्रतिवेदन तैयार किया जा रहा है..." : "Preparing your divine report...", { id: "pdf-match" });
 
-        const captureSection = async (elementId: string): Promise<string | null> => {
-            const element = document.getElementById(elementId);
-            if (!element) return null;
-            try {
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff",
-                    logging: false
-                });
-                return canvas.toDataURL('image/jpeg', 0.95);
-            } catch (e) {
-                console.error(`Failed to capture section ${elementId}:`, e);
-                return null;
+        try {
+            const captureSection = async (elementId: string): Promise<string | null> => {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    console.warn(`Section ${elementId} not found`);
+                    return null;
+                }
+                
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: "#ffffff",
+                        logging: true,
+                        allowTaint: true,
+                        windowWidth: 800
+                    });
+                    return canvas.toDataURL('image/png', 1.0);
+                } catch (e) {
+                    console.error(`Failed to capture section ${elementId}:`, e);
+                    return null;
+                }
+            };
+
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = 210;
+            const pageHeight = 297;
+            
+            const [overviewImg, detailsImg, analysisImg] = await Promise.all([
+                captureSection("pdf-match-overview"),
+                captureSection("pdf-match-details"),
+                captureSection("pdf-match-findings")
+            ]);
+
+            if (overviewImg) {
+                doc.addImage(overviewImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
             }
-        };
 
-        const doc = new jsPDF('p', 'mm', 'a4');
-        
-        const overviewImg = await captureSection("pdf-match-overview");
-        if (overviewImg) doc.addImage(overviewImg, 'JPEG', 0, 0, 210, 297);
+            if (detailsImg) {
+                doc.addPage();
+                doc.addImage(detailsImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+            }
 
-        doc.addPage();
-        const detailsImg = await captureSection("pdf-match-details");
-        if (detailsImg) doc.addImage(detailsImg, 'JPEG', 0, 0, 210, 297);
+            if (analysisImg) {
+                doc.addPage();
+                doc.addImage(analysisImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+            }
 
-        doc.addPage();
-        const analysisImg = await captureSection("pdf-match-findings");
-        if (analysisImg) doc.addImage(analysisImg, 'JPEG', 0, 0, 210, 297);
-
-        toast.success("Match Report ready!", { id: "pdf-match" });
-        doc.save(`JyotishConnect_Match_${result.boy}_${result.girl}.pdf`);
+            toast.success(locale === 'hi' ? "रिपोर्ट तैयार है!" : "Match Report ready!", { id: "pdf-match" });
+            doc.save(`JyotishConnect_Match_${result.boy}_${result.girl}.pdf`);
+        } catch (error) {
+            console.error("PDF Generation Error:", error);
+            toast.error(locale === 'hi' ? "रिपोर्ट तैयार करने में त्रुटಿ हुई" : "Error generating report", { id: "pdf-match" });
+        }
     };
 
     const getCompatibilityMessage = (score: number) => {
@@ -392,7 +414,8 @@ export default function KundliMatchingPage() {
             {result && (
                 <div 
                     ref={pdfContentRef}
-                    className="fixed -left-[9999px] top-0 w-[800px] bg-white p-10 text-slate-900 opacity-100 pointer-events-none z-[-100] leading-relaxed"
+                    className="absolute opacity-0 pointer-events-none -z-50 leading-relaxed bg-white"
+                    style={{ width: '800px', top: '0', left: '0' }}
                 >
                     {/* Page 1: Overview & Score */}
                     <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-orange-500/10">

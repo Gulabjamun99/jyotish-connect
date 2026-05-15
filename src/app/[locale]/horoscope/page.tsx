@@ -206,7 +206,7 @@ export default function HoroscopePage() {
                                     {ZODIAC_SIGNS.find(s => s.name === prediction.sign)?.icon}
                                 </div>
                                 <div className="space-y-1">
-                                    <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase">{prediction.sign}</h2>
+                                    <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase">{translateSign(prediction.sign, locale)}</h2>
                                     <div className="flex items-center gap-3">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{prediction.date}</p>
                                         <span className="w-1 h-1 bg-slate-200 rounded-full" />

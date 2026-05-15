@@ -13,7 +13,7 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
 
   const tools = [
     { title: t("horoscope_title"), desc: t("horoscope_desc"), icon: "♈", href: "/horoscope", color: "from-primary/20" },
-    { title: t("matching_title"), desc: t("matching_desc"), icon: "💑", href: "/kundli/matching", color: "from-accent/20" },
+    { title: t("matching_title"), desc: t("matching_desc"), icon: "💑", href: "/kundli-matching", color: "from-accent/20" },
     { title: t("panchang_title"), desc: t("panchang_desc"), icon: "📜", href: "/kundli", color: "from-sky-500/20" },
   ];
 
