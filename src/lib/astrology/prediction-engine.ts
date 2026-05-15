@@ -6,6 +6,7 @@
 export const _SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
 
 import { SIGN_PREDICTIONS } from "./horoscope-data";
+import { getTrans } from "./i18n";
 
 export const generateDailyHoroscope = (sign: string, planets: any[], lang: string = 'en') => {
     const today = new Date();
@@ -14,28 +15,54 @@ export const generateDailyHoroscope = (sign: string, planets: any[], lang: strin
     for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 2654435761);
     const rand = ((h ^ h >>> 16) >>> 0) / 4294967296;
 
-    const data = SIGN_PREDICTIONS[sign]?.[(lang === 'hi' ? 'hi' : 'en') as 'en'|'hi'] || SIGN_PREDICTIONS[sign]?.en;
-    if (!data) return null;
+    // Use available translation or fallback to English if not translated in horoscope-data.ts
+    // For full support, SIGN_PREDICTIONS would need all languages, but we map to 'hi' for Indic languages temporarily 
+    // to provide at least some localization if the specific lang doesn't exist in SIGN_PREDICTIONS.
+    const isIndic = ['hi', 'mr', 'gu', 'bn', 'ta', 'te', 'kn'].includes(lang);
+    const dataLang = SIGN_PREDICTIONS[sign]?.[lang as keyof typeof SIGN_PREDICTIONS[string]] 
+                     || SIGN_PREDICTIONS[sign]?.[(isIndic ? 'hi' : 'en') as 'en'|'hi'] 
+                     || SIGN_PREDICTIONS[sign]?.en;
+                     
+    if (!dataLang) return null;
 
     const pick = (arr: string[]) => arr[Math.floor(rand * arr.length)] || "";
     
     const moon = planets?.find(p => p.name === "Moon");
-    const moonSignStr = moon ? _SIGNS[moon.signId - 1] : "";
+    const t = getTrans(lang);
+    const moonSignStr = moon ? (t.signs[moon.sign] || moon.sign) : ""; // Translated actual moon transit sign
     
-    const transitInfo = lang === 'hi' ? `चन्द्रमा गोचर: ${moonSignStr}` : `Moon Transit: ${moonSignStr}`;
-    const colors = lang === 'hi' ? ["लाल", "सफ़ेद", "पीला", "हरा", "नीला", "गुलाबी", "नारंगी"] : ["Red", "White", "Yellow", "Green", "Blue", "Pink", "Orange"];
+    // Labels translation mapping
+    const transitLabel = lang === 'hi' ? 'चन्द्रमा गोचर' : lang === 'mr' ? 'चंद्र गोचर' : lang === 'gu' ? 'ચંદ્ર ગોચર' : lang === 'bn' ? 'চন্দ্র গোচর' : lang === 'ta' ? 'சந்திர பெயர்ச்சி' : lang === 'te' ? 'చంద్ర సంచారం' : lang === 'kn' ? 'ಚಂದ್ರ ಗೋಚಾರ' : 'Moon Transit';
+    const transitInfo = moonSignStr ? `${transitLabel}: ${moonSignStr}` : "";
     
+    const colorsMap: any = {
+        en: ["Red", "White", "Yellow", "Green", "Blue", "Pink", "Orange"],
+        hi: ["लाल", "सफ़ेद", "पीला", "हरा", "नीला", "गुलाबी", "नारंगी"],
+        mr: ["लाल", "पांढरा", "पिवळा", "हिरवा", "निळा", "गुलाबी", "नारंगी"],
+        gu: ["લાલ", "સફેદ", "પીળો", "લીલો", "વાદળી", "ગુલાબી", "નારંગી"],
+        bn: ["লাল", "সাদা", "হলুদ", "সবুজ", "নীল", "গোলাপী", "কমলা"],
+        ta: ["சிவப்பு", "வெள்ளை", "மஞ்சள்", "பச்சை", "நீலம்", "இளஞ்சிவப்பு", "ஆரஞ்சு"],
+        te: ["ఎరుపు", "తెలుపు", "పసుపు", "ఆకుపచ్చ", "నీలం", "గులాబీ", "నారింజ"],
+        kn: ["ಕೆಂಪು", "ಬಿಳಿ", "ಹಳದಿ", "ಹಸಿರು", "ನೀಲಿ", "ಗುಲಾಬಿ", "ಕಿತ್ತಳೆ"]
+    };
+    const colors = colorsMap[lang] || colorsMap.en;
+    
+    const negativeMap: any = {
+        en: "Avoid stress and haste today.", hi: "तनाव और जल्दबाजी से बचें।", mr: "तणाव आणि घाई टाळा.", gu: "તણાવ અને ઉતાવળ ટાળો.",
+        bn: "চাপ এবং তাড়াহুড়ো এড়িয়ে চলুন।", ta: "மன அழுத்தம் மற்றும் அவசரத்தை தவிர்க்கவும்.", te: "ఒత్తిడి మరియు తొందరపాటును నివారించండి.", kn: "ಒತ್ತಡ ಮತ್ತು ಆತುರವನ್ನು ತಪ್ಪಿಸಿ."
+    };
+
     return {
-        positive: pick(data.personal),
-        negative: lang === 'hi' ? "तनाव और जल्दबाजी से बचें।" : "Avoid stress and haste today.",
-        career: pick(data.career),
-        health: pick(data.health),
-        love: pick(data.love),
+        positive: pick(dataLang.personal),
+        negative: negativeMap[lang] || negativeMap.en,
+        career: pick(dataLang.career),
+        health: pick(dataLang.health),
+        love: pick(dataLang.love),
         luckyNumber: Math.floor(rand * 9) + 1,
         luckyColor: pick(colors),
         labels: {
-            color: lang === 'hi' ? "शुभ रंग" : "Lucky Color",
-            number: lang === 'hi' ? "शुभ अंक" : "Lucky Number"
+            color: lang === 'hi' ? "शुभ रंग" : lang === 'mr' ? "शुभ रंग" : lang === 'gu' ? "શુભ રંગ" : lang === 'bn' ? "শুভ রঙ" : lang === 'ta' ? "அதிர்ஷ்ட நிறம்" : lang === 'te' ? "అదృష్ట రంగు" : lang === 'kn' ? "ಅದೃಷ್ಟ ಬಣ್ಣ" : "Lucky Color",
+            number: lang === 'hi' ? "शुभ अंक" : lang === 'mr' ? "शुभ अंक" : lang === 'gu' ? "શુભ અંક" : lang === 'bn' ? "শুভ সংখ্যা" : lang === 'ta' ? "அதிர்ஷ்ட எண்" : lang === 'te' ? "అదృష్ట సంఖ్య" : lang === 'kn' ? "ಅದೃಷ್ಟ ಸಂಖ್ಯೆ" : "Lucky Number"
         },
         transitInfo
     };
@@ -271,15 +298,15 @@ export const generateDetailedMatchingReport = (result: any, lang: string = "en")
     const l = (key: string) => _get(lang, key);
 
     return {
-        marriage: { title: lang === 'hi' ? "विवाह अनुकूलता" : "Marriage Compatibility", rating: score >= 24 ? l("excellent") : l("good"), verdict: score >= 24 ? "Highly favorable." : "Stable match." },
-        nature: { title: lang === 'hi' ? "प्रकृति और स्वभाव" : "Nature & Temperament", verdict: (ash.gana?.score || 0) >= 5 ? "Harmonious nature." : "Differences likely." },
-        family: { title: lang === 'hi' ? "परिवार और संतान" : "Family & Children", verdict: (ash.nadi?.score || 0) === 8 ? "Excellent health match." : "Nadi considerations." },
-        finance: { title: lang === 'hi' ? "धन और समृद्धि" : "Wealth & Prosperity", verdict: (ash.bhakoot?.score || 0) === 7 ? "Steady wealth." : "Financial planning needed." },
-        bond: { title: lang === 'hi' ? "नवांश तालमेल" : "Navamsa Synergy", verdict: analyzeNavamsaBond(boyData, girlData, lang) },
-        timing: { title: lang === 'hi' ? "विवाह समय" : "Marriage Timing", verdict: calculateLikelyMarriagePeriod(boyData, girlData, lang) },
-        forecast: { title: lang === 'hi' ? "जीवन पूर्वानुमान" : "Life Forecast", verdict: generateLifeForecastSummary(score, lang) },
-        remedies: { title: lang === 'hi' ? "उपाय" : "Remedies", list: getContextualRemedies(result, lang) },
-        summary: { verdict: score >= 18 ? "Proceed" : "Caution", confidence: 60 + score, nextSteps: score >= 24 ? "Select Muhurat" : "Perform Remedies" }
+        marriage: { title: l("labels_life_predictions_Marriage") || (lang === 'hi' ? "विवाह अनुकूलता" : "Marriage Compatibility"), rating: score >= 24 ? l("excellent") : l("good"), verdict: score >= 24 ? l("marriageYoga") : l("good") },
+        nature: { title: l("labels_life_predictions_Nature") || (lang === 'hi' ? "प्रकृति और स्वभाव" : "Nature & Temperament"), verdict: (ash.gana?.score || 0) >= 5 ? l("excellent") : l("average") },
+        family: { title: l("labels_life_predictions_Family") || (lang === 'hi' ? "परिवार और संतान" : "Family & Children"), verdict: (ash.nadi?.score || 0) === 8 ? l("excellent") : l("average") },
+        finance: { title: l("labels_life_predictions_Wealth") || (lang === 'hi' ? "धन और समृद्धि" : "Wealth & Prosperity"), verdict: (ash.bhakoot?.score || 0) === 7 ? l("prosperous") : l("average") },
+        bond: { title: l("labels_life_predictions_Spirituality") || (lang === 'hi' ? "नवांश तालमेल" : "Navamsa Synergy"), verdict: analyzeNavamsaBond(boyData, girlData, lang) },
+        timing: { title: l("marriageYoga") || (lang === 'hi' ? "विवाह समय" : "Marriage Timing"), verdict: calculateLikelyMarriagePeriod(boyData, girlData, lang) },
+        forecast: { title: l("labels_life_predictions_Forecast") || (lang === 'hi' ? "जीवन पूर्वानुमान" : "Life Forecast"), verdict: generateLifeForecastSummary(score, lang) },
+        remedies: { title: l("labels_life_predictions_Remedies") || (lang === 'hi' ? "उपाय" : "Remedies"), list: getContextualRemedies(result, lang) },
+        summary: { verdict: score >= 18 ? l("conclusionGood") : l("conclusionCaution"), confidence: 60 + score, nextSteps: score >= 24 ? l("auspicious") : l("remedyVishnu") }
     };
 };
 
@@ -383,35 +410,18 @@ export const generateAvakahadaChakra = (chart: any, lang: string = 'en') => {
 };
 
 export const generateLifePredictions = (chart: any, lang: string = 'en') => {
-    const asc = chart.ascendantSign || "Aries";
-    const moon = chart.moonSign || "Aries";
-    const sun = chart.sunSign || "Aries";
+    const t = getTrans(lang);
     
     // In a real engine, these would be deep lookups. 
     // Here we use a structured generator based on the chart's unique signatures.
+    const lp = t.life_predictions || {};
     
-    const getReading = (category: string) => {
-        const key = `${category}_${asc}_${moon}`.toLowerCase();
-        // Fallback localized logic
-        if (lang === 'hi') {
-            switch(category) {
-                case 'Career': return `आपका ${asc} लग्न और ${moon} राशि आपके करियर में स्थिरता और नेतृत्व का संकेत देते हैं। सूर्य का ${sun} में होना सरकारी लाभ की संभावना बढ़ाता है।`;
-                case 'Health': return `स्वास्थ्य की दृष्टि से, लग्न स्वामी का प्रभाव मध्यम है। पाचन और मानसिक तनाव के प्रति सावधानी बरतें। नियमित योग लाभकारी होगा।`;
-                case 'Marriage': return `सप्तम भाव का स्वामी अनुकूल स्थिति में है। जीवनसाथी सहायक और धार्मिक प्रवृत्ति का होगा। विवाह के बाद भाग्य उदय होने के संकेत हैं।`;
-                case 'Wealth': return `वित्तीय स्थिति मजबूत रहेगी। संपत्ति और वाहन सुख के योग हैं। निवेश से लाभ की संभावना है।`;
-                case 'Education': return `पंचम भाव का स्वामी आपकी तीक्ष्ण बुद्धि का संकेत देता है। उच्च शिक्षा के लिए विदेश यात्रा के योग बन सकते हैं।`;
-                default: return "खगोलीय पिंडों का संरेखण आपके जीवन में सकारात्मक ऊर्जा ला रहा है।";
-            }
-        }
-        return `Your ${asc} ascendant and ${moon} moon sign suggest a path of growth. The presence of Sun in ${sun} enhances your natural authority and creative expression in ${category}.`;
-    };
-
     return {
-        Career: getReading('Career'),
-        Health: getReading('Health'),
-        Marriage: getReading('Marriage'),
-        Wealth: getReading('Wealth'),
-        Education: getReading('Education')
+        Career: lp.Career || "Your career path is influenced by the 10th house and its lord. A strong Sun or Saturn indicates authority and government roles.",
+        Health: lp.Health || "The 6th house governs acute illnesses, while the 8th house rules chronic conditions.",
+        Marriage: lp.Marriage || "The 7th house and its lord define your marital life. Venus is the significator for men, and Jupiter for women.",
+        Wealth: lp.Wealth || "Your financial status is determined by the 2nd house and the 11th house.",
+        Education: lp.Education || "The 4th house rules primary education, and the 5th house rules intelligence and higher learning."
     };
 };
 

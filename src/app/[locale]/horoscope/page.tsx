@@ -125,9 +125,9 @@ export default function HoroscopePage() {
             if (dynamicData) {
                 const formattedDate = new Date().toLocaleDateString(locale === 'en' ? 'en-US' : `${locale}-IN`);
                 setPrediction({
-                    sign,
-                    date: formattedDate,
-                    ...dynamicData
+                    ...dynamicData,
+                    sign: sign,
+                    date: formattedDate
                 });
             }
         } catch (err) {

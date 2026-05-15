@@ -15,6 +15,7 @@ import { DetailCard, DetailRow } from "@/components/kundli/DetailCard";
 import { generateLifePredictions } from "@/lib/astrology/prediction-engine";
 import { useLocale } from "next-intl";
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
+import html2canvas from "html2canvas";
 
 export default function KundliPage() {
     const _SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
@@ -141,26 +142,50 @@ export default function KundliPage() {
                 const clone = svgEl.cloneNode(true) as SVGSVGElement;
                 clone.setAttribute('width', '600'); clone.setAttribute('height', '600');
                 const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' }));
-                return await new Promise<string>((res, rej) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const c = document.createElement('canvas'); c.width = 600; c.height = 600;
-                        const ctx = c.getContext('2d')!; ctx.fillStyle = '#fff'; ctx.fillRect(0,0,600,600);
-                        ctx.drawImage(img, 0, 0, 600, 600); URL.revokeObjectURL(url); res(c.toDataURL('image/png'));
-                    };
-                    img.onerror = () => { URL.revokeObjectURL(url); rej(null); };
-                    img.src = url;
+        const captureImage = async (id: string) => {
+            const el = document.getElementById(id);
+            if (!el) return null;
+            try {
+                const canvas = await html2canvas(el, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    backgroundColor: "#ffffff" 
                 });
-            } catch { return null; }
+                return canvas.toDataURL('image/png');
+            } catch (e) {
+                console.error(`Failed to capture ${id}:`, e);
+                return null;
+            }
         };
 
-        const [d1Img, d9Img, moonImg, d10Img] = await Promise.all([
+        toast.loading("Rendering High-Fidelity Report...", { id: "pdf-gen" });
+
+        const [d1Img, d9Img, moonImg, d10Img, planetsImg, birthImg, dashaImg, ashtakImg, doshasImg, pCareer, pHealth, pLove, pWealth, pEdu] = await Promise.all([
             captureSvg(lagnaChartRef), captureSvg(d9ChartRef),
             captureSvg(moonChartRef), captureSvg(d10ChartRef),
+            captureImage("pdf-planets"),
+            captureImage("pdf-birth-details"),
+            captureImage("pdf-dasha-detailed"),
+            captureImage("pdf-ashtakvarga"),
+            captureImage("pdf-doshas"),
+            captureImage("pdf-pred-career"),
+            captureImage("pdf-pred-health"),
+            captureImage("pdf-pred-marriage"),
+            captureImage("pdf-pred-wealth"),
+            captureImage("pdf-pred-edu")
         ]);
 
         try {
-            await generateKundliPDF(chart, formData, locale, { d1: d1Img, d9: d9Img, moon: moonImg, d10: d10Img });
+            await generateKundliPDF(chart, formData, locale, { 
+                d1: d1Img, d9: d9Img, moon: moonImg, d10: d10Img,
+                planets: planetsImg,
+                birth: birthImg,
+                dasha: dashaImg,
+                ashtak: ashtakImg,
+                doshas: doshasImg,
+                pCareer, pHealth, pLove, pWealth, pEdu
+            });
             toast.success("Premium PDF Downloaded!", { id: "pdf-gen" });
         } catch (e) {
             console.error(e);
@@ -799,16 +824,16 @@ export default function KundliPage() {
 
                     {/* Page: Planetary Positions */}
                     <div id="pdf-planets" className="p-10 mb-20 bg-white min-h-[1100px]">
-                        <h1 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-2 mb-8">
-                            Planetary Positions
+                        <h1 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-2 mb-8 uppercase tracking-widest">
+                            {t("panchang_title") || "Planetary Positions"}
                         </h1>
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="bg-purple-600 text-white">
-                                    <th className="p-4 text-left border border-purple-500">Planet</th>
-                                    <th className="p-4 text-left border border-purple-500">Sign</th>
-                                    <th className="p-4 text-left border border-purple-500">Degree</th>
-                                    <th className="p-4 text-left border border-purple-500">House</th>
+                                    <th className="p-4 text-left border border-purple-500">{t("attribute") || "Planet"}</th>
+                                    <th className="p-4 text-left border border-purple-500">{t("table.koota") || "Sign"}</th>
+                                    <th className="p-4 text-left border border-purple-500">{t("label_degree") || "Degree"}</th>
+                                    <th className="p-4 text-left border border-purple-500">{t("label_house") || "House"}</th>
                                 </tr>
                             </thead>
                             <tbody className="text-lg text-slate-800">
@@ -888,10 +913,10 @@ export default function KundliPage() {
                         </div>
                     </div>
                 </div>
-                <div className="hidden">
+                <div className="fixed -left-[9999px] top-0 pointer-events-none w-[800px] bg-white opacity-100 z-[-100]">
                     {/* Avakahada / Birth Details */}
                     <div id="pdf-birth-details" className="p-10 bg-white min-h-[800px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-orange-500 pb-2">Birth Attributes</h1>
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-orange-500 pb-2 uppercase tracking-widest">{t("beginCheckTitle") || "Birth Attributes"}</h1>
                         <div className="grid grid-cols-2 gap-8 text-xl">
                             <div className="border p-4 rounded-xl"><b>Name:</b> {formData.name}</div>
                             <div className="border p-4 rounded-xl"><b>Date:</b> {formData.dob}</div>
@@ -906,7 +931,7 @@ export default function KundliPage() {
 
                     {/* Dasha Detailed Timeline */}
                     <div id="pdf-dasha-detailed" className="p-10 bg-white min-h-[1100px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-indigo-500 pb-2">Vimshottari Dasha Timeline</h1>
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-indigo-500 pb-2 uppercase tracking-widest">{t("vimshottariDasha") || "Vimshottari Dasha Timeline"}</h1>
                         <div className="space-y-4">
                             {chart.dasha?.periods?.map((p: any, i: number) => (
                                 <div key={i} className="flex justify-between border-b py-4 text-lg">
@@ -919,7 +944,7 @@ export default function KundliPage() {
 
                     {/* Ashtakvarga Table */}
                     <div id="pdf-ashtakvarga" className="p-10 bg-white min-h-[600px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-yellow-500 pb-2">Sarvashtakvarga Points</h1>
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-yellow-500 pb-2 uppercase tracking-widest">{t("gunaScoreDistribution") || "Sarvashtakvarga Points"}</h1>
                         <div className="grid grid-cols-4 gap-4">
                             {_SIGNS.map((sign, i) => (
                                 <div key={i} className="border p-4 text-center">
@@ -930,25 +955,41 @@ export default function KundliPage() {
                         </div>
                     </div>
 
+                    {/* Dosha Analysis */}
+                    <div id="pdf-doshas" className="p-10 bg-white min-h-[900px] text-slate-900">
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-red-500 pb-2 uppercase tracking-widest">{t("doshaCheck") || "Dosha Analysis"}</h1>
+                        <div className="space-y-6">
+                            {Object.entries(chart.doshas || {}).map(([key, data]: any) => (
+                                <div key={key} className={`p-6 rounded-2xl border-2 ${data.present ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                                    <h2 className="text-2xl font-bold mb-2 flex justify-between">
+                                        <span>{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                        <span className={data.present ? 'text-red-600' : 'text-green-600'}>{data.present ? 'PRESENT' : 'ABSENT'}</span>
+                                    </h2>
+                                    <p className="text-lg opacity-80">{data.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Prediction Pages */}
                     <div id="pdf-pred-career" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-orange-600">Career & Profession Analysis</h1>
+                        <h1 className="text-3xl font-black mb-6 text-orange-600 uppercase tracking-widest">{t("career") || "Career & Profession"}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Career}</p>
                     </div>
                     <div id="pdf-pred-health" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-red-600">Health & Wellbeing Analysis</h1>
+                        <h1 className="text-3xl font-black mb-6 text-red-600 uppercase tracking-widest">{t("longevity_health") || "Health & Wellbeing"}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Health}</p>
                     </div>
                     <div id="pdf-pred-marriage" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-pink-600">Marriage & Relationships</h1>
+                        <h1 className="text-3xl font-black mb-6 text-pink-600 uppercase tracking-widest">{t("marriageAnalysis") || "Marriage & Relationships"}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Marriage}</p>
                     </div>
                     <div id="pdf-pred-wealth" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-green-600">Wealth & Financial Prospects</h1>
+                        <h1 className="text-3xl font-black mb-6 text-green-600 uppercase tracking-widest">{t("finance_wealth") || "Wealth & Finance"}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Wealth}</p>
                     </div>
                     <div id="pdf-pred-edu" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-blue-600">Education & Knowledge</h1>
+                        <h1 className="text-3xl font-black mb-6 text-blue-600 uppercase tracking-widest">{t("personalityTraits") || "Education & Personality"}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Education}</p>
                     </div>
                 </div>

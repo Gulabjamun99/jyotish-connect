@@ -145,15 +145,15 @@ export default function KundliMatchingPage() {
     };
 
     const getCompatibilityMessage = (score: number) => {
-        if (score > 24) return locale === 'hi' ? 'उत्कृष्ट मिलान' : 'Excellent Match';
-        if (score > 18) return locale === 'hi' ? 'औसत मिलान' : 'Average Match';
-        return locale === 'hi' ? 'कम अनुकूलता' : 'Low Compatibility';
+        if (score > 24) return t("excellentMatch");
+        if (score > 18) return t("averageMatch");
+        return t("lowCompatibility");
     };
 
     const getMarriageStabilityMessage = (score: number) => {
-        if (score >= 28) return locale === 'hi' ? 'वैवाहिक जीवन बहुत सुखद और स्थिर रहेगा।' : 'Marital life will be very happy and stable.';
-        if (score >= 18) return locale === 'hi' ? 'मिलान अच्छा है, कुछ छोटे समझौतों की जरूरत हो सकती है।' : 'Match is good, might need some minor adjustments.';
-        return locale === 'hi' ? 'विवाह से पहले उचित ज्योतिषीय परामर्श और उपायों की सलाह दी जाती है।' : 'Proper astrological consultation and remedies are advised before marriage.';
+        if (score >= 28) return t("stabilityMessage.highlyFavorable");
+        if (score >= 18) return t("stabilityMessage.averageCompatibility");
+        return t("stabilityMessage.notRecommended");
     };
 
     return (
@@ -392,13 +392,13 @@ export default function KundliMatchingPage() {
             {result && (
                 <div 
                     ref={pdfContentRef}
-                    className="absolute left-0 top-0 w-[800px] bg-white p-10 text-slate-900 opacity-0 pointer-events-none -z-50 leading-relaxed"
+                    className="fixed -left-[9999px] top-0 w-[800px] bg-white p-10 text-slate-900 opacity-100 pointer-events-none z-[-100] leading-relaxed"
                 >
                     {/* Page 1: Overview & Score */}
                     <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-orange-500/10">
                         <div className="flex justify-between items-center border-b-4 border-orange-500 pb-6 mb-10">
                             <h1 className="text-4xl font-black text-orange-600 uppercase tracking-tighter">
-                                {locale === 'hi' ? "कुंडली मिलान रिपोर्ट" : "Match Report"}
+                                {t("finalMatchingResult") || "Match Report"}
                             </h1>
                             <div className="text-right">
                                 <div className="text-5xl font-black text-orange-500">{result.total_guna} / 36</div>
@@ -444,18 +444,18 @@ export default function KundliMatchingPage() {
 
                     {/* Page 2: Ashtakoot & Panchang */}
                     <div id="pdf-match-details" className="p-10 mb-20 bg-white min-h-[1100px]">
-                        <h2 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-4 mb-8">
-                            {locale === 'hi' ? "विस्तृत अष्टकूट मिलान" : "Detailed Koota Analysis"}
+                        <h2 className="text-3xl font-black text-blue-600 border-b-4 border-blue-500 pb-4 mb-8 uppercase tracking-widest">
+                            {t("ganMilanTitle") || "Detailed Koota Analysis"}
                         </h2>
                         
                         <table className="w-full border-collapse mb-12">
                             <thead>
                                 <tr className="bg-blue-600 text-white">
-                                    <th className="p-4 text-left border border-blue-500">Koota</th>
-                                    <th className="p-4 text-center border border-blue-500">Boy</th>
-                                    <th className="p-4 text-center border border-blue-500">Girl</th>
-                                    <th className="p-4 text-right border border-blue-500">Max</th>
-                                    <th className="p-4 text-right border border-blue-500">Obtained</th>
+                                    <th className="p-4 text-left border border-blue-500">{t("table.koota") || "Koota"}</th>
+                                    <th className="p-4 text-center border border-blue-500">{t("boy") || "Boy"}</th>
+                                    <th className="p-4 text-center border border-blue-500">{t("girl") || "Girl"}</th>
+                                    <th className="p-4 text-right border border-blue-500">{t("table.max") || "Max"}</th>
+                                    <th className="p-4 text-right border border-blue-500">{t("table.obtained") || "Obtained"}</th>
                                 </tr>
                             </thead>
                             <tbody className="text-lg">
@@ -503,8 +503,8 @@ export default function KundliMatchingPage() {
                     {/* Page 3: Detailed Findings */}
                     {detailedReport && (
                         <div id="pdf-match-findings" className="p-10 bg-white min-h-[1100px]">
-                            <h2 className="text-3xl font-black text-emerald-600 border-b-4 border-emerald-500 pb-4 mb-8">
-                                {locale === 'hi' ? "विस्तृत विश्लेषण" : "Detailed Findings"}
+                            <h2 className="text-3xl font-black text-emerald-600 border-b-4 border-emerald-500 pb-4 mb-8 uppercase tracking-widest">
+                                {t("detailedAnalysis") || "Detailed Findings"}
                             </h2>
                             <div className="space-y-12">
                                 {[
