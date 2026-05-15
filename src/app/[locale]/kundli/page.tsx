@@ -845,15 +845,15 @@ export default function KundliPage() {
                     {/* Page: Planetary Positions */}
                     <div id="pdf-planets" className="p-10 mb-20 bg-white min-h-[1100px]">
                         <h1 className="text-3xl font-black text-purple-600 border-b-4 border-purple-500 pb-2 mb-8 uppercase tracking-widest">
-                            {t("panchang_title") || "Planetary Positions"}
+                            {l("panchang_title", "Planetary Positions")}
                         </h1>
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="bg-purple-600 text-white">
-                                    <th className="p-4 text-left border border-purple-500">{t("attribute") || "Planet"}</th>
-                                    <th className="p-4 text-left border border-purple-500">{t("table.koota") || "Sign"}</th>
-                                    <th className="p-4 text-left border border-purple-500">{t("label_degree") || "Degree"}</th>
-                                    <th className="p-4 text-left border border-purple-500">{t("label_house") || "House"}</th>
+                                    <th className="p-4 text-left border border-purple-500">{l("attribute", "Planet")}</th>
+                                    <th className="p-4 text-left border border-purple-500">{l("table.koota", "Sign")}</th>
+                                    <th className="p-4 text-left border border-purple-500">{l("label_degree", "Degree")}</th>
+                                    <th className="p-4 text-left border border-purple-500">{l("label_house", "House")}</th>
                                 </tr>
                             </thead>
                             <tbody className="text-lg text-slate-800">
@@ -936,7 +936,7 @@ export default function KundliPage() {
                 <div className="fixed -left-[9999px] top-0 pointer-events-none w-[800px] bg-white opacity-100 z-[-100]">
                     {/* Avakahada / Birth Details */}
                     <div id="pdf-birth-details" className="p-10 bg-white min-h-[800px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-orange-500 pb-2 uppercase tracking-widest">{t("beginCheckTitle") || "Birth Attributes"}</h1>
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-orange-500 pb-2 uppercase tracking-widest">{l("beginCheckTitle", "Birth Attributes")}</h1>
                         <div className="grid grid-cols-2 gap-8 text-xl">
                             <div className="border p-4 rounded-xl"><b>Name:</b> {formData.name}</div>
                             <div className="border p-4 rounded-xl"><b>Date:</b> {formData.dob}</div>
@@ -951,7 +951,7 @@ export default function KundliPage() {
 
                     {/* Dasha Detailed Timeline */}
                     <div id="pdf-dasha-detailed" className="p-10 bg-white min-h-[1100px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-indigo-500 pb-2 uppercase tracking-widest">{t("vimshottariDasha") || "Vimshottari Dasha Timeline"}</h1>
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-indigo-500 pb-2 uppercase tracking-widest">{l("vimshottariDasha", "Vimshottari Dasha Timeline")}</h1>
                         <div className="space-y-4">
                             {chart.dasha?.periods?.map((p: any, i: number) => (
                                 <div key={i} className="flex justify-between border-b py-4 text-lg">
@@ -964,7 +964,7 @@ export default function KundliPage() {
 
                     {/* Ashtakvarga Table */}
                     <div id="pdf-ashtakvarga" className="p-10 bg-white min-h-[600px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-yellow-500 pb-2 uppercase tracking-widest">{t("gunaScoreDistribution") || "Sarvashtakvarga Points"}</h1>
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-yellow-500 pb-2 uppercase tracking-widest">{l("gunaScoreDistribution", "Sarvashtakvarga Points")}</h1>
                         <div className="grid grid-cols-4 gap-4">
                             {_SIGNS.map((sign, i) => (
                                 <div key={i} className="border p-4 text-center">
@@ -975,9 +975,9 @@ export default function KundliPage() {
                         </div>
                     </div>
 
-                    {/* Dosha Analysis */}
-                    <div id="pdf-doshas" className="p-10 bg-white min-h-[900px] text-slate-900">
-                        <h1 className="text-4xl font-black mb-8 border-b-4 border-red-500 pb-2 uppercase tracking-widest">{t("doshaCheck") || "Dosha Analysis"}</h1>
+                    {/* Secondary Dosha View (Unique ID) */}
+                    <div id="pdf-doshas-detailed" className="p-10 bg-white min-h-[900px] text-slate-900">
+                        <h1 className="text-4xl font-black mb-8 border-b-4 border-red-500 pb-2 uppercase tracking-widest">{l("doshaCheck", "Dosha Analysis")}</h1>
                         <div className="space-y-6">
                             {Object.entries(chart.doshas || {}).map(([key, data]: any) => (
                                 <div key={key} className={`p-6 rounded-2xl border-2 ${data.present ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
@@ -993,37 +993,28 @@ export default function KundliPage() {
 
                     {/* Prediction Pages */}
                     <div id="pdf-pred-career" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-orange-600 uppercase tracking-widest">{t("career") || "Career & Profession"}</h1>
+                        <h1 className="text-3xl font-black mb-6 text-orange-600 uppercase tracking-widest">{l("career", "Career & Profession")}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Career}</p>
                     </div>
                     <div id="pdf-pred-health" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-red-600 uppercase tracking-widest">{t("longevity_health") || "Health & Wellbeing"}</h1>
+                        <h1 className="text-3xl font-black mb-6 text-red-600 uppercase tracking-widest">{l("longevity_health", "Health & Wellbeing")}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Health}</p>
                     </div>
                     <div id="pdf-pred-marriage" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-pink-600 uppercase tracking-widest">{t("marriageAnalysis") || "Marriage & Relationships"}</h1>
+                        <h1 className="text-3xl font-black mb-6 text-pink-600 uppercase tracking-widest">{l("marriageAnalysis", "Marriage & Relationships")}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Marriage}</p>
                     </div>
                     <div id="pdf-pred-wealth" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-green-600 uppercase tracking-widest">{t("finance_wealth") || "Wealth & Finance"}</h1>
+                        <h1 className="text-3xl font-black mb-6 text-green-600 uppercase tracking-widest">{l("finance_wealth", "Wealth & Finance")}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Wealth}</p>
                     </div>
                     <div id="pdf-pred-edu" className="p-10 bg-white min-h-[500px] text-slate-900">
-                        <h1 className="text-3xl font-black mb-6 text-blue-600 uppercase tracking-widest">{t("personalityTraits") || "Education & Personality"}</h1>
+                        <h1 className="text-3xl font-black mb-6 text-blue-600 uppercase tracking-widest">{l("personalityTraits", "Education & Personality")}</h1>
                         <p className="text-xl leading-relaxed">{chart.predictions?.Education}</p>
                     </div>
                 </div>
-            </>
+                </>
             )}
         </main>
     );
 }
-
-
-
-
-
-
-
-
-

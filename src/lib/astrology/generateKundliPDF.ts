@@ -121,29 +121,30 @@ export async function generateKundliPDF(
     } else {
         H(doc,'Daily Panchang at Birth',3,TP);
         ST(doc,'Panchang Details',32);
-    // Tithi & Yoga may be index-based — resolve to name
-    const safeStr = (v: any) => (typeof v === 'string' && /^[\x00-\x7F]*$/.test(v)) ? v : '';
-    const resolveIdx = (arr: string[]|undefined, v: any) => typeof v === 'number' ? (arr?.[v] || `#${v}`) : safeStr(v);
-    const tithiVal = resolveIdx(EN.panchang?.tithi, chart.panchang?.tithiId) || '—';
-    const yogaVal  = resolveIdx(EN.panchang?.yoga,  chart.panchang?.yogaId)  || '—';
-    const karanVal = resolveIdx(EN.panchang?.karan, chart.panchang?.karanaId)|| '—';
-    const varaVal  = resolveIdx(EN.panchang?.vara,  chart.panchang?.vara)  || '—';
-    autoTable(doc,{
-        startY:37, margin:{left:15},
-        head:[['Panchang Element','Value']],
-        body:[
-            ['Tithi (Lunar Day)', tithiVal],
-            ['Nakshatra (Birth Star)', nakshatraEn],
-            ['Yoga', yogaVal],
-            ['Karana', karanVal],
-            ['Vara (Weekday)', varaVal],
-            ['Sunrise', safeStr(chart.panchang?.sunrise) || '—'],
-            ['Sunset',  safeStr(chart.panchang?.sunset)  || '—'],
-        ],
-        styles:{fontSize:11,cellPadding:5},
-        headStyles:{fillColor:[30,90,180],textColor:255},
-        alternateRowStyles:{fillColor:[245,248,255]},
-    });
+        // Tithi & Yoga may be index-based — resolve to name
+        const safeStr = (v: any) => (typeof v === 'string' && /^[\x00-\x7F]*$/.test(v)) ? v : '';
+        const resolveIdx = (arr: string[]|undefined, v: any) => typeof v === 'number' ? (arr?.[v] || `#${v}`) : safeStr(v);
+        const tithiVal = resolveIdx(EN.panchang?.tithi, chart.panchang?.tithiId) || '—';
+        const yogaVal  = resolveIdx(EN.panchang?.yoga,  chart.panchang?.yogaId)  || '—';
+        const karanVal = resolveIdx(EN.panchang?.karan, chart.panchang?.karanaId)|| '—';
+        const varaVal  = resolveIdx(EN.panchang?.vara,  chart.panchang?.vara)  || '—';
+        autoTable(doc,{
+            startY:37, margin:{left:15},
+            head:[['Panchang Element','Value']],
+            body:[
+                ['Tithi (Lunar Day)', tithiVal],
+                ['Nakshatra (Birth Star)', nakshatraEn],
+                ['Yoga', yogaVal],
+                ['Karana', karanVal],
+                ['Vara (Weekday)', varaVal],
+                ['Sunrise', safeStr(chart.panchang?.sunrise) || '—'],
+                ['Sunset',  safeStr(chart.panchang?.sunset)  || '—'],
+            ],
+            styles:{fontSize:11,cellPadding:5},
+            headStyles:{fillColor:[30,90,180],textColor:255},
+            alternateRowStyles:{fillColor:[245,248,255]},
+        });
+    }
 
     // PAGES 4-7: Charts
     const chartDefs=[
