@@ -299,8 +299,9 @@ export default function KundliPage() {
                     </div>
 
                     {/* Report Section */}
-                    {chart ? (
-                        <div id="results" className="lg:col-span-8 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    {chart && (
+                        <>
+                            <div id="results" className="lg:col-span-8 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
                             {/* User Summary Card */}
                             <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl border border-white/10 relative overflow-hidden">
