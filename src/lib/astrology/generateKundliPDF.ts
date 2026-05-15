@@ -182,20 +182,19 @@ export async function generateKundliPDF(
             [ox+s-q*0.3,oy+s-q*0.3],//11 bottom-right
             [ox+3*q,oy+3*q],     // 12
         ];
-        // Correct simple positions for North Indian chart
         const hPos:Array<[number,number]> = [
-            [ox+h,    oy+h*0.45],    // H1  top
-            [ox+h*0.45,oy+h*0.45],  // H2  top-left
-            [ox+h*0.15,oy+h],       // H3  left
-            [ox+h*0.45,oy+h*1.55],  // H4  bottom-left
-            [ox+h,    oy+h*1.55],   // H5  bottom
-            [ox+h*1.55,oy+h*1.55],  // H6  bottom-right
-            [ox+h*1.85,oy+h],       // H7  right
-            [ox+h*1.55,oy+h*0.45],  // H8  top-right
-            [ox+h*1.85,oy+h*0.15],  // H9  top-right corner
-            [ox+h*1.55,oy+h],       // H10 right-center
-            [ox+h*1.85,oy+h*1.85],  // H11 bottom-right corner
-            [ox+h*0.45,oy+h*0.15],  // H12 top-left corner
+            [ox+h,      oy+q],         // H1
+            [ox+q,      oy+s*0.1],     // H2
+            [ox+s*0.1,  oy+q],         // H3
+            [ox+q,      oy+h],         // H4
+            [ox+s*0.1,  oy+s*0.75],    // H5
+            [ox+q,      oy+s*0.9],     // H6
+            [ox+h,      oy+s*0.75],    // H7
+            [ox+s*0.75, oy+s*0.9],     // H8
+            [ox+s*0.9,  oy+s*0.75],    // H9
+            [ox+s*0.75, oy+h],         // H10
+            [ox+s*0.9,  oy+q],         // H11
+            [ox+s*0.75, oy+s*0.1],     // H12
         ];
         // Planet colors
         const pColors:Record<string,number[]> = {

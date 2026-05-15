@@ -5,6 +5,42 @@
 
 export const _SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
 
+import { SIGN_PREDICTIONS } from "./horoscope-data";
+
+export const generateDailyHoroscope = (sign: string, planets: any[], lang: string = 'en') => {
+    const today = new Date();
+    const seed = `${today.toLocaleDateString()}-${sign}`;
+    let h = 0xdeadbeef;
+    for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 2654435761);
+    const rand = ((h ^ h >>> 16) >>> 0) / 4294967296;
+
+    const data = SIGN_PREDICTIONS[sign]?.[(lang === 'hi' ? 'hi' : 'en') as 'en'|'hi'] || SIGN_PREDICTIONS[sign]?.en;
+    if (!data) return null;
+
+    const pick = (arr: string[]) => arr[Math.floor(rand * arr.length)] || "";
+    
+    const moon = planets?.find(p => p.name === "Moon");
+    const moonSignStr = moon ? _SIGNS[moon.signId - 1] : "";
+    
+    const transitInfo = lang === 'hi' ? `चन्द्रमा गोचर: ${moonSignStr}` : `Moon Transit: ${moonSignStr}`;
+    const colors = lang === 'hi' ? ["लाल", "सफ़ेद", "पीला", "हरा", "नीला", "गुलाबी", "नारंगी"] : ["Red", "White", "Yellow", "Green", "Blue", "Pink", "Orange"];
+    
+    return {
+        positive: pick(data.personal),
+        negative: lang === 'hi' ? "तनाव और जल्दबाजी से बचें।" : "Avoid stress and haste today.",
+        career: pick(data.career),
+        health: pick(data.health),
+        love: pick(data.love),
+        luckyNumber: Math.floor(rand * 9) + 1,
+        luckyColor: pick(colors),
+        labels: {
+            color: lang === 'hi' ? "शुभ रंग" : "Lucky Color",
+            number: lang === 'hi' ? "शुभ अंक" : "Lucky Number"
+        },
+        transitInfo
+    };
+};
+
 const _INTL: any = {
     en: {
         manglikBalanced: "Both are Manglik, so the dosha is balanced.",

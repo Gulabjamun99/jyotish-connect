@@ -392,7 +392,7 @@ export default function KundliMatchingPage() {
             {result && (
                 <div 
                     ref={pdfContentRef}
-                    className="fixed -left-[9999px] top-0 bg-white p-10 text-slate-900 w-[800px] leading-relaxed"
+                    className="absolute left-0 top-0 w-[800px] bg-white p-10 text-slate-900 opacity-0 pointer-events-none -z-50 leading-relaxed"
                 >
                     {/* Page 1: Overview & Score */}
                     <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-orange-500/10">
