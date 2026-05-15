@@ -239,14 +239,20 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
 
         // Check if all planets (except Rahu/Ketu) are on one side
         const planetsToCheck = planetsWithVaisheshika.filter(p => p.name !== "Rahu" && p.name !== "Ketu" && p.name !== "Asc");
-        const allOneSide = planetsToCheck.every(p => {
+        
+        const allRahuToKetu = planetsToCheck.every(p => {
             const diff = (p.longitude - rahuLong + 360) % 360;
             return diff < 180;
         });
 
-        isKaalSarp = allOneSide;
+        const allKetuToRahu = planetsToCheck.every(p => {
+            const diff = (p.longitude - rahuLong + 360) % 360;
+            return diff > 180;
+        });
+
+        isKaalSarp = allRahuToKetu || allKetuToRahu;
         if (isKaalSarp) {
-            kaalSarpDesc = "Kaal Sarp Dosha is present. All planets are positioned between Rahu and Ketu, which may cause obstacles and delays in life.";
+            kaalSarpDesc = "Kaal Sarp Dosha is present. All planets are positioned on one side of the Rahu-Ketu axis, which may cause obstacles and delays in life.";
         }
     }
 

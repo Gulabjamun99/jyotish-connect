@@ -43,13 +43,13 @@ export const YONI_COMPATIBILITY: Record<string, Record<string, number>> = {
 };
 
 export const LORD_FRIENDSHIP: Record<string, Record<string, number>> = {
-    "Sun": { "Sun": 5, "Moon": 5, "Mars": 5, "Mercury": 4, "Jupiter": 5, "Venus": 0, "Saturn": 0 },
-    "Moon": { "Sun": 5, "Moon": 5, "Mars": 4, "Mercury": 5, "Jupiter": 4, "Venus": 0.5, "Saturn": 0.5 },
-    "Mars": { "Sun": 5, "Moon": 5, "Mars": 5, "Mercury": 0, "Jupiter": 5, "Venus": 3, "Saturn": 3 },
-    "Mercury": { "Sun": 4, "Moon": 1, "Mars": 4, "Mercury": 5, "Jupiter": 4, "Venus": 5, "Saturn": 5 },
-    "Jupiter": { "Sun": 5, "Moon": 5, "Mars": 5, "Mercury": 0.5, "Jupiter": 5, "Venus": 0.5, "Saturn": 3 },
-    "Venus": { "Sun": 0, "Moon": 0.5, "Mars": 3, "Mercury": 5, "Jupiter": 0.5, "Venus": 5, "Saturn": 5 },
-    "Saturn": { "Sun": 0, "Moon": 0, "Mars": 0, "Mercury": 5, "Jupiter": 3, "Venus": 5, "Saturn": 5 }
+    "Sun":     { "Sun": 5, "Moon": 5,   "Mars": 5,   "Mercury": 4,   "Jupiter": 5,   "Venus": 0,   "Saturn": 0   },
+    "Moon":    { "Sun": 5, "Moon": 5,   "Mars": 4,   "Mercury": 1,   "Jupiter": 4,   "Venus": 0.5, "Saturn": 0.5 },
+    "Mars":    { "Sun": 5, "Moon": 4,   "Mars": 5,   "Mercury": 0.5, "Jupiter": 5,   "Venus": 3,   "Saturn": 0.5 },
+    "Mercury": { "Sun": 4, "Moon": 1,   "Mars": 0.5, "Mercury": 5,   "Jupiter": 0.5, "Venus": 5,   "Saturn": 4   },
+    "Jupiter": { "Sun": 5, "Moon": 4,   "Mars": 5,   "Mercury": 0.5, "Jupiter": 5,   "Venus": 0.5, "Saturn": 3   },
+    "Venus":   { "Sun": 0, "Moon": 0.5, "Mars": 3,   "Mercury": 5,   "Jupiter": 0.5, "Venus": 5,   "Saturn": 5   },
+    "Saturn":  { "Sun": 0, "Moon": 0.5, "Mars": 0.5, "Mercury": 4,   "Jupiter": 3,   "Venus": 5,   "Saturn": 5   }
 };
 
 export const SIGN_LORDS = [

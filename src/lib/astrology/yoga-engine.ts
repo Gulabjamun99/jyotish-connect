@@ -44,7 +44,7 @@ export function detectYogas(planets: any[], houses: any[]): Yoga[] {
 
     // 3. Panch Mahapurusha Yogas (Mars, Mercury, Jupiter, Venus, Saturn in Kendra and Own/Exalted sign)
     const kendras = [1, 4, 7, 10];
-    const EXALTATIONS: Record<string, number> = { "Sun": 1, "Moon": 4, "Mars": 10, "Mercury": 6, "Jupiter": 4, "Venus": 12, "Saturn": 7 };
+    const EXALTATIONS: Record<string, number> = { "Sun": 1, "Moon": 2, "Mars": 10, "Mercury": 6, "Jupiter": 4, "Venus": 12, "Saturn": 7 };
     const OWN_SIGNS: Record<string, number[]> = { "Sun": [5], "Moon": [4], "Mars": [1, 8], "Mercury": [3, 6], "Jupiter": [9, 12], "Venus": [2, 7], "Saturn": [10, 11] };
 
     // Function to check Kendra and Strength

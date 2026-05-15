@@ -36,9 +36,12 @@ export function calculateGuna(boyMoon: any, girlMoon: any) {
     ashtakoot.vashya.score = boyMoon.signId === girlMoon.signId ? 2 : 1;
 
     // 3. Tara (3 points)
-    const taraDiff = (girlMoon.nakshatraId - boyMoon.nakshatraId + 27) % 9;
-    if ([1, 2, 4, 6, 8, 0].includes(taraDiff % 9)) ashtakoot.tara.score = 3;
-    else ashtakoot.tara.score = 1.5;
+    const isAuspiciousTara = (diff: number) => [1, 2, 4, 6, 8, 0].includes(diff % 9);
+    const bToG = (girlMoon.nakshatraId - boyMoon.nakshatraId + 27) % 9;
+    const gToB = (boyMoon.nakshatraId - girlMoon.nakshatraId + 27) % 9;
+    if (isAuspiciousTara(bToG) && isAuspiciousTara(gToB)) ashtakoot.tara.score = 3;
+    else if (isAuspiciousTara(bToG) || isAuspiciousTara(gToB)) ashtakoot.tara.score = 1.5;
+    else ashtakoot.tara.score = 0;
 
     // 4. Yoni (4 points)
     const bYoni = YONI_TABLE[boyMoon.nakshatra];
