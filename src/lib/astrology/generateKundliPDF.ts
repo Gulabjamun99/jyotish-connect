@@ -41,7 +41,8 @@ export async function generateKundliPDF(
     imgs: {
         d1?:string|null; d9?:string|null; moon?:string|null; d10?:string|null;
         planets?:string|null; birth?:string|null; dasha?:string|null; ashtak?:string|null;
-        pCareer?:string|null; pHealth?:string|null; pLove?:string|null; pWealth?:string|null;
+        doshas?:string|null;
+        pCareer?:string|null; pHealth?:string|null; pLove?:string|null; pWealth?:string|null; pEdu?:string|null;
     }
 ) {
     // Always use English for PDF text (jsPDF Helvetica cannot render Devanagari/Tamil/Telugu etc.)
