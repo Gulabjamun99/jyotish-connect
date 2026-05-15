@@ -141,7 +141,27 @@ export default function KundliPage() {
                 if (!svgEl) return null;
                 const clone = svgEl.cloneNode(true) as SVGSVGElement;
                 clone.setAttribute('width', '600'); clone.setAttribute('height', '600');
-                const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' }));
+                const svgData = new XMLSerializer().serializeToString(clone);
+                const canvas = document.createElement('canvas');
+                canvas.width = 600; canvas.height = 600;
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+                return new Promise((resolve) => {
+                    img.onload = () => {
+                        ctx?.drawImage(img, 0, 0);
+                        URL.revokeObjectURL(url);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.src = url;
+                });
+            } catch (e) {
+                console.error("SVG Capture failed:", e);
+                return null;
+            }
+        };
+
         const captureImage = async (id: string) => {
             const el = document.getElementById(id);
             if (!el) return null;
