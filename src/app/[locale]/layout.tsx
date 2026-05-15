@@ -126,14 +126,6 @@ export default async function SelectedLocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${notoSans.variable} ${notoDevanagari.variable} ${notoBengali.variable} ${notoTamil.variable} ${notoTelugu.variable} ${notoKannada.variable} ${notoGujarati.variable} ${selectedFont} antialiased font-sans`}
       >
-        <style jsx global>{`
-          :root {
-            --font-main: ${selectedFont ? `var(${selectedFont})` : 'var(--font-geist-sans)'};
-          }
-          body {
-            font-family: var(--font-main), ui-sans-serif, system-ui, sans-serif !important;
-          }
-        `}</style>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="class"
