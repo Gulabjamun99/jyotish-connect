@@ -445,3 +445,4 @@ export const generateDetailedKundliReport = (chart: any, lang: string = "en") =>
         ashtakvarga: chart.ashtakvarga || { sarva: [28, 30, 25, 32, 28, 27, 30, 22, 25, 28, 30, 28] }
     };
 };
+export const generateAIPredictions = generateLifePredictions;

@@ -17,6 +17,7 @@ import { LocationInput } from "@/components/kundli/LocationInput";
 // ... imports
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
 import { generateFullMatchAnalysis } from "@/lib/astrology/prediction-engine";
+import { LagnaChart } from "@/components/kundli/LagnaChart";
 
 // ... imports
 type PersonDetails = {
@@ -40,6 +41,8 @@ export default function KundliMatchingPage() {
     const [detailedReport, setDetailedReport] = useState<any>(null);
     const [activeTab, setActiveTab] = useState("overview");
     const pdfContentRef = useRef<HTMLDivElement>(null);
+    const pdfBoyChartRef = useRef<HTMLDivElement>(null);
+    const pdfGirlChartRef = useRef<HTMLDivElement>(null);
 
     const handleMatch = async () => {
         if (!boy.name || !boy.dob || !girl.name || !girl.dob) {
@@ -89,7 +92,11 @@ export default function KundliMatchingPage() {
                 boyDasha: matchResult.boy.dasha,
                 girlDasha: matchResult.girl.dasha,
                 boyPlanets: matchResult.boy.planets,
-                girlPlanets: matchResult.girl.planets
+                girlPlanets: matchResult.girl.planets,
+                boyChart: matchResult.boy.charts,
+                girlChart: matchResult.girl.charts,
+                boyAscendant: matchResult.boy.ascendantLongitude,
+                girlAscendant: matchResult.girl.ascendantLongitude
             });
 
             toast.success(t("calculationSuccess"));
@@ -138,14 +145,33 @@ export default function KundliMatchingPage() {
             const pageWidth = 210;
             const pageHeight = 297;
             
-            const [overviewImg, detailsImg, analysisImg] = await Promise.all([
+            const [overviewImg, detailsImg, analysisImg, boyChartImg, girlChartImg] = await Promise.all([
                 captureSection("pdf-match-overview"),
                 captureSection("pdf-match-details"),
-                captureSection("pdf-match-findings")
+                captureSection("pdf-match-findings"),
+                captureSection("pdf-boy-chart"),
+                captureSection("pdf-girl-chart")
             ]);
 
             if (overviewImg) {
                 doc.addImage(overviewImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+            }
+
+            if (boyChartImg && girlChartImg) {
+                doc.addPage();
+                doc.setFillColor(15, 15, 35); doc.rect(0, 0, 210, 297, 'F');
+                doc.setFontSize(22); doc.setTextColor(249, 115, 22); doc.setFont('helvetica', 'bold');
+                doc.text(locale === 'hi' ? "जन्म कुंडली तुलना" : "Birth Chart Comparison", 105, 30, { align: 'center' });
+                
+                doc.addImage(boyChartImg, 'PNG', 10, 50, 90, 90);
+                doc.setFontSize(14); doc.setTextColor(255, 255, 255);
+                doc.text(result.boy, 55, 145, { align: 'center' });
+                doc.setFontSize(10); doc.text(locale === 'hi' ? "(वर की कुंडली)" : "(Boy's Chart)", 55, 152, { align: 'center' });
+
+                doc.addImage(girlChartImg, 'PNG', 110, 50, 90, 90);
+                doc.setFontSize(14); doc.setTextColor(255, 255, 255);
+                doc.text(result.girl, 155, 145, { align: 'center' });
+                doc.setFontSize(10); doc.text(locale === 'hi' ? "(वधू की कुंडली)" : "(Girl's Chart)", 155, 152, { align: 'center' });
             }
 
             if (detailsImg) {
@@ -414,9 +440,15 @@ export default function KundliMatchingPage() {
             {result && (
                 <div 
                     ref={pdfContentRef}
-                    className="absolute opacity-0 pointer-events-none -z-50 leading-relaxed bg-white"
-                    style={{ width: '800px', top: '0', left: '0' }}
+                    className="fixed -left-[9999px] top-0 leading-relaxed bg-white"
+                    style={{ width: '800px' }}
                 >
+                    <div id="pdf-boy-chart" ref={pdfBoyChartRef} className="bg-white p-8">
+                        <LagnaChart chart={result.boyChart?.D1 || {}} planets={result.boyPlanets} ascendant={result.boyAscendant} title={`${result.boy} (Boy)`} subTitle="D1 Chart" />
+                    </div>
+                    <div id="pdf-girl-chart" ref={pdfGirlChartRef} className="bg-white p-8">
+                        <LagnaChart chart={result.girlChart?.D1 || {}} planets={result.girlPlanets} ascendant={result.girlAscendant} title={`${result.girl} (Girl)`} subTitle="D1 Chart" />
+                    </div>
                     {/* Page 1: Overview & Score */}
                     <div id="pdf-match-overview" className="p-10 mb-20 bg-white min-h-[1100px] border-8 border-orange-500/10">
                         <div className="flex justify-between items-center border-b-4 border-orange-500 pb-6 mb-10">

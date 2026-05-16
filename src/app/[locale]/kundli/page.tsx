@@ -141,29 +141,20 @@ export default function KundliPage() {
         if (!chart) return;
         toast.loading("Generating Premium Report...", { id: "pdf-gen" });
 
-        const captureSvg = async (ref: React.RefObject<HTMLDivElement | null>): Promise<string | null> => {
+        const captureChart = async (ref: React.RefObject<HTMLDivElement | null>) => {
+            const el = ref.current;
+            if (!el) return null;
             try {
-                const svgEl = ref.current?.querySelector('svg');
-                if (!svgEl) return null;
-                const clone = svgEl.cloneNode(true) as SVGSVGElement;
-                clone.setAttribute('width', '600'); clone.setAttribute('height', '600');
-                const svgData = new XMLSerializer().serializeToString(clone);
-                const canvas = document.createElement('canvas');
-                canvas.width = 600; canvas.height = 600;
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                const url = URL.createObjectURL(svgBlob);
-                return new Promise((resolve) => {
-                    img.onload = () => {
-                        ctx?.drawImage(img, 0, 0);
-                        URL.revokeObjectURL(url);
-                        resolve(canvas.toDataURL('image/png'));
-                    };
-                    img.src = url;
+                const canvas = await html2canvas(el, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: true,
+                    backgroundColor: "#ffffff",
+                    windowWidth: 800
                 });
+                return canvas.toDataURL('image/png');
             } catch (e) {
-                console.error("SVG Capture failed:", e);
+                console.error("Chart capture failed:", e);
                 return null;
             }
         };
@@ -192,8 +183,8 @@ export default function KundliPage() {
         toast.loading("Rendering High-Fidelity Report...", { id: "pdf-gen" });
 
         const [d1Img, d9Img, moonImg, d10Img, planetsImg, birthImg, dashaImg, ashtakImg, doshasImg, pCareer, pHealth, pLove, pWealth, pEdu] = await Promise.all([
-            captureSvg(pdfLagnaRef), captureSvg(pdfD9Ref),
-            captureSvg(pdfMoonRef), captureSvg(pdfD10Ref),
+            captureChart(pdfLagnaRef), captureChart(pdfD9Ref),
+            captureChart(pdfMoonRef), captureChart(pdfD10Ref),
             captureImage("pdf-planets"),
             captureImage("pdf-birth-details"),
             captureImage("pdf-dasha-detailed"),
@@ -801,17 +792,17 @@ export default function KundliPage() {
                 >
                     {/* Hidden Charts for PDF Capture */}
                     <div className="hidden-charts-for-pdf">
-                        <div ref={pdfLagnaRef} style={{ width: '600px', height: '600px' }}>
-                            <LagnaChart chart={chart.charts?.D1 || {}} planets={chart.planets} ascendant={chart.ascendantLongitude} />
+                        <div ref={pdfLagnaRef} className="bg-white p-4" style={{ width: '600px' }}>
+                            <LagnaChart chart={chart.charts?.D1 || {}} planets={chart.planets} ascendant={chart.ascendantLongitude} title="Lagna Chart" subTitle="D1" />
                         </div>
-                        <div ref={pdfD9Ref} style={{ width: '600px', height: '600px' }}>
-                            <LagnaChart chart={chart.charts?.D9 || {}} planets={chart.planets} ascendant={chart.d9Ascendant} />
+                        <div ref={pdfD9Ref} className="bg-white p-4" style={{ width: '600px' }}>
+                            <LagnaChart chart={chart.charts?.D9 || {}} planets={chart.planets} ascendant={chart.d9Ascendant} title="Navamsa Chart" subTitle="D9" />
                         </div>
-                        <div ref={pdfMoonRef} style={{ width: '600px', height: '600px' }}>
-                            <LagnaChart chart={chart.charts?.Moon || {}} planets={chart.planets} ascendant={chart.moonLongitude} />
+                        <div ref={pdfMoonRef} className="bg-white p-4" style={{ width: '600px' }}>
+                            <LagnaChart chart={chart.charts?.Moon || {}} planets={chart.planets} ascendant={chart.moonLongitude} title="Moon Chart" subTitle="Chandra" />
                         </div>
-                        <div ref={pdfD10Ref} style={{ width: '600px', height: '600px' }}>
-                            <LagnaChart chart={chart.charts?.D10 || {}} planets={chart.planets} ascendant={chart.d10Ascendant} />
+                        <div ref={pdfD10Ref} className="bg-white p-4" style={{ width: '600px' }}>
+                            <LagnaChart chart={chart.charts?.D10 || {}} planets={chart.planets} ascendant={chart.d10Ascendant} title="Dasamsa Chart" subTitle="D10" />
                         </div>
                     </div>
                     {/* Page: Predictions */}
