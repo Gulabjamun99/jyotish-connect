@@ -129,7 +129,7 @@ export default async function SelectedLocaleLayout({
         <meta name="theme-color" content="#0ea5e9" />
       </head>
       <body className={bodyClasses}>
-        <ClientWrapper messages={messages}>
+        <ClientWrapper messages={messages} locale={locale}>
           {children}
         </ClientWrapper>
       </body>
