@@ -13,11 +13,7 @@ import {
 
 import "./globals.css";
 
-import { AuthProvider } from "@/context/AuthContext";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-// import { EnvVarChecker } from "@/components/debug/EnvVarChecker"; // Import added
-import { Toaster } from "react-hot-toast";
-import { HelpChatWidget } from "@/components/support/HelpChatWidget";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -82,7 +78,7 @@ export const metadata: Metadata = {
   description: "Connect with expert astrologers for personalized readings, Kundli matching, and more.",
 };
 
-import { NextIntlClientProvider } from "next-intl";
+import { ClientWrapper } from "@/components/providers/ClientWrapper";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -105,7 +101,8 @@ export default async function SelectedLocaleLayout({
   // Providing all messages to the client
   const messages = await getMessages();
 
-  const localeFonts: Record<string, string> = {
+  // Map of fonts to variables
+  const fontVars: Record<string, string> = {
     hi: notoDevanagari.variable,
     mr: notoDevanagari.variable,
     bn: notoBengali.variable,
@@ -115,7 +112,15 @@ export default async function SelectedLocaleLayout({
     gu: notoGujarati.variable,
   };
 
-  const selectedFont = localeFonts[locale] || "";
+  // Only include fonts needed for the current locale + base fonts
+  const activeFontVar = fontVars[locale] || "";
+  const bodyClasses = [
+    geistSans.variable,
+    geistMono.variable,
+    notoSans.variable,
+    activeFontVar,
+    "antialiased font-sans"
+  ].filter(Boolean).join(" ");
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -123,23 +128,10 @@ export default async function SelectedLocaleLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0ea5e9" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSans.variable} ${notoDevanagari.variable} ${notoBengali.variable} ${notoTamil.variable} ${notoTelugu.variable} ${notoKannada.variable} ${notoGujarati.variable} ${selectedFont} antialiased font-sans`}
-      >
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            forcedTheme="dark"
-            disableTransitionOnChange
-          >
-            <AuthProvider>
-              {children}
-              <Toaster position="bottom-right" />
-              <HelpChatWidget />
-            </AuthProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
+      <body className={bodyClasses}>
+        <ClientWrapper messages={messages}>
+          {children}
+        </ClientWrapper>
       </body>
     </html>
   );
