@@ -138,9 +138,6 @@ export default function KundliMatchingPage() {
                             if (el) {
                                 el.style.opacity = '1';
                                 el.style.visibility = 'visible';
-                                el.style.display = 'block';
-                            }
-                        }
                     });
                     return canvas.toDataURL('image/png', 1.0);
                 } catch (e) {
@@ -152,6 +149,11 @@ export default function KundliMatchingPage() {
             const doc = new jsPDF('p', 'mm', 'a4');
             const pageWidth = 210;
             const pageHeight = 297;
+
+            toast.loading(locale === 'hi' ? "रिपोर्ट तैयार की जा रही है..." : "Capturing Report Sections...", { id: "pdf-match" });
+            
+            // Critical: Wait for elements to settle in the hidden container
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             const [overviewImg, detailsImg, analysisImg, boyChartImg, girlChartImg] = await Promise.all([
                 captureSection("pdf-match-overview"),

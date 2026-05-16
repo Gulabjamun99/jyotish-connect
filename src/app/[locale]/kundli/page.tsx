@@ -192,6 +192,9 @@ export default function KundliPage() {
 
         toast.loading("Rendering High-Fidelity Report...", { id: "pdf-gen" });
 
+        // Give extra time for charts and hidden sections to fully render
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const [d1Img, d9Img, moonImg, d10Img, planetsImg, birthImg, dashaImg, ashtakImg, doshasImg, pCareer, pHealth, pLove, pWealth, pEdu] = await Promise.all([
             captureChart(pdfLagnaRef), captureChart(pdfD9Ref),
             captureChart(pdfMoonRef), captureChart(pdfD10Ref),
