@@ -130,9 +130,17 @@ export default function KundliMatchingPage() {
                         scale: 2,
                         useCORS: true,
                         backgroundColor: "#ffffff",
-                        logging: true,
+                        logging: false,
                         allowTaint: true,
-                        windowWidth: 800
+                        windowWidth: 800,
+                        onclone: (doc) => {
+                            const el = doc.getElementById(elementId);
+                            if (el) {
+                                el.style.opacity = '1';
+                                el.style.visibility = 'visible';
+                                el.style.display = 'block';
+                            }
+                        }
                     });
                     return canvas.toDataURL('image/png', 1.0);
                 } catch (e) {

@@ -166,12 +166,22 @@ export default function KundliPage() {
                 return null;
             }
             try {
+                // Scroll into view briefly if needed or wait for potential layout shifts
                 const canvas = await html2canvas(el, { 
                     scale: 2, 
                     useCORS: true, 
-                    logging: true,
+                    logging: false, // Cleaner logs
                     backgroundColor: "#ffffff",
-                    windowWidth: 800
+                    windowWidth: 800,
+                    onclone: (doc) => {
+                        // Ensure cloned element is visible
+                        const clonedEl = doc.getElementById(id);
+                        if (clonedEl) {
+                            clonedEl.style.opacity = '1';
+                            clonedEl.style.visibility = 'visible';
+                            clonedEl.style.display = 'block';
+                        }
+                    }
                 });
                 return canvas.toDataURL('image/png');
             } catch (e) {
@@ -189,7 +199,7 @@ export default function KundliPage() {
             captureImage("pdf-birth-details"),
             captureImage("pdf-dasha-detailed"),
             captureImage("pdf-ashtakvarga"),
-            captureImage("pdf-doshas"),
+            captureImage("pdf-doshas-detailed"),
             captureImage("pdf-pred-career"),
             captureImage("pdf-pred-health"),
             captureImage("pdf-pred-marriage"),
