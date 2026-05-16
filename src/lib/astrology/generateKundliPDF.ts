@@ -48,8 +48,7 @@ export async function generateKundliPDF(
     // Always use English for PDF text (jsPDF Helvetica cannot render Devanagari/Tamil/Telugu etc.)
     // Locale is used only for the language label on the cover page.
     const langLabel = LOCALE_NAMES[locale] || 'English';
-    const maha = chart.dasha?.currentLords?.[0] || 'Sun';
-    const antar = chart.dasha?.currentLords?.[1] || 'Sun';
+
     // Use English nakshatra name (not locale-translated which garbles in PDF)
     const nakshatraEn = chart.nakshatra_en || chart.nakshatra || '—';
     const doc = new jsPDF('p','mm','a4');
