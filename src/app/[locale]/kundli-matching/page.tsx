@@ -136,9 +136,11 @@ export default function KundliMatchingPage() {
                         onclone: (doc) => {
                             const el = doc.getElementById(elementId);
                             if (el) {
-                                el.style.opacity = '1';
-                                el.style.visibility = 'visible';
+                                el.style.display = 'block';
+                            }
+                        }
                     });
+
                     return canvas.toDataURL('image/png', 1.0);
                 } catch (e) {
                     console.error(`Failed to capture section ${elementId}:`, e);
