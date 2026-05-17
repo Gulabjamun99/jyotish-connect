@@ -16,7 +16,7 @@ import { LocationInput } from "@/components/kundli/LocationInput";
 // import { calculatePlanets, calculateGunMilan, calculatePanchang } from "@/lib/astrology/calculator";
 // ... imports
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
-import { generateFullMatchAnalysis } from "@/lib/astrology/prediction-engine";
+import { generateFullMatchAnalysis, generateDetailedMatchingReport } from "@/lib/astrology/prediction-engine";
 import { LagnaChart } from "@/components/kundli/LagnaChart";
 
 // ... imports
@@ -77,8 +77,13 @@ export default function KundliMatchingPage() {
             if (!response.ok) throw new Error("API failure");
             const matchResult = await response.json();
 
-            const report = generateFullMatchAnalysis(matchResult, locale);
-            setDetailedReport(report);
+            const fullReport = generateFullMatchAnalysis(matchResult, locale);
+            const detailedReportPart = generateDetailedMatchingReport(matchResult, locale);
+            const mergedReport = {
+                ...fullReport,
+                ...detailedReportPart
+            };
+            setDetailedReport(mergedReport);
 
             setResult({
                 boy: boy.name,

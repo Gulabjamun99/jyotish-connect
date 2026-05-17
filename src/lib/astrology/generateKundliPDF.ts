@@ -466,6 +466,7 @@ export async function generateKundliPDF(
     }
 
     // PAGES 12+: Life Predictions
+    let predY = 40;
     if (imgs.pCareer || imgs.pHealth || imgs.pLove || imgs.pWealth || imgs.pEdu) {
         if (imgs.pCareer) { doc.addPage(); doc.addImage(imgs.pCareer, 'PNG', 0, 0, 210, 297); }
         if (imgs.pHealth) { doc.addPage(); doc.addImage(imgs.pHealth, 'PNG', 0, 0, 210, 297); }
@@ -478,7 +479,7 @@ export async function generateKundliPDF(
         
         doc.addPage(); H(doc,'Life Predictions',12,TP);
         ST(doc,'Life Area Predictions',32,79,70,229);
-        let predY = 40;
+        predY = 40;
         
         predEntries.forEach(([area, text]: any) => {
             const label = (EN.labels?.life_predictions as any)?.[area] || area;
