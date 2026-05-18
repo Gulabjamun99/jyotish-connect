@@ -70,8 +70,8 @@ export function Sarvagya({ userData }: SarvagyaProps) {
     // Check if user has provided all birth details in conversation
     const extractAndCheckDetails = (allMessages: Message[]) => {
         const conversationText = allMessages.map(m => m.content).join(" ");
-        // Simple heuristic checks — if DOB pattern found (dd/mm/yyyy or similar), mark complete
-        const hasDOB = /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}\b/.test(conversationText);
+        // Simple heuristic checks — if DOB pattern found (dd/mm/yyyy, 8-digit string, or similar), mark complete
+        const hasDOB = /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}\b/.test(conversationText) || /\b\d{8}\b/.test(conversationText);
         const hasTime = /\b\d{1,2}:\d{2}\s*(am|pm|AM|PM)?\b/.test(conversationText);
         const hasPlace = conversationText.toLowerCase().includes("born in") || 
                         conversationText.toLowerCase().includes("birth place") ||
@@ -85,10 +85,20 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         const text = allMessages.map(m => m.content).join(" ");
         const details: BirthDetails = { ...birthDetails };
 
-        // 1. DOB extraction (DD/MM/YYYY or DD-MM-YYYY)
+        // 1. DOB extraction (DD/MM/YYYY or DD-MM-YYYY or DDMMYYYY)
         const dobMatch = text.match(/\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\b/);
         if (dobMatch) {
             details.dob = `${dobMatch[3]}-${dobMatch[2].padStart(2, '0')}-${dobMatch[1].padStart(2, '0')}`;
+        } else {
+            const digitsMatch = text.match(/\b(\d{2})(\d{2})(\d{4})\b/);
+            if (digitsMatch) {
+                const d = parseInt(digitsMatch[1]);
+                const m = parseInt(digitsMatch[2]);
+                const y = parseInt(digitsMatch[3]);
+                if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+                    details.dob = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                }
+            }
         }
 
         // 2. TOB extraction (HH:MM or HH:MM AM/PM)
@@ -116,11 +126,24 @@ export function Sarvagya({ userData }: SarvagyaProps) {
             details.place = placeMatch[1].trim();
         }
 
-        // 5. Fallback for comma separated details like "Renu, 19-06-1998, time 23:20 pm, jamshedpur"
+        // 5. Fallback for comma separated details like "Renu, 19061998, 23:20, jamshedpur"
         const commaParts = text.split(',');
         if (commaParts.length >= 4) {
             if (!details.name) details.name = commaParts[0].trim();
             
+            // Look for date in parts
+            commaParts.forEach((part) => {
+                const trimmed = part.trim();
+                if (/^\d{8}$/.test(trimmed)) {
+                    const d = parseInt(trimmed.substring(0, 2));
+                    const m = parseInt(trimmed.substring(2, 4));
+                    const y = parseInt(trimmed.substring(4, 8));
+                    if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+                        details.dob = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    }
+                }
+            });
+
             // Check place in last parts
             const lastPart = commaParts[commaParts.length - 1].trim();
             if (lastPart && !lastPart.includes("time") && !lastPart.includes("am") && !lastPart.includes("pm") && !/\d/.test(lastPart)) {
