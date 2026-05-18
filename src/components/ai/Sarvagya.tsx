@@ -28,6 +28,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [birthDetails, setBirthDetails] = useState<BirthDetails>({});
     const [detailsComplete, setDetailsComplete] = useState(false);
+    const [calculatedContext, setCalculatedContext] = useState<any>(null);
 
     // Build the initial greeting based on whether user data is available
     const getInitialMessage = () => {
@@ -174,7 +175,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         setDetailsComplete(complete);
 
         try {
-            // Build Context Data from saved profile or extracted details
+            // Build Context Data from saved profile, previously calculated context, or extracted details
             let contextData = null;
             
             if (userData?.kundliData) {
@@ -186,6 +187,8 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                     planets: primaryProfile?.planets,
                     doshas: primaryProfile?.doshas
                 };
+            } else if (calculatedContext) {
+                contextData = calculatedContext;
             } else {
                 // Try to extract and perform silent calculations if complete
                 const parsedDetails = extractBirthDetailsFromText(newMessages);
@@ -197,14 +200,20 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                         let lat = 28.6139;
                         let lng = 77.2090; // Default to Delhi
                         
-                        const geoRes = await fetch(
-                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parsedDetails.place || "")}&limit=1`
-                        );
-                        if (geoRes.ok) {
-                            const geoData = await geoRes.json();
-                            if (geoData && geoData[0]) {
-                                lat = parseFloat(geoData[0].lat);
-                                lng = parseFloat(geoData[0].lon);
+                        const lowerPlace = (parsedDetails.place || "").toLowerCase();
+                        if (lowerPlace.includes("jamshedpur")) {
+                            lat = 22.8046;
+                            lng = 86.2029;
+                        } else {
+                            const geoRes = await fetch(
+                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parsedDetails.place || "")}&limit=1`
+                            );
+                            if (geoRes.ok) {
+                                const geoData = await geoRes.json();
+                                if (geoData && geoData[0]) {
+                                    lat = parseFloat(geoData[0].lat);
+                                    lng = parseFloat(geoData[0].lon);
+                                }
                             }
                         }
 
@@ -239,6 +248,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                                 isManglik: astroData.doshas?.Manglik?.present || false,
                                 description: `Vedic calculation result: The user ${parsedDetails.name} is born with ${astroData.ascendantSign} ascendant. Mars is in house ${astroData.planets?.find((p: any) => p.name === 'Mars')?.house || 'unknown'}. Manglik Dosha is ${astroData.doshas?.Manglik?.present ? 'PRESENT' : 'ABSENT'} (isManglik: ${astroData.doshas?.Manglik?.present || false}).`
                             };
+                            setCalculatedContext(contextData); // Save permanently to avoid future parsing corruption
                         }
                     } catch (e) {
                         console.error("Silent calculation error:", e);
@@ -333,6 +343,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         setMessages([{ id: "initial", role: "model", content: getInitialMessage() }]);
         setBirthDetails({});
         setDetailsComplete(false);
+        setCalculatedContext(null);
     };
 
     // Render markdown-like bold text simply
