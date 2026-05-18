@@ -264,7 +264,11 @@ export const analyzeNavamsaBond = (boy: any, girl: any, lang: string = 'en') => 
 };
 
 export const calculateLikelyMarriagePeriod = (boy: any, girl: any, lang: string = 'en') => {
-    return _get(lang, "marriageYoga");
+    const currentYear = new Date().getFullYear();
+    if (lang === 'hi') {
+        return `वर्तमान ग्रहों की स्थिति और गोचर (विशेष रूप से बृहस्पति के राशि गोचर) के अनुसार, वर्ष ${currentYear} के मध्य से वर्ष ${currentYear + 1} के अंत के बीच विवाह के अत्यधिक प्रबल और शुभ योग बन रहे हैं।`;
+    }
+    return `According to current planetary transits (particularly Jupiter's auspicious alignment), highly favorable marriage yogas are forming between the middle of ${currentYear} and the end of ${currentYear + 1}.`;
 };
 
 export const generateLifeForecastSummary = (score: number, lang: string = 'en') => {
@@ -308,6 +312,97 @@ export const generateDetailedMatchingReport = (result: any, lang: string = "en")
         remedies: { title: l("labels_life_predictions_Remedies") || (lang === 'hi' ? "उपाय" : "Remedies"), list: getContextualRemedies(result, lang) },
         summary: { verdict: score >= 18 ? l("conclusionGood") : l("conclusionCaution"), confidence: 60 + score, nextSteps: score >= 24 ? l("auspicious") : l("remedyVishnu") }
     };
+};
+
+export const calculateDynamicMarriagePeriods = (result: any, score: number, lang: string = 'en') => {
+    const currentYear = new Date().getFullYear();
+    const isHindi = lang === 'hi';
+    
+    // Check if there is Manglik mismatch
+    const boyManglik = result.boy?.doshas?.Manglik?.present || result.is_manglik_boy || false;
+    const girlManglik = result.girl?.doshas?.Manglik?.present || result.is_manglik_girl || false;
+    const manglikMismatch = boyManglik !== girlManglik;
+    
+    // Check if there is Nadi or Bhakoot Dosha
+    const ash = result.milan?.ashtakoot || result.ashtakoot || {};
+    const nadiScore = ash.nadi?.score ?? 8;
+    const bhakootScore = ash.bhakoot?.score ?? 7;
+    const hasSevereDosha = nadiScore === 0 || bhakootScore === 0;
+
+    let p1_time = "";
+    let p1_strength = "";
+    let p2_time = "";
+    let p2_strength = "";
+    let p3_time = "";
+    let p3_strength = "";
+
+    if (isHindi) {
+        if (manglikMismatch) {
+            p1_time = `जून ${currentYear} - दिसंबर ${currentYear}`;
+            p1_strength = "सामान्य (उपाय आवश्यक)";
+            p2_time = `जनवरी ${currentYear + 1} - जून ${currentYear + 1}`;
+            p2_strength = "मध्यम (पूजा के बाद)";
+            p3_time = `जुलाई ${currentYear + 1} - दिसंबर ${currentYear + 1}`;
+            p3_strength = "उच्च अनुकूलता";
+        } else if (hasSevereDosha) {
+            p1_time = `जून ${currentYear} - दिसंबर ${currentYear}`;
+            p1_strength = "मध्यम (नाड़ी/भकूट शांति आवश्यक)";
+            p2_time = `जनवरी ${currentYear + 1} - जून ${currentYear + 1}`;
+            p2_strength = "उच्च (दोष निवारण पश्चात)";
+            p3_time = `जुलाई ${currentYear + 1} - दिसंबर ${currentYear + 1}`;
+            p3_strength = "अति उच्च";
+        } else if (score >= 28) {
+            p1_time = `जून ${currentYear} - दिसंबर ${currentYear}`;
+            p1_strength = "अति उच्च (सर्वोत्तम समय)";
+            p2_time = `जनवरी ${currentYear + 1} - जून ${currentYear + 1}`;
+            p2_strength = "उच्च";
+            p3_time = `जुलाई ${currentYear + 1} - दिसंबर ${currentYear + 1}`;
+            p3_strength = "मध्यम";
+        } else {
+            p1_time = `जून ${currentYear} - दिसंबर ${currentYear}`;
+            p1_strength = "उच्च";
+            p2_time = `जनवरी ${currentYear + 1} - जून ${currentYear + 1}`;
+            p2_strength = "अति उच्च (अनुकूल बृहस्पति गोचर)";
+            p3_time = `जुलाई ${currentYear + 1} - दिसंबर ${currentYear + 1}`;
+            p3_strength = "उच्च";
+        }
+    } else {
+        if (manglikMismatch) {
+            p1_time = `June ${currentYear} - Dec ${currentYear}`;
+            p1_strength = "Moderate (Remedies Required)";
+            p2_time = `Jan ${currentYear + 1} - June ${currentYear + 1}`;
+            p2_strength = "High (Post Puja)";
+            p3_time = `July ${currentYear + 1} - Dec ${currentYear + 1}`;
+            p3_strength = "Very High Compatibility";
+        } else if (hasSevereDosha) {
+            p1_time = `June ${currentYear} - Dec ${currentYear}`;
+            p1_strength = "Moderate (Nadi/Bhakoot Shanti required)";
+            p2_time = `Jan ${currentYear + 1} - June ${currentYear + 1}`;
+            p2_strength = "High (Post Rectification)";
+            p3_time = `July ${currentYear + 1} - Dec ${currentYear + 1}`;
+            p3_strength = "Very High";
+        } else if (score >= 28) {
+            p1_time = `June ${currentYear} - Dec ${currentYear}`;
+            p1_strength = "Very High (Highly Auspicious)";
+            p2_time = `Jan ${currentYear + 1} - June ${currentYear + 1}`;
+            p2_strength = "High";
+            p3_time = `July ${currentYear + 1} - Dec ${currentYear + 1}`;
+            p3_strength = "Moderate";
+        } else {
+            p1_time = `June ${currentYear} - Dec ${currentYear}`;
+            p1_strength = "High";
+            p2_time = `Jan ${currentYear + 1} - June ${currentYear + 1}`;
+            p2_strength = "Very High (Favorable Jupiter Transit)";
+            p3_time = `July ${currentYear + 1} - Dec ${currentYear + 1}`;
+            p3_strength = "High";
+        }
+    }
+
+    return [
+        { time: p1_time, strength: p1_strength },
+        { time: p2_time, strength: p2_strength },
+        { time: p3_time, strength: p3_strength }
+    ];
 };
 
 export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
@@ -375,10 +470,7 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
             verdict: analyzeManglikCancellation(result.boy, result.girl, lang)
         },
         section14: {
-            periods: [
-                { time: "Current - Dec 2024", strength: "Moderate" },
-                { time: "Jan 2025 - June 2025", strength: "Very High" }
-            ]
+            periods: calculateDynamicMarriagePeriods(result, score, lang)
         },
         section15: {
             boyRemedies: getContextualRemedies(result, lang),

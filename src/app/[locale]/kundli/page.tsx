@@ -195,30 +195,20 @@ export default function KundliPage() {
         // Give extra time for charts and hidden sections to fully render
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const [d1Img, d9Img, moonImg, d10Img, planetsImg, birthImg, dashaImg, ashtakImg, doshasImg, pCareer, pHealth, pLove, pWealth, pEdu] = await Promise.all([
+        const [d1Img, d9Img, moonImg, d10Img] = await Promise.all([
             captureChart(pdfLagnaRef), captureChart(pdfD9Ref),
-            captureChart(pdfMoonRef), captureChart(pdfD10Ref),
-            captureImage("pdf-planets"),
-            captureImage("pdf-birth-details"),
-            captureImage("pdf-dasha-detailed"),
-            captureImage("pdf-ashtakvarga"),
-            captureImage("pdf-doshas-detailed"),
-            captureImage("pdf-pred-career"),
-            captureImage("pdf-pred-health"),
-            captureImage("pdf-pred-marriage"),
-            captureImage("pdf-pred-wealth"),
-            captureImage("pdf-pred-edu")
+            captureChart(pdfMoonRef), captureChart(pdfD10Ref)
         ]);
 
         try {
             await generateKundliPDF(chart, formData, locale, { 
                 d1: d1Img, d9: d9Img, moon: moonImg, d10: d10Img,
-                planets: planetsImg,
-                birth: birthImg,
-                dasha: dashaImg,
-                ashtak: ashtakImg,
-                doshas: doshasImg,
-                pCareer, pHealth, pLove, pWealth, pEdu
+                planets: undefined,
+                birth: undefined,
+                dasha: undefined,
+                ashtak: undefined,
+                doshas: undefined,
+                pCareer: undefined, pHealth: undefined, pLove: undefined, pWealth: undefined, pEdu: undefined
             });
             toast.success("Premium PDF Downloaded!", { id: "pdf-gen" });
         } catch (e) {

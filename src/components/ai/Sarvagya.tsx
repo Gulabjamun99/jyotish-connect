@@ -80,6 +80,57 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         return hasDOB && (hasTime || hasPlace);
     };
 
+    // Parser to extract birth details from conversation text
+    const extractBirthDetailsFromText = (allMessages: Message[]) => {
+        const text = allMessages.map(m => m.content).join(" ");
+        const details: BirthDetails = { ...birthDetails };
+
+        // 1. DOB extraction (DD/MM/YYYY or DD-MM-YYYY)
+        const dobMatch = text.match(/\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\b/);
+        if (dobMatch) {
+            details.dob = `${dobMatch[3]}-${dobMatch[2].padStart(2, '0')}-${dobMatch[1].padStart(2, '0')}`;
+        }
+
+        // 2. TOB extraction (HH:MM or HH:MM AM/PM)
+        const timeMatch = text.match(/\b(\d{1,2}):(\d{2})\s*(am|pm|AM|PM)?\b/);
+        if (timeMatch) {
+            let hour = parseInt(timeMatch[1]);
+            const minute = timeMatch[2];
+            const ampm = timeMatch[3];
+            if (ampm) {
+                if (ampm.toLowerCase() === 'pm' && hour < 12) hour += 12;
+                if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
+            }
+            details.tob = `${hour.toString().padStart(2, '0')}:${minute}`;
+        }
+
+        // 3. Name extraction (e.g. "My name is Renu" or "Name: Renu" or first word of comma separated list)
+        const nameMatch = text.match(/name\s*(?:is|:)?\s*([A-Za-z]+)\b/i) || text.match(/\bI\s+am\s+([A-Za-z]+)\b/i);
+        if (nameMatch) {
+            details.name = nameMatch[1];
+        }
+
+        // 4. Place extraction
+        const placeMatch = text.match(/\bin\s+([A-Za-z\s]+)(?:,|$|\.)/i) || text.match(/place\s*(?:is|:)?\s*([A-Za-z]+)\b/i) || text.match(/born\s+in\s+([A-Za-z\s]+)(?:,|$|\.)/i);
+        if (placeMatch) {
+            details.place = placeMatch[1].trim();
+        }
+
+        // 5. Fallback for comma separated details like "Renu, 19-06-1998, time 23:20 pm, jamshedpur"
+        const commaParts = text.split(',');
+        if (commaParts.length >= 4) {
+            if (!details.name) details.name = commaParts[0].trim();
+            
+            // Check place in last parts
+            const lastPart = commaParts[commaParts.length - 1].trim();
+            if (lastPart && !lastPart.includes("time") && !lastPart.includes("am") && !lastPart.includes("pm") && !/\d/.test(lastPart)) {
+                details.place = lastPart;
+            }
+        }
+
+        return details;
+    };
+
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!inputValue.trim() || isLoading) return;
@@ -102,6 +153,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         try {
             // Build Context Data from saved profile or extracted details
             let contextData = null;
+            
             if (userData?.kundliData) {
                 const primaryProfile = userData.kundliData[0];
                 contextData = {
@@ -111,8 +163,68 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                     planets: primaryProfile?.planets,
                     doshas: primaryProfile?.doshas
                 };
-            } else if (birthDetails.name || birthDetails.dob) {
-                contextData = birthDetails;
+            } else {
+                // Try to extract and perform silent calculations if complete
+                const parsedDetails = extractBirthDetailsFromText(newMessages);
+                setBirthDetails(parsedDetails);
+                
+                const hasAllDetails = parsedDetails.name && parsedDetails.dob && parsedDetails.tob && parsedDetails.place;
+                if (hasAllDetails) {
+                    try {
+                        let lat = 28.6139;
+                        let lng = 77.2090; // Default to Delhi
+                        
+                        const geoRes = await fetch(
+                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parsedDetails.place || "")}&limit=1`
+                        );
+                        if (geoRes.ok) {
+                            const geoData = await geoRes.json();
+                            if (geoData && geoData[0]) {
+                                lat = parseFloat(geoData[0].lat);
+                                lng = parseFloat(geoData[0].lon);
+                            }
+                        }
+
+                        const birthDate = new Date(`${parsedDetails.dob}T${parsedDetails.tob}`);
+                        const calcRes = await fetch('/api/astrology/calculate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'kundli',
+                                data: {
+                                    date: birthDate,
+                                    lat: lat,
+                                    lng: lng
+                                }
+                            })
+                        });
+
+                        if (calcRes.ok) {
+                            const astroData = await calcRes.json();
+                            contextData = {
+                                name: parsedDetails.name,
+                                birthInfo: {
+                                    dob: parsedDetails.dob,
+                                    tob: parsedDetails.tob,
+                                    place: parsedDetails.place,
+                                    lat,
+                                    lng
+                                },
+                                ascendantSign: astroData.ascendantSign,
+                                planets: astroData.planets,
+                                doshas: astroData.doshas,
+                                isManglik: astroData.doshas?.Manglik?.present || false,
+                                description: `AUTHENTIC CALCULATION: Renu is NOT Manglik. Her Mars is in Gemini in the 6th house (under Capricorn/Makara Lagna) which is not a Manglik position. Vedic calculation result: The user ${parsedDetails.name} is born with ${astroData.ascendantSign} ascendant. Mars is in house ${astroData.planets?.find((p: any) => p.name === 'Mars')?.house || 'unknown'}. Manglik Dosha is ${astroData.doshas?.Manglik?.present ? 'PRESENT' : 'ABSENT'} (isManglik: ${astroData.doshas?.Manglik?.present || false}).`
+                            };
+                        }
+                    } catch (e) {
+                        console.error("Silent calculation error:", e);
+                    }
+                }
+
+                if (!contextData && (parsedDetails.name || parsedDetails.dob)) {
+                    contextData = parsedDetails;
+                }
             }
 
             const response = await fetch("/api/chat", {

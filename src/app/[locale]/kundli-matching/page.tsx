@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
+import { generateMatchingPDF } from "@/lib/astrology/generateMatchingPDF";
 // import { calculatePlanets, calculateGunMilan, calculatePanchang } from "@/lib/astrology/calculator";
 // ... imports
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
@@ -123,89 +124,11 @@ export default function KundliMatchingPage() {
         toast.loading(locale === 'hi' ? "आपका दिव्य प्रतिवेदन तैयार किया जा रहा है..." : "Preparing your divine report...", { id: "pdf-match" });
 
         try {
-            const captureSection = async (elementId: string): Promise<string | null> => {
-                const element = document.getElementById(elementId);
-                if (!element) {
-                    console.warn(`Section ${elementId} not found`);
-                    return null;
-                }
-                
-                try {
-                    const canvas = await html2canvas(element, {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: "#ffffff",
-                        logging: false,
-                        allowTaint: true,
-                        windowWidth: 800,
-                        onclone: (doc) => {
-                            const el = doc.getElementById(elementId);
-                            if (el) {
-                                el.style.display = 'block';
-                            }
-                        }
-                    });
-
-                    return canvas.toDataURL('image/png', 1.0);
-                } catch (e) {
-                    console.error(`Failed to capture section ${elementId}:`, e);
-                    return null;
-                }
-            };
-
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = 210;
-            const pageHeight = 297;
-
-            toast.loading(locale === 'hi' ? "रिपोर्ट तैयार की जा रही है..." : "Capturing Report Sections...", { id: "pdf-match" });
-            
-            // Critical: Wait for elements to settle in the hidden container
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const [overviewImg, detailsImg, analysisImg, boyChartImg, girlChartImg] = await Promise.all([
-                captureSection("pdf-match-overview"),
-                captureSection("pdf-match-details"),
-                captureSection("pdf-match-findings"),
-                captureSection("pdf-boy-chart"),
-                captureSection("pdf-girl-chart")
-            ]);
-
-            if (overviewImg) {
-                doc.addImage(overviewImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-            }
-
-            if (boyChartImg && girlChartImg) {
-                doc.addPage();
-                doc.setFillColor(15, 15, 35); doc.rect(0, 0, 210, 297, 'F');
-                doc.setFontSize(22); doc.setTextColor(249, 115, 22); doc.setFont('helvetica', 'bold');
-                doc.text(locale === 'hi' ? "जन्म कुंडली तुलना" : "Birth Chart Comparison", 105, 30, { align: 'center' });
-                
-                doc.addImage(boyChartImg, 'PNG', 10, 50, 90, 90);
-                doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-                doc.text(result.boy, 55, 145, { align: 'center' });
-                doc.setFontSize(10); doc.text(locale === 'hi' ? "(वर की कुंडली)" : "(Boy's Chart)", 55, 152, { align: 'center' });
-
-                doc.addImage(girlChartImg, 'PNG', 110, 50, 90, 90);
-                doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-                doc.text(result.girl, 155, 145, { align: 'center' });
-                doc.setFontSize(10); doc.text(locale === 'hi' ? "(वधू की कुंडली)" : "(Girl's Chart)", 155, 152, { align: 'center' });
-            }
-
-            if (detailsImg) {
-                doc.addPage();
-                doc.addImage(detailsImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-            }
-
-            if (analysisImg) {
-                doc.addPage();
-                doc.addImage(analysisImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-            }
-
+            await generateMatchingPDF(result, boy, girl, locale, detailedReport);
             toast.success(locale === 'hi' ? "रिपोर्ट तैयार है!" : "Match Report ready!", { id: "pdf-match" });
-            doc.save(`JyotishConnect_Match_${result.boy}_${result.girl}.pdf`);
         } catch (error) {
             console.error("PDF Generation Error:", error);
-            toast.error(locale === 'hi' ? "रिपोर्ट तैयार करने में त्रुटಿ हुई" : "Error generating report", { id: "pdf-match" });
+            toast.error(locale === 'hi' ? "रिपोर्ट तैयार करने में त्रुटि हुई" : "Error generating report", { id: "pdf-match" });
         }
     };
 
@@ -415,6 +338,53 @@ export default function KundliMatchingPage() {
                                             <Sparkles className="w-4 h-4" /> {detailedReport.family.title}
                                         </div>
                                         <p className="text-sm text-white/70 leading-relaxed">{detailedReport.family.verdict}</p>
+                                    </div>
+                                </div>
+                            )}
+ 
+                            {activeTab === 'detailed' && detailedReport && (
+                                <div className="grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4">
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl space-y-2">
+                                        <div className="text-orange-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <Heart className="w-4 h-4" /> {detailedReport.marriage.title}
+                                        </div>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.marriage.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl space-y-2">
+                                        <div className="text-blue-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <Users className="w-4 h-4" /> {detailedReport.nature.title}
+                                        </div>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.nature.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl space-y-2">
+                                        <div className="text-purple-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4" /> {detailedReport.family.title}
+                                        </div>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.family.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl space-y-2">
+                                        <div className="text-emerald-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <Wallet className="w-4 h-4" /> {detailedReport.finance.title}
+                                        </div>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.finance.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl space-y-2">
+                                        <div className="text-pink-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4" /> {detailedReport.bond.title}
+                                        </div>
+                                        <p className="text-sm text-white/70 leading-relaxed">{detailedReport.bond.verdict}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl space-y-2">
+                                        <div className="text-yellow-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <Timer className="w-4 h-4" /> {detailedReport.timing.title}
+                                        </div>
+                                        <p className="text-sm text-white/70 leading-relaxed font-bold">{detailedReport.timing.verdict}</p>
+                                    </div>
+                                    <div className="md:col-span-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-8 rounded-3xl border border-orange-500/20 shadow-xl space-y-2">
+                                        <div className="text-orange-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                            <TrendingUp className="w-4 h-4" /> {detailedReport.forecast.title}
+                                        </div>
+                                        <p className="text-sm text-white/80 leading-relaxed">{detailedReport.forecast.verdict}</p>
                                     </div>
                                 </div>
                             )}

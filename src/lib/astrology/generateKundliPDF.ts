@@ -289,7 +289,6 @@ export async function generateKundliPDF(
     });
 
     // PAGE 9: Dasha Timeline — API returns dasha.mahadashas[]
-    doc.addPage(); H(doc,'Vimshottari Dasha',9,TP);
     const nowMs = Date.now();
     const mahadashas: any[] = chart.dasha?.mahadashas || [];
     // Find active mahadasha
