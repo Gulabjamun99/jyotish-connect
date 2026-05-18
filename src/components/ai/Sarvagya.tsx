@@ -214,7 +214,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                                 planets: astroData.planets,
                                 doshas: astroData.doshas,
                                 isManglik: astroData.doshas?.Manglik?.present || false,
-                                description: `AUTHENTIC CALCULATION: Renu is NOT Manglik. Her Mars is in Gemini in the 6th house (under Capricorn/Makara Lagna) which is not a Manglik position. Vedic calculation result: The user ${parsedDetails.name} is born with ${astroData.ascendantSign} ascendant. Mars is in house ${astroData.planets?.find((p: any) => p.name === 'Mars')?.house || 'unknown'}. Manglik Dosha is ${astroData.doshas?.Manglik?.present ? 'PRESENT' : 'ABSENT'} (isManglik: ${astroData.doshas?.Manglik?.present || false}).`
+                                description: `Vedic calculation result: The user ${parsedDetails.name} is born with ${astroData.ascendantSign} ascendant. Mars is in house ${astroData.planets?.find((p: any) => p.name === 'Mars')?.house || 'unknown'}. Manglik Dosha is ${astroData.doshas?.Manglik?.present ? 'PRESENT' : 'ABSENT'} (isManglik: ${astroData.doshas?.Manglik?.present || false}).`
                             };
                         }
                     } catch (e) {

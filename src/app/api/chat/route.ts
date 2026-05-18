@@ -85,6 +85,12 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         if (!latestMessage) {
             return new Response(JSON.stringify({ error: "No user message found to process." }), { status: 400 });
         }
+
+        // Inject latest contextData into the current message to ensure immediate context visibility
+        if (contextData) {
+            const originalText = latestMessage.parts[0]?.text || "";
+            latestMessage.parts[0].text = `[CURRENT ASTROLOGICAL CONTEXT: ${JSON.stringify(contextData)}]\n\n${originalText}`;
+        }
         
         // Double check roles alternate after pop. If empty, it's fine. 
         // If not empty, ensures and alternates.
