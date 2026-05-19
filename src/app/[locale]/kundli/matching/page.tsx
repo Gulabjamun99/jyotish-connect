@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
 import { Sparkles, Heart, User, FileText, CheckCircle2, AlertCircle, LayoutGrid, Zap, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { LocationInput } from "@/components/kundli/LocationInput";
 import { generateDetailedMatchingReport, analyzeManglikCancellation, generateFullMatchAnalysis } from "@/lib/astrology/prediction-engine";
+import { generateMatchingPDF } from "@/lib/astrology/generateMatchingPDF";
 import { useLocale, useTranslations } from "next-intl";
 import { translateSign } from "@/lib/astrology/i18n";
 
@@ -110,71 +109,48 @@ export default function MatchingPage() {
         toast.loading(l('decoding_starlight', "Crafting your premium report..."), { id: "pdf-match" });
 
         try {
-            const captureSection = async (elementId: string): Promise<string | null> => {
-                const element = document.getElementById(elementId);
-                if (!element) {
-                    console.warn(`Section ${elementId} not found`);
-                    return null;
-                }
-                try {
-                    const canvas = await html2canvas(element, {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: "#ffffff",
-                        logging: true,
-                        windowWidth: 800
-                    });
-                    return canvas.toDataURL('image/png', 1.0);
-                } catch (e) {
-                    console.error(`Failed to capture section ${elementId}:`, e);
-                    return null;
-                }
+            const reportData = dynamicReport || generateDetailedMatchingReport(result, locale);
+            if (!reportData) throw new Error("Could not generate report data");
+
+            const baseResult = {
+                boy: boyData.name,
+                girl: girlData.name,
+                total_guna: result.milan.totalScore,
+                is_manglik_boy: result.boy.doshas.Manglik.present,
+                is_manglik_girl: result.girl.doshas.Manglik.present,
+                ashtakoot: result.milan.ashtakoot,
+                boyPanchang: result.boy.panchang,
+                girlPanchang: result.girl.panchang,
+                boyDasha: result.boy.dasha,
+                girlDasha: result.girl.dasha,
+                boyPlanets: result.boy.planets,
+                girlPlanets: result.girl.planets,
+                boyChart: result.boy.charts,
+                girlChart: result.girl.charts,
+                boyAscendant: result.boy.ascendantLongitude,
+                girlAscendant: result.girl.ascendantLongitude
             };
 
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
+            const boyDetails = {
+                name: boyData.name,
+                dob: boyData.dob,
+                tob: boyData.tob,
+                place: boyData.birthplace,
+                lat: boyData.lat,
+                lng: boyData.lng
+            };
 
-            // --- PAGE 1: COVER ---
-            doc.setFillColor(10, 10, 26);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
-            doc.setTextColor(249, 115, 22);
-            doc.setFontSize(36);
-            doc.setFont("helvetica", "bold");
-            doc.text("JyotishConnect", pageWidth / 2, 80, { align: "center" });
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.text(l('matching_title', "Premium Kundli Milan"), pageWidth / 2, 95, { align: "center" });
-            
-            doc.setFontSize(18);
-            doc.text(`${boyData.name} & ${girlData.name}`, pageWidth / 2, 130, { align: "center" });
-            doc.setDrawColor(249, 115, 22);
-            doc.line(pageWidth / 2 - 30, 135, pageWidth / 2 + 30, 135);
+            const girlDetails = {
+                name: girlData.name,
+                dob: girlData.dob,
+                tob: girlData.tob,
+                place: girlData.birthplace,
+                lat: girlData.lat,
+                lng: girlData.lng
+            };
 
-            doc.setFontSize(32);
-            doc.setTextColor(249, 115, 22);
-            doc.text(`${result.milan.totalScore}/36`, pageWidth / 2, 165, { align: "center" });
-            doc.setFontSize(10);
-            doc.setTextColor(150, 150, 150);
-            doc.text(l('totalGunas', "GUN MILAN SCORE"), pageWidth / 2, 175, { align: "center" });
-
-            doc.text(`Generated on ${new Date().toLocaleDateString()} · Vedic AI`, pageWidth / 2, 280, { align: "center" });
-
-            // --- PAGE 2+: CAPTURED SECTIONS ---
-            const [detailsImg, ashtakootImg, dynamicsImg, verdictImg] = await Promise.all([
-                captureSection('pdf-details'),
-                captureSection('pdf-ashtakoot'),
-                captureSection('pdf-dynamics'),
-                captureSection('pdf-verdict')
-            ]);
-
-            if (detailsImg) { doc.addPage(); doc.addImage(detailsImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
-            if (ashtakootImg) { doc.addPage(); doc.addImage(ashtakootImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
-            if (dynamicsImg) { doc.addPage(); doc.addImage(dynamicsImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
-            if (verdictImg) { doc.addPage(); doc.addImage(verdictImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST'); }
-
+            await generateMatchingPDF(baseResult, boyDetails, girlDetails, locale, reportData);
             toast.success(l('downloadReport', "Report ready!"), { id: "pdf-match" });
-            doc.save(`Milan_Report_${boyData.name.replace(/\s+/g, '_')}.pdf`);
         } catch (err) {
             console.error("PDF Error:", err);
             toast.error(l('calculation_failed', "Failed to generate PDF."), { id: "pdf-match" });
