@@ -199,8 +199,37 @@ export async function generateMatchingPDF(
         }
     });
 
+    // Ensure that result has the format expected by generateDetailedMatchingReport
+    let compatibilityObject = result;
+    if (result && !result.milan) {
+        compatibilityObject = {
+            milan: {
+                totalScore: result.total_guna || 0,
+                ashtakoot: result.ashtakoot || {}
+            },
+            boy: {
+                name: result.boy || "Boy",
+                planets: result.boyPlanets || [],
+                charts: result.boyChart || {},
+                ascendantLongitude: result.boyAscendant || 0,
+                doshas: {
+                    Manglik: { present: result.is_manglik_boy || false }
+                }
+            },
+            girl: {
+                name: result.girl || "Girl",
+                planets: result.girlPlanets || [],
+                charts: result.girlChart || {},
+                ascendantLongitude: result.girlAscendant || 0,
+                doshas: {
+                    Manglik: { present: result.is_manglik_girl || false }
+                }
+            }
+        };
+    }
+
     // Generate clean English report dynamically to ensure perfect PDF rendering without garbled characters
-    const englishReport = generateDetailedMatchingReport(result, 'en');
+    const englishReport = generateDetailedMatchingReport(compatibilityObject, 'en');
 
     // Overview verdict below table
     const yVerdict = (doc as any).lastAutoTable.finalY + 12;
@@ -218,13 +247,13 @@ export async function generateMatchingPDF(
 
     let fy = 40;
     const compatibilitySections = [
-        { title: 'Marriage Compatibility (विवाह अनुकूलता)', text: englishReport?.marriage?.verdict },
-        { title: 'Nature & Temperament (प्रकृति और स्वभाव)', text: englishReport?.nature?.verdict },
-        { title: 'Family & Children (परिवार और संतान)', text: englishReport?.family?.verdict },
-        { title: 'Wealth & Prosperity (धन और समृद्धि)', text: englishReport?.finance?.verdict },
-        { title: 'Navamsa Synergy (नवांश तालमेल)', text: englishReport?.bond?.verdict },
-        { title: 'Auspicious Marriage Timing (विवाह का शुभ समय)', text: englishReport?.timing?.verdict },
-        { title: 'Life Forecast (जीवन पूर्वानुमान)', text: englishReport?.forecast?.verdict },
+        { title: 'Marriage Compatibility', text: englishReport?.marriage?.verdict },
+        { title: 'Nature & Temperament', text: englishReport?.nature?.verdict },
+        { title: 'Family & Children', text: englishReport?.family?.verdict },
+        { title: 'Wealth & Prosperity', text: englishReport?.finance?.verdict },
+        { title: 'Navamsa Synergy', text: englishReport?.bond?.verdict },
+        { title: 'Auspicious Marriage Timing', text: englishReport?.timing?.verdict },
+        { title: 'Life Forecast', text: englishReport?.forecast?.verdict },
     ];
 
     compatibilitySections.forEach((sec) => {
