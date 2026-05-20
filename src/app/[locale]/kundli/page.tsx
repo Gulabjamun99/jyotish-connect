@@ -11,6 +11,7 @@ import { generateKundliPDF } from "@/lib/astrology/generateKundliPDF";
 import { LocationInput } from "@/components/kundli/LocationInput";
 import { LagnaChart } from "@/components/kundli/LagnaChart";
 import { DetailCard, DetailRow } from "@/components/kundli/DetailCard";
+import { AshtakvargaHeatmap } from "@/components/astrology/AshtakvargaHeatmap";
 // import { calculatePlanets, calculatePanchang, calculateVimshottari, calculateDivisionalCharts, calculateDoshas, calculateYogas } from "@/lib/astrology/calculator";
 import { generateLifePredictions } from "@/lib/astrology/prediction-engine";
 import { useLocale } from "next-intl";
@@ -596,55 +597,10 @@ export default function KundliPage() {
 
                                 {/* 5. ASHTAKVARGA TAB */}
                                 {activeTab === 'ashtakvarga' && (
-                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                                        {/* Explanation Banner */}
-                                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-5">
-                                            <div className="text-xs font-black uppercase tracking-widest text-yellow-400 mb-2">Ashtakvarga — {l('what_is_this', 'Kya hai yeh?')}</div>
-                                            <p className="text-white/70 text-sm leading-relaxed">
-                                                Ashtakvarga ek Vedic system hai jisme har rashi (zodiac sign) ko ek score milta hai — 0 se 56 tak. <strong className="text-white">28+ = Strong (shubh)</strong>, <strong className="text-yellow-300">20–27 = Medium</strong>, <strong className="text-red-400">0–19 = Weak (chakkar pade sakta hai)</strong>. Jis rashi mein planet transit kare aur score zyada ho, woh period acha hota hai.
-                                            </p>
-                                        </div>
-                                        {/* Score Grid */}
-                                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/10">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <h3 className="text-2xl font-black flex items-center gap-3">
-                                                    <Activity className="w-6 h-6 text-yellow-500" /> Sarvashtakvarga Points
-                                                </h3>
-                                                <div className="text-sm text-white/40">
-                                                    Total: <span className="font-black text-white">{(_SIGNS).reduce((acc, _, idx) => acc + ((chart.ashtakvarga?.sarva?.[idx]) || 28), 0)}</span>/672
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                                {(_SIGNS).map((sign, idx) => {
-                                                    const points = (chart.ashtakvarga?.sarva?.[idx]) || 28;
-                                                    const strength = points >= 30 ? 'excellent' : points >= 25 ? 'good' : points >= 20 ? 'medium' : 'weak';
-                                                    const colorClass = strength === 'excellent' ? 'text-green-400' : strength === 'good' ? 'text-blue-400' : strength === 'medium' ? 'text-yellow-400' : 'text-red-400';
-                                                    const bgClass = strength === 'excellent' ? 'bg-green-500/10 border-green-500/20' : strength === 'good' ? 'bg-blue-500/10 border-blue-500/20' : strength === 'medium' ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-red-500/10 border-red-500/20';
-                                                    const label = strength === 'excellent' ? l('ashtk_excellent', 'Uchch') : strength === 'good' ? l('ashtk_good', 'Acha') : strength === 'medium' ? l('ashtk_medium', 'Madhyam') : l('ashtk_weak', 'Kamzor');
-                                                    return (
-                                                        <div key={idx} className={`p-4 rounded-2xl border text-center ${bgClass}`}>
-                                                            <div className="text-[11px] text-white/50 uppercase font-black tracking-widest mb-1">{translateSign(sign, locale)}</div>
-                                                            <div className={`text-3xl font-black mb-1 ${colorClass}`}>{points}</div>
-                                                            <div className={`text-[10px] font-bold uppercase ${colorClass}`}>{label}</div>
-                                                            <div className="w-full h-1.5 bg-white/10 mt-2 rounded-full overflow-hidden">
-                                                                <div className={`h-full rounded-full ${strength === 'excellent' ? 'bg-green-500' : strength === 'good' ? 'bg-blue-500' : strength === 'medium' ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${(points / 56) * 100}%` }} />
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                        {/* Legend */}
-                                        <div className="flex flex-wrap gap-4 text-sm">
-                                            {[['bg-green-500', '30–56', l('ashtk_excellent','Uchch / Excellent')], ['bg-blue-500', '25–29', l('ashtk_good','Acha / Good')], ['bg-yellow-500', '20–24', l('ashtk_medium','Madhyam / Medium')], ['bg-red-500', '0–19', l('ashtk_weak','Kamzor / Weak')]].map(([bg, range, lbl]) => (
-                                                <div key={range} className="flex items-center gap-2">
-                                                    <div className={`w-3 h-3 rounded-full ${bg}`} />
-                                                    <span className="text-white/50">{range}:</span>
-                                                    <span className="text-white/80 font-bold">{lbl}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <AshtakvargaHeatmap
+                                        ashtakvarga={chart.ashtakvarga}
+                                        ascendantSign={chart.ascendantSign}
+                                    />
                                 )}
 
                                 {/* 6. DOSHAS TAB */}

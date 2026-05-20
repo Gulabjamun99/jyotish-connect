@@ -24,12 +24,18 @@ export default function SearchPage() {
         rating: "Any"
     });
 
+    const [lastVisible, setLastVisible] = useState<any>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+
     useEffect(() => {
         const fetchAstro = async () => {
             setLoading(true);
             try {
-                const response = await getAstrologers(filters);
+                const response = await getAstrologers(filters, 15, null);
                 setAstrologers(response.astrologers);
+                setLastVisible(response.lastDoc);
+                setHasMore(response.astrologers.length === 15);
                 console.log("Fetched Astrologers:", response.astrologers);
             } catch (err) {
                 console.error("Failed to fetch astrologers", err);
@@ -39,6 +45,22 @@ export default function SearchPage() {
         };
         fetchAstro();
     }, [filters]);
+
+    const loadMoreAstrologers = async () => {
+        if (loadingMore || !hasMore || !lastVisible) return;
+        setLoadingMore(true);
+        try {
+            const response = await getAstrologers(filters, 15, lastVisible);
+            setAstrologers(prev => [...prev, ...response.astrologers]);
+            setLastVisible(response.lastDoc);
+            setHasMore(response.astrologers.length === 15);
+            console.log("Loaded more Astrologers:", response.astrologers);
+        } catch (err) {
+            console.error("Failed to load more astrologers", err);
+        } finally {
+            setLoadingMore(false);
+        }
+    };
 
     const filteredAstrologers = astrologers.filter(astro => {
         const matchesSearch = astro.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -202,6 +224,18 @@ export default function SearchPage() {
                                     </div>
                                 )))}
                         </div>
+
+                        {hasMore && (
+                            <div className="flex justify-center mt-12 mb-6">
+                                <Button
+                                    onClick={loadMoreAstrologers}
+                                    disabled={loadingMore}
+                                    className="glass-btn relative text-white font-black text-xs uppercase tracking-[0.2em] h-12 px-10 rounded-2xl shadow-xl hover:scale-105 transition-all border border-primary/20 bg-primary/10 hover:bg-primary/20 disabled:opacity-50 disabled:hover:scale-100"
+                                >
+                                    {loadingMore ? "Loading Cosmic Guides..." : "Load More Guides"}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

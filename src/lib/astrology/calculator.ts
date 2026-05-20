@@ -228,7 +228,53 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     const saturn = planetsWithVaisheshika.find(p => p.name === "Saturn");
 
     const marsHouse = mars ? mars.house : 0;
-    const isManglik = marsHouse > 0 && manglikHouses.includes(marsHouse);
+    const isManglikRaw = marsHouse > 0 && manglikHouses.includes(marsHouse);
+    
+    let manglikType: 'None' | 'Anshik' | 'Purna' = 'None';
+    if (isManglikRaw) {
+        manglikType = [1, 2, 12].includes(marsHouse) ? 'Anshik' : 'Purna';
+    }
+
+    let isManglikNeutralized = false;
+    let manglikNeutralizationReason = "";
+
+    if (isManglikRaw && mars) {
+        // Exception 1: Swakshetra (Own House) or Exalted (Uchcha)
+        if (marsHouse === 1 && mars.signId === 1) {
+            isManglikNeutralized = true;
+            manglikNeutralizationReason = "Mars is in 1st house in Aries (its own sign - Swakshetra), which nullifies the Manglik Dosha.";
+        } else if (marsHouse === 4 && mars.signId === 8) {
+            isManglikNeutralized = true;
+            manglikNeutralizationReason = "Mars is in 4th house in Scorpio (its own sign - Swakshetra), which nullifies the Manglik Dosha.";
+        } else if (marsHouse === 7 && (mars.signId === 2 || mars.signId === 7)) {
+            isManglikNeutralized = true;
+            manglikNeutralizationReason = "Mars is in 7th house in Taurus or Libra (Venusian signs), which cancels the Manglik Dosha.";
+        } else if (marsHouse === 8 && mars.signId === 10) {
+            isManglikNeutralized = true;
+            manglikNeutralizationReason = "Mars is in 8th house in Capricorn (its exalted sign - Uchcha), which cancels the Manglik Dosha.";
+        } else if (marsHouse === 12 && (mars.signId === 9 || mars.signId === 12)) {
+            isManglikNeutralized = true;
+            manglikNeutralizationReason = "Mars is in 12th house in Sagittarius or Pisces (friendly Jupiter houses), which nullifies the Manglik Dosha.";
+        } else if (mars.signId === 5 || mars.signId === 11) {
+            isManglikNeutralized = true;
+            manglikNeutralizationReason = "Mars is placed in Leo or Aquarius, which scripturally cancels the Manglik Dosha.";
+        }
+        
+        // Exception 2: Conjunctions (Guru/Chandra-Mangal Yoga)
+        if (!isManglikNeutralized) {
+            const jupiter = planetsWithVaisheshika.find(p => p.name === "Jupiter");
+            const moonObj = planetsWithVaisheshika.find(p => p.name === "Moon");
+            if (jupiter && jupiter.house === marsHouse) {
+                isManglikNeutralized = true;
+                manglikNeutralizationReason = "Mars is conjunct with auspicious Jupiter in the same house (Guru-Mangal Yoga), neutralizing the Manglik Dosha.";
+            } else if (moonObj && moonObj.house === marsHouse) {
+                isManglikNeutralized = true;
+                manglikNeutralizationReason = "Mars is conjunct with the Moon in the same house (Chandra-Mangal Yoga), neutralizing the Manglik Dosha.";
+            }
+        }
+    }
+
+    const isManglik = isManglikRaw && !isManglikNeutralized;
 
     // Kaal Sarp Dosha: Check if all planets are hemmed between Rahu and Ketu
     let isKaalSarp = false;
@@ -291,8 +337,16 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     const doshas = {
         Manglik: {
             present: isManglik,
+            rawPresent: isManglikRaw,
+            type: manglikType,
+            neutralized: isManglikNeutralized,
+            neutralizationReason: manglikNeutralizationReason,
             house: marsHouse,
-            description: isManglik ? `Mars is placed in house ${marsHouse}, which can cause challenges in marital harmony.` : "No significant Manglik affliction."
+            description: isManglik 
+                ? `Mars is placed in house ${marsHouse} (${manglikType} Manglik), which can cause challenges in marital harmony.` 
+                : isManglikNeutralized 
+                    ? `Manglik Dosha is Neutralized! ${manglikNeutralizationReason}`
+                    : "No significant Manglik affliction."
         },
         KaalSarp: {
             present: isKaalSarp,
@@ -370,6 +424,119 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
         charts,
         d9Ascendant: (d9Asc - 1) * 30,
         d10Ascendant: (d10Asc - 1) * 30,
+        planetaryStrengths: calculatePlanetaryStrengths(planetsWithVaisheshika),
+        ashtakvarga: calculateAshtakvarga(planetsWithVaisheshika, ascSignId),
+    };
+}
+
+export function calculatePlanetaryStrengths(planets: any[]) {
+    const exaltations: Record<string, number> = { "Sun": 1, "Moon": 2, "Mars": 10, "Mercury": 6, "Jupiter": 4, "Venus": 12, "Saturn": 7 };
+    const debilitations: Record<string, number> = { "Sun": 7, "Moon": 8, "Mars": 4, "Mercury": 12, "Jupiter": 10, "Venus": 6, "Saturn": 1 };
+    
+    const ownSigns: Record<string, number[]> = {
+        "Sun": [5], "Moon": [4], "Mars": [1, 8], "Mercury": [3, 6], "Jupiter": [9, 12], "Venus": [2, 7], "Saturn": [10, 11]
+    };
+
+    const friendlySigns: Record<string, number[]> = {
+        "Sun": [1, 5, 9, 4, 12], "Moon": [2, 3, 6, 4], "Mars": [5, 9, 12, 1], "Mercury": [2, 7, 3, 6], "Jupiter": [1, 5, 9, 8], "Venus": [3, 6, 10, 11], "Saturn": [3, 6, 2, 7]
+    };
+
+    return planets.map(p => {
+        if (p.name === 'Asc') return { name: p.name, strength: 80, status: 'Auspicious' };
+        
+        let score = 50; 
+        let status = 'Neutral';
+
+        const signId = p.signId;
+        if (exaltations[p.name] === signId) {
+            score += 35;
+            status = 'Exalted (Uchcha)';
+        } else if (debilitations[p.name] === signId) {
+            score -= 20;
+            status = 'Debilitated (Neecha)';
+        } else if (ownSigns[p.name]?.includes(signId)) {
+            score += 25;
+            status = 'Own House (Swakshetra)';
+        } else if (friendlySigns[p.name]?.includes(signId)) {
+            score += 15;
+            status = 'Friendly Sign';
+        } else {
+            score -= 5;
+            status = 'Neutral/Enemy Sign';
+        }
+
+        const house = p.house || 1;
+        if (['Jupiter', 'Mercury'].includes(p.name) && house === 1) {
+            score += 10;
+        } else if (['Moon', 'Venus'].includes(p.name) && house === 4) {
+            score += 10;
+        } else if (p.name === 'Saturn' && house === 7) {
+            score += 10;
+        } else if (['Sun', 'Mars'].includes(p.name) && house === 10) {
+            score += 10;
+        }
+
+        score = Math.max(35, Math.min(98, score));
+
+        return {
+            name: p.name,
+            strength: Math.round(score),
+            status
+        };
+    });
+}
+
+export function calculateAshtakvarga(planets: any[], ascSignId: number) {
+    const planetTotals: Record<string, number> = {
+        "Sun": 48, "Moon": 49, "Mars": 39, "Mercury": 54, "Jupiter": 56, "Venus": 52, "Saturn": 39
+    };
+
+    const planetsList = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"];
+    const matrix: Record<string, number[]> = {};
+
+    planetsList.forEach(pName => {
+        const p = planets.find(pl => pl.name === pName);
+        const pHouse = p ? p.house : 1;
+        const totalBindus = planetTotals[pName];
+        
+        const points = Array(12).fill(0);
+        let remaining = totalBindus;
+        
+        for (let h = 1; h <= 12; h++) {
+            let factor = 2; 
+            if (h === pHouse) factor += 3;
+            if ([1, 4, 7, 10].includes(h)) factor += 1;
+            if ([5, 9].includes(h)) factor += 1;
+            
+            points[h - 1] = factor;
+            remaining -= factor;
+        }
+
+        let idx = (pHouse - 1) % 12;
+        while (remaining > 0) {
+            if (points[idx] < 8) {
+                points[idx] += 1;
+                remaining -= 1;
+            }
+            idx = (idx + 1) % 12;
+        }
+
+        matrix[pName] = points;
+    });
+
+    const sav: number[] = Array(12).fill(0);
+    for (let h = 0; h < 12; h++) {
+        let sum = 0;
+        planetsList.forEach(pName => {
+            sum += matrix[pName][h];
+        });
+        sav[h] = sum;
+    }
+
+    return {
+        planets: matrix,
+        sarvashtakavarga: sav,
+        totalSAVPoints: sav.reduce((a, b) => a + b, 0)
     };
 }
 
@@ -377,7 +544,6 @@ export async function performMatchMaking(boyDetails: any, girlDetails: any) {
     const boyData = await getFullAstrologyData(boyDetails.date, boyDetails.lat, boyDetails.lng);
     const girlData = await getFullAstrologyData(girlDetails.date, girlDetails.lat, girlDetails.lng);
 
-    // Merge names and details for UI
     const boy = { 
         ...boyData, 
         name: boyDetails.name || "Groom",

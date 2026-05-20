@@ -2,16 +2,45 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { getTrans } from './i18n';
 
-// jsPDF only supports Latin fonts (Helvetica/Courier/Times).
-// Devanagari/Hindi cannot be rendered — so PDF always uses English names.
-const EN = getTrans('en');
+// Detect if any Unicode font is registered in jsPDF's VFS (Virtual File System)
+export function isUnicodeFontLoaded(doc: jsPDF): boolean {
+    try {
+        const fonts = doc.getFontList();
+        return Object.keys(fonts).some(fontName => 
+            fontName.toLowerCase().includes('noto') || 
+            fontName.toLowerCase().includes('devanagari') ||
+            fontName.toLowerCase().includes('unicode') ||
+            fontName.toLowerCase().includes('hindi')
+        );
+    } catch (e) {
+        return false;
+    }
+}
+
+// Clean non-Latin characters to prevent jsPDF Helvetica crashes or empty squares
+export function safeText(doc: jsPDF, text: string, fallback: string = ''): string {
+    if (!text) return fallback;
+    if (isUnicodeFontLoaded(doc)) return text;
+    // Clean to keep only ASCII printable characters (32 to 126)
+    const cleaned = text.split('').filter(char => {
+        const code = char.charCodeAt(0);
+        return code >= 32 && code <= 126;
+    }).join('').trim();
+    return cleaned || fallback;
+}
 
 const _SIGNS_EN = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
 const _PLANETS_EN: Record<string,string> = { Sun:"Sun", Moon:"Moon", Mars:"Mars", Mercury:"Mercury", Jupiter:"Jupiter", Venus:"Venus", Saturn:"Saturn", Rahu:"Rahu (North Node)", Ketu:"Ketu (South Node)", Asc:"Ascendant" };
 
-function pl(name: string) { return _PLANETS_EN[name] || name; }
-function sg(sign: string) { return EN.signs[sign as keyof typeof EN.signs] || sign; }
-function nk(id: number) { return EN.nakshatras?.[id - 1] || '—'; }
+function pl(name: string, T: any) { 
+    return T.planets?.[name] || _PLANETS_EN[name] || name; 
+}
+function sg(sign: string, T: any) { 
+    return T.signs?.[sign as keyof typeof T.signs] || sign; 
+}
+function nk(id: number, T: any) { 
+    return T.nakshatras?.[id - 1] || '—'; 
+}
 
 function H(doc: jsPDF, title: string, pg: number, total: number) {
     doc.setFillColor(15,15,35); doc.rect(0,0,210,22,'F');
@@ -45,13 +74,39 @@ export async function generateKundliPDF(
         pCareer?:string|null; pHealth?:string|null; pLove?:string|null; pWealth?:string|null; pEdu?:string|null;
     }
 ) {
-    // Always use English for PDF text (jsPDF Helvetica cannot render Devanagari/Tamil/Telugu etc.)
-    // Locale is used only for the language label on the cover page.
+    const doc = new jsPDF('p','mm','a4');
+    const useUnicode = isUnicodeFontLoaded(doc);
+    const T = useUnicode ? getTrans(locale) : getTrans('en');
+    const EN = getTrans('en');
+
+    // Labels system dynamically switching between localized (Unicode) and safe English
+    const L = {
+        title: useUnicode && locale === 'hi' ? 'प्रीमियम वैदिक ज्योतिष रिपोर्ट' : 'Premium Vedic Astrology Report',
+        birthDetails: useUnicode && locale === 'hi' ? 'जन्म विवरण' : 'Birth Details',
+        avakahada: useUnicode && locale === 'hi' ? 'अवकहड़ा चक्र' : 'Avakahada Chakra',
+        panchang: useUnicode && locale === 'hi' ? 'दैनिक पंचांग' : 'Daily Panchang at Birth',
+        panchangDetails: useUnicode && locale === 'hi' ? 'पंचांग विवरण' : 'Panchang Details',
+        planetaryPositions: useUnicode && locale === 'hi' ? 'ग्रहों की स्थिति' : 'Planetary Positions',
+        currentActiveDasha: useUnicode && locale === 'hi' ? 'वर्तमान सक्रिय दशा' : 'Current Active Dasha',
+        dashaTimeline: useUnicode && locale === 'hi' ? 'विंशोत्तरी दशा समय-रेखा (120 वर्ष चक्र)' : 'Full Vimshottari Dasha Timeline (120 Year Cycle)',
+        ashtakvarga: useUnicode && locale === 'hi' ? 'अष्टकवर्ग विश्लेषण' : 'Ashtakvarga Analysis',
+        ashtakvargaStrength: useUnicode && locale === 'hi' ? 'सर्वाष्टकवर्ग - राशि अनुसार शक्ति स्कोर' : 'Sarvashtakvarga — Strength Score per Zodiac Sign',
+        doshaAnalysis: useUnicode && locale === 'hi' ? 'दोष विश्लेषण' : 'Dosha Analysis',
+        lifePredictions: useUnicode && locale === 'hi' ? 'जीवन भविष्यफल' : 'Life Predictions',
+        lifeAreaPredictions: useUnicode && locale === 'hi' ? 'जीवन क्षेत्र भविष्यफल' : 'Life Area Predictions',
+        yogas: useUnicode && locale === 'hi' ? 'महत्वपूर्ण योग' : 'Important Yogas',
+        yogasDetected: useUnicode && locale === 'hi' ? 'आपकी कुंडली में पाए गए योग' : 'Yogas Detected in Your Chart',
+        gemstones: useUnicode && locale === 'hi' ? 'रत्न अनुशंसाएं' : 'Gemstone Recommendations',
+        remedies: useUnicode && locale === 'hi' ? 'आध्यात्मिक उपाय' : 'Spiritual Remedies',
+        conclusion: useUnicode && locale === 'hi' ? 'आशीर्वाद और दिव्य मार्गदर्शन' : 'Blessings & Divine Guidance',
+    };
+
     const langLabel = LOCALE_NAMES[locale] || 'English';
 
-    // Use English nakshatra name (not locale-translated which garbles in PDF)
-    const nakshatraEn = chart.nakshatra_en || chart.nakshatra || '—';
-    const doc = new jsPDF('p','mm','a4');
+    // Safely retrieve nakshatra name using dynamic T
+    const nakshatraVal = chart.nakshatraId ? nk(chart.nakshatraId, T) : safeText(doc, chart.nakshatra_en || chart.nakshatra, '—');
+    const nakshatraEn = chart.nakshatraId ? nk(chart.nakshatraId, EN) : safeText(doc, chart.nakshatra_en || (typeof chart.nakshatra === 'string' && /^[\x00-\x7F]*$/.test(chart.nakshatra) ? chart.nakshatra : ''), '—');
+    
     const TP = 18;
 
     // PAGE 1: Cover
@@ -60,13 +115,14 @@ export async function generateKundliPDF(
     doc.setFontSize(30); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
     doc.text('JyotishConnect', 105, 75, {align:'center'});
     doc.setFontSize(12); doc.setTextColor(200,200,200); doc.setFont('helvetica','normal');
-    doc.text('Premium Vedic Astrology Report', 105, 90, {align:'center'});
+    doc.text(L.title, 105, 90, {align:'center'});
     doc.setFontSize(22); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
-    doc.text(formData.name || 'Your Name', 105, 140, {align:'center'});
+    doc.text(safeText(doc, formData.name, 'Seeker'), 105, 140, {align:'center'});
     doc.setFontSize(10); doc.setTextColor(255,220,180); doc.setFont('helvetica','normal');
-    doc.text(`${formData.dob}  |  ${formData.tob}  |  ${formData.birthplace}`, 105, 153, {align:'center'});
+    doc.text(`${formData.dob}  |  ${formData.tob}  |  ${safeText(doc, formData.birthplace, 'Birthplace')}`, 105, 153, {align:'center'});
     doc.setFontSize(10); doc.setTextColor(150,150,150);
-    doc.text(`Lagna: ${sg(chart.ascendantSign)}  |  Rasi: ${sg(chart.moonSign)}  |  Nakshatra: ${nakshatraEn}`, 105, 200, {align:'center'});
+    doc.text(`${useUnicode && locale === 'hi' ? 'लग्न' : 'Lagna'}: ${sg(chart.ascendantSign, T)}  |  ${useUnicode && locale === 'hi' ? 'राशि' : 'Rasi'}: ${sg(chart.moonSign, T)}  |  ${useUnicode && locale === 'hi' ? 'नक्षत्र' : 'Nakshatra'}: ${nakshatraVal}`, 105, 200, {align:'center'});
+    
     // Show language label so user knows this PDF matches their selected language
     doc.setFontSize(8); doc.setTextColor(120,100,60);
     doc.text(`Report Language: ${langLabel}  |  Numerical data identical across all languages`, 105, 265, {align:'center'});
@@ -77,42 +133,49 @@ export async function generateKundliPDF(
     if (imgs.birth) {
         doc.addImage(imgs.birth, 'PNG', 0, 0, 210, 297);
     } else {
-        H(doc,'Birth Attributes & Avakahada',2,TP);
-        ST(doc,'Birth Details',32);
-    autoTable(doc,{
-        startY:37, margin:{left:15},
-        head:[['Field','Value']],
-        body:[
-            ['Name', formData.name],
-            ['Date of Birth', formData.dob],
-            ['Time of Birth', formData.tob],
-            ['Place of Birth', formData.birthplace],
-            ['Lagna (Ascendant)', sg(chart.ascendantSign)],
-            ['Moon Sign (Rasi)', sg(chart.moonSign)],
-            ['Nakshatra (Birth Star)', nakshatraEn],
-            ['Nakshatra Pada', chart.nakshatraPada ? `Pada ${chart.nakshatraPada}` : '—'],
-            ['Nakshatra Number', chart.nakshatraId ? String(chart.nakshatraId) : '—'],
-            ['Report Language', langLabel],
-        ],
-        styles:{fontSize:10,cellPadding:4},
-        headStyles:{fillColor:[249,115,22],textColor:255},
-        alternateRowStyles:{fillColor:[250,250,250]},
-    });
-    const y2=(doc as any).lastAutoTable.finalY+10;
-    ST(doc,'Avakahada Chakra',y2,79,70,229);
-    autoTable(doc,{
-        startY:y2+5, margin:{left:15},
-        head:[['Attribute','Value','Attribute','Value']],
-        body:[
-            ['Varna', chart.avakahada?.varna||'—', 'Vashya', chart.avakahada?.vashya||'—'],
-            ['Tara',  chart.avakahada?.tara||'—',  'Yoni',   chart.avakahada?.yoni||'—'],
-            ['Gana',  chart.avakahada?.gana||'—',  'Nadi',   chart.avakahada?.nadi||'—'],
-            ['Moon Lord (Rashish)', chart.avakahada?.rashish||'—', 'Bhakoot', chart.avakahada?.bhakoot||'—'],
-        ],
-        styles:{fontSize:10,cellPadding:4},
-        headStyles:{fillColor:[79,70,229],textColor:255},
-        alternateRowStyles:{fillColor:[248,248,255]},
-    });
+        H(doc, useUnicode && locale === 'hi' ? 'जन्म गुण एवं अवकहड़ा' : 'Birth Attributes & Avakahada', 2, TP);
+        ST(doc, L.birthDetails, 32);
+        
+        autoTable(doc,{
+            startY:37, margin:{left:15},
+            head:[[useUnicode && locale === 'hi' ? 'विवरण' : 'Field', useUnicode && locale === 'hi' ? 'मान' : 'Value']],
+            body:[
+                [useUnicode && locale === 'hi' ? 'नाम' : 'Name', safeText(doc, formData.name, 'Seeker')],
+                [useUnicode && locale === 'hi' ? 'जन्म तिथि' : 'Date of Birth', formData.dob],
+                [useUnicode && locale === 'hi' ? 'जन्म समय' : 'Time of Birth', formData.tob],
+                [useUnicode && locale === 'hi' ? 'जन्म स्थान' : 'Place of Birth', safeText(doc, formData.birthplace, 'Birthplace')],
+                [useUnicode && locale === 'hi' ? 'लग्न (Ascendant)' : 'Lagna (Ascendant)', sg(chart.ascendantSign, T)],
+                [useUnicode && locale === 'hi' ? 'चंद्र राशि (Rasi)' : 'Moon Sign (Rasi)', sg(chart.moonSign, T)],
+                [useUnicode && locale === 'hi' ? 'नक्षत्र (Birth Star)' : 'Nakshatra (Birth Star)', nakshatraVal],
+                [useUnicode && locale === 'hi' ? 'नक्षत्र चरण' : 'Nakshatra Pada', chart.nakshatraPada ? `${useUnicode && locale === 'hi' ? 'चरण' : 'Pada'} ${chart.nakshatraPada}` : '—'],
+                [useUnicode && locale === 'hi' ? 'नक्षत्र संख्या' : 'Nakshatra Number', chart.nakshatraId ? String(chart.nakshatraId) : '—'],
+                [useUnicode && locale === 'hi' ? 'रिपोर्ट भाषा' : 'Report Language', langLabel],
+            ],
+            styles:{fontSize:useUnicode?9.5:10,cellPadding:4},
+            headStyles:{fillColor:[249,115,22],textColor:255},
+            alternateRowStyles:{fillColor:[250,250,250]},
+        });
+        
+        const y2=(doc as any).lastAutoTable.finalY+10;
+        ST(doc, L.avakahada, y2, 79,70,229);
+        autoTable(doc,{
+            startY:y2+5, margin:{left:15},
+            head:[[
+                useUnicode && locale === 'hi' ? 'गुण' : 'Attribute', 
+                useUnicode && locale === 'hi' ? 'मान' : 'Value', 
+                useUnicode && locale === 'hi' ? 'गुण' : 'Attribute', 
+                useUnicode && locale === 'hi' ? 'मान' : 'Value'
+            ]],
+            body:[
+                [useUnicode && locale === 'hi' ? 'वर्ण' : 'Varna', chart.avakahada?.varna||'—', useUnicode && locale === 'hi' ? 'वश्य' : 'Vashya', chart.avakahada?.vashya||'—'],
+                [useUnicode && locale === 'hi' ? 'तारा' : 'Tara',  chart.avakahada?.tara||'—',  useUnicode && locale === 'hi' ? 'योनि' : 'Yoni',   chart.avakahada?.yoni||'—'],
+                [useUnicode && locale === 'hi' ? 'गण' : 'Gana',  chart.avakahada?.gana||'—',  useUnicode && locale === 'hi' ? 'नाड़ी' : 'Nadi',   chart.avakahada?.nadi||'—'],
+                [useUnicode && locale === 'hi' ? 'राशि स्वामी' : 'Moon Lord (Rashish)', chart.avakahada?.rashish||'—', useUnicode && locale === 'hi' ? 'भकूट' : 'Bhakoot', chart.avakahada?.bhakoot||'—'],
+            ],
+            styles:{fontSize:useUnicode?9.5:10,cellPadding:4},
+            headStyles:{fillColor:[79,70,229],textColor:255},
+            alternateRowStyles:{fillColor:[248,248,255]},
+        });
     }
 
     // PAGE 3: Panchang
@@ -120,26 +183,27 @@ export async function generateKundliPDF(
     if (imgs.planets) {
         doc.addImage(imgs.planets, 'PNG', 0, 0, 210, 297);
     } else {
-        H(doc,'Daily Panchang at Birth',3,TP);
-        ST(doc,'Panchang Details',32);
-        // Tithi & Yoga may be index-based — resolve to name
+        H(doc, L.panchang, 3, TP);
+        ST(doc, L.panchangDetails, 32);
+        
         const safeStr = (v: any) => (typeof v === 'string' && /^[\x00-\x7F]*$/.test(v)) ? v : '';
         const resolveIdx = (arr: string[]|undefined, v: any) => typeof v === 'number' ? (arr?.[v] || `#${v}`) : safeStr(v);
-        const tithiVal = resolveIdx(EN.panchang?.tithi, chart.panchang?.tithiId) || '—';
-        const yogaVal  = resolveIdx(EN.panchang?.yoga,  chart.panchang?.yogaId)  || '—';
-        const karanVal = resolveIdx(EN.panchang?.karan, chart.panchang?.karanaId)|| '—';
-        const varaVal  = resolveIdx(EN.panchang?.vara,  chart.panchang?.vara)  || '—';
+        const tithiVal = resolveIdx(T.panchang?.tithi, chart.panchang?.tithiId) || '—';
+        const yogaVal  = resolveIdx(T.panchang?.yoga,  chart.panchang?.yogaId)  || '—';
+        const karanVal = resolveIdx(T.panchang?.karan, chart.panchang?.karanaId)|| '—';
+        const varaVal  = resolveIdx(T.panchang?.vara,  chart.panchang?.vara)  || '—';
+        
         autoTable(doc,{
             startY:37, margin:{left:15},
-            head:[['Panchang Element','Value']],
+            head:[[useUnicode && locale === 'hi' ? 'पंचांग तत्व' : 'Panchang Element', useUnicode && locale === 'hi' ? 'मान' : 'Value']],
             body:[
-                ['Tithi (Lunar Day)', tithiVal],
-                ['Nakshatra (Birth Star)', nakshatraEn],
-                ['Yoga', yogaVal],
-                ['Karana', karanVal],
-                ['Vara (Weekday)', varaVal],
-                ['Sunrise', safeStr(chart.panchang?.sunrise) || '—'],
-                ['Sunset',  safeStr(chart.panchang?.sunset)  || '—'],
+                [useUnicode && locale === 'hi' ? 'तिथि (Lunar Day)' : 'Tithi (Lunar Day)', tithiVal],
+                [useUnicode && locale === 'hi' ? 'नक्षत्र (Birth Star)' : 'Nakshatra (Birth Star)', nakshatraVal],
+                [useUnicode && locale === 'hi' ? 'योग' : 'Yoga', yogaVal],
+                [useUnicode && locale === 'hi' ? 'करण' : 'Karana', karanVal],
+                [useUnicode && locale === 'hi' ? 'वार (Weekday)' : 'Vara (Weekday)', varaVal],
+                [useUnicode && locale === 'hi' ? 'सूर्योदय' : 'Sunrise', safeStr(chart.panchang?.sunrise) || '—'],
+                [useUnicode && locale === 'hi' ? 'सूर्यास्त' : 'Sunset',  safeStr(chart.panchang?.sunset)  || '—'],
             ],
             styles:{fontSize:11,cellPadding:5},
             headStyles:{fillColor:[30,90,180],textColor:255},
@@ -149,55 +213,23 @@ export async function generateKundliPDF(
 
     // PAGES 4-7: Charts
     const chartDefs=[
-        {img:imgs.d1, label:'Lagna / Birth Chart (D1)', pg:4},
-        {img:imgs.d9, label:'Navamsa Chart (D9)',       pg:5},
-        {img:imgs.moon,label:'Chandra Lagna (Moon Chart)',pg:6},
-        {img:imgs.d10,label:'Dasamsa Chart (D10)',      pg:7},
+        {img:imgs.d1, label: useUnicode && locale === 'hi' ? 'लग्न / जन्म कुंडली (D1)' : 'Lagna / Birth Chart (D1)', pg:4},
+        {img:imgs.d9, label: useUnicode && locale === 'hi' ? 'नवांश कुंडली (D9)' : 'Navamsa Chart (D9)',       pg:5},
+        {img:imgs.moon,label: useUnicode && locale === 'hi' ? 'चन्द्र लग्न कुंडली' : 'Chandra Lagna (Moon Chart)',pg:6},
+        {img:imgs.d10,label: useUnicode && locale === 'hi' ? 'दशमांश कुंडली (D10)' : 'Dasamsa Chart (D10)',      pg:7},
     ];
-    // Helper: Draw North Indian Kundli chart programmatically in jsPDF
+
     const drawNIChart = (houseData: {[h:number]:string[]}, ascLong: number, ox: number, oy: number, size: number) => {
         const s = size; const h = s/2; const q = s/4;
-        // Outer border
         doc.setDrawColor(249,115,22); doc.setLineWidth(0.5);
         doc.rect(ox, oy, s, s);
-        // Inner diamond
         doc.line(ox+h, oy,     ox+s, oy+h);
         doc.line(ox+s, oy+h,   ox+h, oy+s);
         doc.line(ox+h, oy+s,   ox,   oy+h);
         doc.line(ox,   oy+h,   ox+h, oy);
-        // Cross lines
         doc.line(ox,oy,   ox+s,oy+s);
         doc.line(ox+s,oy, ox,oy+s);
-        // House centers [cx,cy] for houses 1-12 (North Indian layout)
-        const hc:number[][] = [
-            [ox+h,   oy+h],   // 1
-            [ox+q,   oy+q],   // 2
-            [ox,     oy],     // 3  (top-left corner, approx)
-            [ox+q,   oy+h],   // 4  (left middle)
-            [ox,     oy+s],   // 5
-            [ox+q,   oy+3*q], // 6
-            [ox+h,   oy+h],   // 7 same center as 1 - adjust
-            [ox+3*q, oy+3*q], // 8
-            [ox+s,   oy+s],   // 9
-            [ox+3*q, oy+h],   // 10
-            [ox+s,   oy],     // 11
-            [ox+3*q, oy+q],   // 12
-        ];
-        // Proper North Indian house positions
-        const pos:Array<[number,number]> = [
-            [ox+h,   oy+q*0.7],  // 1  top center
-            [ox+q*0.7, oy+q*0.7],// 2  top-left
-            [ox+q*0.3, oy+h],    // 3  left-top
-            [ox+q*0.7, oy+3*q],  // 4  left-bottom 
-            [ox+h,   oy+s-q*0.7],// 5  bottom center
-            [ox+3*q+q*0.3,oy+3*q],//6  right-bottom
-            [ox+s-q*0.7,oy+h],   // 7  right-top -- not right, but ok
-            [ox+3*q+q*0.3,oy+q*0.7],//8 right-top area
-            [ox+s-q*0.3,oy+q*0.3], //9 top-right corner
-            [ox+3*q,oy+h],       // 10 right-center
-            [ox+s-q*0.3,oy+s-q*0.3],//11 bottom-right
-            [ox+3*q,oy+3*q],     // 12
-        ];
+        
         const hPos:Array<[number,number]> = [
             [ox+h,      oy+q],         // H1
             [ox+q,      oy+s*0.1],     // H2
@@ -212,21 +244,17 @@ export async function generateKundliPDF(
             [ox+s*0.9,  oy+q],         // H11
             [ox+s*0.75, oy+s*0.1],     // H12
         ];
-        // Planet colors
         const pColors:Record<string,number[]> = {
             Sun:[249,115,22],Moon:[96,165,250],Mars:[248,113,113],
             Mercury:[74,222,128],Jupiter:[250,204,21],Venus:[244,114,182],
             Saturn:[167,139,250],Rahu:[148,163,184],Ketu:[100,116,139],Asc:[249,115,22]
         };
         const ascSign = Math.floor((ascLong||0)/30);
-        // Draw house numbers and planets
         for(let h=1;h<=12;h++){
             const [cx,cy] = hPos[h-1];
             const signNum = ((ascSign + h - 1) % 12) + 1;
-            // House number (small)
             doc.setFontSize(6.5); doc.setTextColor(150,150,150); doc.setFont('helvetica','normal');
             doc.text(String(signNum), cx, cy-4, {align:'center'});
-            // Planets in this house
             const planets = houseData[h] || [];
             planets.forEach((pName, idx) => {
                 const col = pColors[pName] || [80,80,80];
@@ -245,18 +273,16 @@ export async function generateKundliPDF(
         if(img){
             doc.addImage(img,'PNG',35,42,140,140);
         } else {
-            // Draw chart programmatically from chart data
             const chartKey = pg===4?'D1':pg===5?'D9':pg===6?'Moon':'D10';
             const houseData = chart.charts?.[chartKey] || {};
             const ascLong = chartKey === 'D9' ? (chart.d9Ascendant || 0) : chartKey === 'D10' ? (chart.d10Ascendant || 0) : chartKey === 'Moon' ? (chart.moonLongitude || 0) : (chart.ascendantLongitude || 0);
             drawNIChart(houseData, ascLong, 35, 38, 140);
-            // Planet legend below chart
             const legendPlanets = [['Su','Sun',[249,115,22]],['Mo','Moon',[96,165,250]],['Ma','Mars',[248,113,113]],['Me','Mercury',[74,222,128]],['Ju','Jupiter',[250,204,21]],['Ve','Venus',[244,114,182]],['Sa','Saturn',[167,139,250]],['Ra','Rahu',[148,163,184]],['Ke','Ketu',[100,116,139]]];
             let lx=15; const ly=190;
             legendPlanets.forEach(([short,name,col]:any)=>{
                 doc.setFillColor(col[0],col[1],col[2]); doc.circle(lx+2,ly-1,1.5,'F');
                 doc.setFontSize(7); doc.setTextColor(60,60,60);
-                doc.text(`${short}=${name}`,lx+5,ly);
+                doc.text(`${short}=${pl(name, T)}`,lx+5,ly);
                 lx+=28;
                 if(lx>185){lx=15;}
             });
@@ -264,120 +290,159 @@ export async function generateKundliPDF(
     });
 
     // PAGE 8: Planetary Positions
-    doc.addPage(); H(doc,'Planetary Positions',8,TP);
-    ST(doc,'Planetary Positions',32);
+    doc.addPage(); H(doc, L.planetaryPositions, 8, TP);
+    ST(doc, L.planetaryPositions, 32);
     autoTable(doc,{
         startY:38, margin:{left:15},
-        head:[['Planet','Sign','Degree','Nakshatra','House','Status']],
+        head:[[
+            useUnicode && locale === 'hi' ? 'ग्रह' : 'Planet',
+            useUnicode && locale === 'hi' ? 'राशि' : 'Sign',
+            useUnicode && locale === 'hi' ? 'अंश' : 'Degree',
+            useUnicode && locale === 'hi' ? 'नक्षत्र' : 'Nakshatra',
+            useUnicode && locale === 'hi' ? 'भाव' : 'House',
+            useUnicode && locale === 'hi' ? 'अवस्था' : 'Status'
+        ]],
         body:(chart.planets||[]).map((p:any)=>[
-            pl(p.name),
-            sg(p.sign),
+            pl(p.name, T),
+            sg(p.sign, T),
             p.longitude != null ? `${Math.floor(p.longitude%30)}\u00b0 ${Math.floor((p.longitude%1)*60)}'` : '—',
-            nk(p.nakshatraId) || '—',
+            p.nakshatraId ? nk(p.nakshatraId, T) : '—',
             p.house != null ? String(p.house) : '—',
-            p.isExalted ? 'Exalted' : p.isDebilitated ? 'Debilitated' : 'Neutral',
+            p.isExalted 
+                ? (useUnicode && locale === 'hi' ? 'उच्च' : 'Exalted') 
+                : p.isDebilitated 
+                    ? (useUnicode && locale === 'hi' ? 'नीच' : 'Debilitated') 
+                    : (useUnicode && locale === 'hi' ? 'समान्य' : 'Neutral'),
         ]),
-        styles:{fontSize:9,cellPadding:3},
+        styles:{fontSize:useUnicode?9:9.5,cellPadding:3},
         headStyles:{fillColor:[109,40,217],textColor:255},
         alternateRowStyles:{fillColor:[248,245,255]},
         didParseCell:(data:any)=>{
             if(data.column.index===5){
-                if(data.cell.raw==='Exalted') data.cell.styles.textColor=[34,197,94];
-                if(data.cell.raw==='Debilitated') data.cell.styles.textColor=[220,38,38];
+                if(data.cell.raw==='Exalted' || data.cell.raw==='उच्च') data.cell.styles.textColor=[34,197,94];
+                if(data.cell.raw==='Debilitated' || data.cell.raw==='नीच') data.cell.styles.textColor=[220,38,38];
             }
         },
     });
 
-    // PAGE 9: Dasha Timeline — API returns dasha.mahadashas[]
+    // PAGE 9: Dasha Timeline
     const nowMs = Date.now();
     const mahadashas: any[] = chart.dasha?.mahadashas || [];
-    // Find active mahadasha
     const activeMaha = mahadashas.find((m:any) => {
         const s=new Date(m.start).getTime(), e=new Date(m.end).getTime();
         return nowMs>=s && nowMs<=e;
     }) || mahadashas[0];
-    // Find active antardasha within active mahadasha
     const activeAntar = activeMaha?.antardashas?.find((a:any) => {
         const s=new Date(a.start).getTime(), e=new Date(a.end).getTime();
         return nowMs>=s && nowMs<=e;
     }) || activeMaha?.antardashas?.[0];
     const maha = activeMaha?.lord || '—';
     const antar = activeAntar?.lord || '—';
-    // PAGE 9: Dasha Timeline
+
     doc.addPage();
     if (imgs.dasha) {
         doc.addImage(imgs.dasha, 'PNG', 0, 0, 210, 297);
     } else {
-        H(doc,'Vimshottari Dasha Timeline',9,TP);
-        ST(doc,'Current Active Dasha',32);
+        H(doc, useUnicode && locale === 'hi' ? 'विंशोत्तरी दशा' : 'Vimshottari Dasha Timeline', 9, TP);
+        ST(doc, L.currentActiveDasha, 32);
+        
         autoTable(doc,{
             startY:38, margin:{left:15}, tableWidth:130,
-            head:[['Dasha Level','Planet Lord','Period']],
+            head:[[
+                useUnicode && locale === 'hi' ? 'दशा स्तर' : 'Dasha Level',
+                useUnicode && locale === 'hi' ? 'दशा स्वामी' : 'Planet Lord',
+                useUnicode && locale === 'hi' ? 'अवधि' : 'Period'
+            ]],
             body:[
-                ['Mahadasha (Major)', pl(maha),
+                [useUnicode && locale === 'hi' ? 'महादशा (दीर्घ)' : 'Mahadasha (Major)', pl(maha, T),
                     activeMaha ? `${new Date(activeMaha.start).getFullYear()} — ${new Date(activeMaha.end).getFullYear()}` : '—'],
-                ['Antardasha (Sub)', pl(antar),
+                [useUnicode && locale === 'hi' ? 'अंतर्दशा (लघु)' : 'Antardasha (Sub)', pl(antar, T),
                     activeAntar ? `${new Date(activeAntar.start).toLocaleDateString('en-IN',{month:'short',year:'numeric'})} — ${new Date(activeAntar.end).toLocaleDateString('en-IN',{month:'short',year:'numeric'})}` : '—'],
-                ['Pratyantardasha','—','—'],
+                [useUnicode && locale === 'hi' ? 'प्रत्यंतर्दशा' : 'Pratyantardasha','—','—'],
             ],
-            styles:{fontSize:10,cellPadding:5},
+            styles:{fontSize:useUnicode?9.5:10,cellPadding:5},
             headStyles:{fillColor:[249,115,22],textColor:255},
         });
+        
         const y9=(doc as any).lastAutoTable.finalY+10;
-        ST(doc,'Full Vimshottari Dasha Timeline (120 Year Cycle)',y9,79,70,229);
+        ST(doc, L.dashaTimeline, y9, 79,70,229);
         if(mahadashas.length===0){
             doc.setFontSize(10); doc.setTextColor(120,120,120);
-            doc.text('Dasha data not available. Please regenerate the Kundli.', 15, y9+12);
+            doc.text(useUnicode && locale === 'hi' ? 'दशा डेटा उपलब्ध नहीं है।' : 'Dasha data not available. Please regenerate the Kundli.', 15, y9+12);
         } else {
             autoTable(doc,{
                 startY:y9+5, margin:{left:15},
-                head:[['Planet','Start','End','Yrs','Active Antardasha','Status']],
+                head:[[
+                    useUnicode && locale === 'hi' ? 'ग्रह' : 'Planet',
+                    useUnicode && locale === 'hi' ? 'शुरुआत' : 'Start',
+                    useUnicode && locale === 'hi' ? 'समाप्ति' : 'End',
+                    useUnicode && locale === 'hi' ? 'वर्ष' : 'Yrs',
+                    useUnicode && locale === 'hi' ? 'सक्रिय अंतर्दशा' : 'Active Antardasha',
+                    useUnicode && locale === 'hi' ? 'अवस्था' : 'Status'
+                ]],
                 body:mahadashas.map((m:any)=>{
                     const s=new Date(m.start), e=new Date(m.end);
                     const isActive=nowMs>=s.getTime()&&nowMs<=e.getTime();
                     const isPast=nowMs>e.getTime();
                     const dur=((e.getTime()-s.getTime())/(365.25*24*3600*1000)).toFixed(1);
                     const curAD=m.antardashas?.find((a:any)=>nowMs>=new Date(a.start).getTime()&&nowMs<=new Date(a.end).getTime());
+                    
+                    let statusLabel = isActive ? 'ACTIVE' : isPast ? 'Done' : 'Future';
+                    if (useUnicode && locale === 'hi') {
+                        statusLabel = isActive ? 'सक्रिय' : isPast ? 'पूर्ण' : 'भविष्य';
+                    }
                     return[
-                        pl(m.lord),
+                        pl(m.lord, T),
                         s.toLocaleDateString('en-IN',{year:'numeric',month:'short'}),
                         e.toLocaleDateString('en-IN',{year:'numeric',month:'short'}),
                         dur,
-                        curAD ? pl(curAD.lord) : '—',
-                        isActive?'ACTIVE':isPast?'Done':'Future',
+                        curAD ? pl(curAD.lord, T) : '—',
+                        statusLabel,
                     ];
                 }),
-                styles:{fontSize:8.5,cellPadding:3},
+                styles:{fontSize:useUnicode?8:8.5,cellPadding:3},
                 headStyles:{fillColor:[79,70,229],textColor:255},
                 alternateRowStyles:{fillColor:[248,248,255]},
                 didParseCell:(data:any)=>{
-                    if(data.column.index===5&&data.cell.raw==='ACTIVE'){
+                    if((data.column.index===5)&&(data.cell.raw==='ACTIVE' || data.cell.raw==='सक्रिय')){
                         data.cell.styles.textColor=[249,115,22];
                         data.cell.styles.fontStyle='bold';
                     }
                 },
             });
-            // Antardasha detail for active mahadasha
+            
             if(activeMaha?.antardashas?.length>0){
                 const yAD=(doc as any).lastAutoTable.finalY+8;
                 if(yAD<260){
-                    ST(doc,`Antardasha Schedule — ${pl(maha)} Mahadasha`,yAD,109,40,217);
+                    ST(doc, useUnicode && locale === 'hi' ? `अंतर्दशा अनुसूची — स्वामी: ${pl(maha, T)}` : `Antardasha Schedule — ${pl(maha, T)} Mahadasha`, yAD, 109,40,217);
                     autoTable(doc,{
                         startY:yAD+5, margin:{left:15},
-                        head:[['Sub-Lord','Start','End','Status']],
+                        head:[[
+                            useUnicode && locale === 'hi' ? 'उप-स्वामी' : 'Sub-Lord',
+                            useUnicode && locale === 'hi' ? 'शुरुआत' : 'Start',
+                            useUnicode && locale === 'hi' ? 'समाप्ति' : 'End',
+                            useUnicode && locale === 'hi' ? 'अवस्था' : 'Status'
+                        ]],
                         body:activeMaha.antardashas.map((a:any)=>{
                             const as=new Date(a.start),ae=new Date(a.end);
                             const ia=nowMs>=as.getTime()&&nowMs<=ae.getTime();
                             const ip=nowMs>ae.getTime();
-                            return[pl(a.lord),
+                            
+                            let statusLabel = ia ? 'ACTIVE' : ip ? 'Done' : 'Upcoming';
+                            if (useUnicode && locale === 'hi') {
+                                statusLabel = ia ? 'सक्रिय' : ip ? 'पूर्ण' : 'आगामी';
+                            }
+                            return[
+                                pl(a.lord, T),
                                 as.toLocaleDateString('en-IN',{month:'short',year:'numeric'}),
                                 ae.toLocaleDateString('en-IN',{month:'short',year:'numeric'}),
-                                ia?'ACTIVE':ip?'Done':'Upcoming'];
+                                statusLabel
+                            ];
                         }),
-                        styles:{fontSize:8,cellPadding:2.5},
+                        styles:{fontSize:useUnicode?7.5:8,cellPadding:2.5},
                         headStyles:{fillColor:[109,40,217],textColor:255},
                         didParseCell:(data:any)=>{
-                            if(data.column.index===3&&data.cell.raw==='ACTIVE'){
+                            if((data.column.index===3)&&(data.cell.raw==='ACTIVE' || data.cell.raw==='सक्रिय')){
                                 data.cell.styles.textColor=[249,115,22];
                                 data.cell.styles.fontStyle='bold';
                             }
@@ -393,36 +458,62 @@ export async function generateKundliPDF(
     if (imgs.ashtak) {
         doc.addImage(imgs.ashtak, 'PNG', 0, 0, 210, 297);
     } else {
-        H(doc,'Ashtakvarga Analysis',10,TP);
-        ST(doc,'Sarvashtakvarga — Strength Score per Zodiac Sign',32);
+        H(doc, L.ashtakvarga, 10, TP);
+        ST(doc, L.ashtakvargaStrength, 32);
+        
         doc.setFontSize(8.5); doc.setTextColor(100,100,100);
-        doc.text('Score Guide: 30+ = Excellent  |  25-29 = Good  |  20-24 = Medium  |  Below 20 = Weak', 15,41);
+        doc.text(
+            useUnicode && locale === 'hi' 
+                ? 'अंक मार्गदर्शिका: 30+ = उत्कृष्ट  |  25-29 = उत्तम  |  20-24 = मध्यम  |  20 से कम = कमजोर'
+                : 'Score Guide: 30+ = Excellent  |  25-29 = Good  |  20-24 = Medium  |  Below 20 = Weak', 
+            15,41
+        );
+        
         const total672=_SIGNS_EN.reduce((acc:number,_:string,i:number)=>acc+(chart.ashtakvarga?.sarva?.[i]||28),0);
         doc.setFontSize(9); doc.setTextColor(79,70,229);
-        doc.text(`Total Sarvashtakvarga Score: ${total672} / 337 (avg ${(total672/12).toFixed(1)} per sign)`, 15, 47);
+        doc.text(
+            useUnicode && locale === 'hi'
+                ? `कुल सर्वाष्टकवर्ग स्कोर: ${total672} / 337 (औसत ${(total672/12).toFixed(1)} प्रति राशि)`
+                : `Total Sarvashtakvarga Score: ${total672} / 337 (avg ${(total672/12).toFixed(1)} per sign)`, 
+            15, 47
+        );
+        
         autoTable(doc,{
             startY:52, margin:{left:15},
-            head:[['Sign','Pts','Strength','Sign','Pts','Strength']],
+            head:[[
+                useUnicode && locale === 'hi' ? 'राशि' : 'Sign',
+                useUnicode && locale === 'hi' ? 'अंक' : 'Pts',
+                useUnicode && locale === 'hi' ? 'शक्ति' : 'Strength',
+                useUnicode && locale === 'hi' ? 'राशि' : 'Sign',
+                useUnicode && locale === 'hi' ? 'अंक' : 'Pts',
+                useUnicode && locale === 'hi' ? 'शक्ति' : 'Strength'
+            ]],
             body:(()=>{
                 const rows:any[]=[];
                 const sarva = chart.ashtakvarga?.sarva || [];
                 for(let i=0;i<12;i+=2){
                     const p1 = typeof sarva[i]   === 'number' ? sarva[i]   : 28;
                     const p2 = typeof sarva[i+1] === 'number' ? sarva[i+1] : 28;
-                    const s=(n:number)=>n>=30?'Excellent':n>=25?'Good':n>=20?'Medium':'Weak';
-                    rows.push([_SIGNS_EN[i], p1, s(p1), _SIGNS_EN[i+1], p2, s(p2)]);
+                    
+                    const s = (n:number) => {
+                        if (useUnicode && locale === 'hi') {
+                            return n>=30?'उत्कृष्ट':n>=25?'उत्तम':n>=20?'मध्यम':'कमजोर';
+                        }
+                        return n>=30?'Excellent':n>=25?'Good':n>=20?'Medium':'Weak';
+                    };
+                    rows.push([sg(_SIGNS_EN[i], T), p1, s(p1), sg(_SIGNS_EN[i+1], T), p2, s(p2)]);
                 }
                 return rows;
             })(),
-            styles:{fontSize:10,cellPadding:4},
+            styles:{fontSize:useUnicode?9.5:10,cellPadding:4},
             headStyles:{fillColor:[161,98,7],textColor:255},
             alternateRowStyles:{fillColor:[255,251,235]},
             didParseCell:(data:any)=>{
                 const v=data.cell.raw;
-                if(v==='Excellent') data.cell.styles.textColor=[22,163,74];
-                if(v==='Good')      data.cell.styles.textColor=[59,130,246];
-                if(v==='Medium')    data.cell.styles.textColor=[161,98,7];
-                if(v==='Weak')      data.cell.styles.textColor=[220,38,38];
+                if(v==='Excellent' || v==='उत्कृष्ट') data.cell.styles.textColor=[22,163,74];
+                if(v==='Good' || v==='उत्तम')      data.cell.styles.textColor=[59,130,246];
+                if(v==='Medium' || v==='मध्यम')    data.cell.styles.textColor=[161,98,7];
+                if(v==='Weak' || v==='कमजोर')      data.cell.styles.textColor=[220,38,38];
             },
         });
     }
@@ -432,31 +523,44 @@ export async function generateKundliPDF(
     if (imgs.doshas) {
         doc.addImage(imgs.doshas, 'PNG', 0, 0, 210, 297);
     } else {
-        H(doc,'Dosha Analysis',11,TP);
-        ST(doc,'Dosha Analysis',32);
+        H(doc, L.doshaAnalysis, 11, TP);
+        ST(doc, L.doshaAnalysis, 32);
         let yD=40;
+        
         Object.entries(chart.doshas||{}).forEach(([key,data]:any)=>{
-            const info=EN.doshas?.[key as keyof typeof EN.doshas] as any;
-            const name=info?.name||key;
-            const desc=info?.description||data.description||'No major influence detected in this area.';
-            const rems:string[]=data.present?(info?.remedies||[]):[];
+            const info = T.doshas?.[key as keyof typeof T.doshas] as any;
+            const name = info?.name || key;
+            const desc = info?.description || data.description || (useUnicode && locale === 'hi' ? 'इस क्षेत्र में कोई बड़ा प्रभाव नहीं पाया गया।' : 'No major influence detected in this area.');
+            const rems:string[] = data.present ? (info?.remedies || []) : [];
             const boxH=32+rems.length*5.5;
-            if(yD+boxH>268){doc.addPage();H(doc,'Dosha Analysis (contd.)',11,TP);yD=30;}
+            
+            if(yD+boxH>268){
+                doc.addPage();
+                H(doc, useUnicode && locale === 'hi' ? 'दोष विश्लेषण (क्रमशः)' : 'Dosha Analysis (contd.)', 11, TP);
+                yD=30;
+            }
+            
             const bg=data.present?[255,240,240]:[240,255,245];
             const bc=data.present?[220,50,50]:[34,197,94];
             doc.setFillColor(bg[0],bg[1],bg[2]);
             doc.setDrawColor(bc[0],bc[1],bc[2]);
             doc.setLineWidth(0.5);
             doc.roundedRect(15,yD,180,boxH,2,2,'FD');
+            
             doc.setFontSize(11); doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-            doc.text(`${name}  —  ${data.present?'PRESENT':'ABSENT'}`, 20, yD+8);
+            const statusStr = data.present 
+                ? (useUnicode && locale === 'hi' ? 'उपस्थित' : 'PRESENT') 
+                : (useUnicode && locale === 'hi' ? 'अनुपस्थित' : 'ABSENT');
+            doc.text(`${name}  —  ${statusStr}`, 20, yD+8);
+            
             doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70,70,70);
             const dL=doc.splitTextToSize(desc,168);
             doc.text(dL,20,yD+15);
+            
             if(rems.length){
                 const ry=yD+15+dL.length*5;
                 doc.setFontSize(8); doc.setTextColor(249,115,22);
-                doc.text('Remedies:',20,ry);
+                doc.text(useUnicode && locale === 'hi' ? 'उपाय:' : 'Remedies:', 20, ry);
                 doc.setTextColor(60,60,60);
                 rems.forEach((r:string,ri:number)=>doc.text(`- ${r}`,24,ry+5+ri*5.5));
             }
@@ -473,28 +577,27 @@ export async function generateKundliPDF(
         if (imgs.pWealth) { doc.addPage(); doc.addImage(imgs.pWealth, 'PNG', 0, 0, 210, 297); }
         if (imgs.pEdu)    { doc.addPage(); doc.addImage(imgs.pEdu,    'PNG', 0, 0, 210, 297); }
     } else {
-        const predData = chart.predictionsEn || chart.predictions || {};
+        const predData = useUnicode ? (chart.predictions || {}) : (chart.predictionsEn || chart.predictions || {});
         const predEntries = Object.entries(predData);
         
-        doc.addPage(); H(doc,'Life Predictions',12,TP);
-        ST(doc,'Life Area Predictions',32,79,70,229);
+        doc.addPage(); H(doc, L.lifePredictions, 12, TP);
+        ST(doc, L.lifeAreaPredictions, 32, 79,70,229);
         predY = 40;
         
         predEntries.forEach(([area, text]: any) => {
-            const label = (EN.labels?.life_predictions as any)?.[area] || area;
-            const safeT = typeof text === 'string' && /^[\x00-\xFF]*$/.test(text) ? text : 'See website for details.';
+            const label = (T.labels?.life_predictions as any)?.[area] || area;
+            const safeT = useUnicode ? String(text) : (typeof text === 'string' && /^[\x00-\xFF]*$/.test(text) ? text : 'Detailed prediction details generated inside platform.');
             
             doc.setFontSize(11); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
             doc.text(label, 15, predY); predY += 6;
-            
             doc.setFillColor(249,115,22); doc.rect(15, predY, 180, 0.5, 'F'); predY += 5;
             
             doc.setFontSize(10); doc.setTextColor(40,40,40); doc.setFont('helvetica','normal');
             const lines = doc.splitTextToSize(safeT, 175);
             
-            // Check if we need a new page
             if (predY + (lines.length * 5) > 280) {
-                doc.addPage(); H(doc,'Life Predictions (Continued)', 13, TP);
+                doc.addPage(); 
+                H(doc, useUnicode && locale === 'hi' ? 'जीवन भविष्यफल (क्रमशः)' : 'Life Predictions (Continued)', 13, TP);
                 predY = 30;
             }
             
@@ -506,14 +609,21 @@ export async function generateKundliPDF(
     // Add Yogas if there is space, otherwise new page
     if (chart.yogas && chart.yogas.length > 0) {
         if (predY > 220) {
-            doc.addPage(); H(doc,'Important Yogas', 14, TP);
+            doc.addPage(); H(doc, L.yogas, 14, TP);
             predY = 30;
         }
-        ST(doc,'Yogas Detected in Your Chart', predY, 161, 98, 7); predY += 8;
+        ST(doc, L.yogasDetected, predY, 161, 98, 7); predY += 8;
+        
         autoTable(doc, {
             startY: predY, margin: { left: 15 },
-            head: [['Yoga Name', 'Effect']],
-            body: chart.yogas.map((y: any) => [y.name || '—', y.effects || y.description || '—']),
+            head: [[
+                useUnicode && locale === 'hi' ? 'योग नाम' : 'Yoga Name', 
+                useUnicode && locale === 'hi' ? 'प्रभाव / विवरण' : 'Effect'
+            ]],
+            body: chart.yogas.map((y: any) => [
+                y.name || '—', 
+                y.effects || y.description || '—'
+            ]),
             styles: { fontSize: 9, cellPadding: 4 },
             headStyles: { fillColor: [161, 98, 7], textColor: 255 },
             alternateRowStyles: { fillColor: [255, 251, 235] },
@@ -521,53 +631,151 @@ export async function generateKundliPDF(
     }
 
     // PAGE 17: Remedies & Gemstones
-    doc.addPage(); H(doc,'Remedies & Gemstones',17,TP);
-    ST(doc,'Gemstone Recommendations',32);
+    doc.addPage(); H(doc, useUnicode && locale === 'hi' ? 'उपाय एवं रत्न' : 'Remedies & Gemstones', 17, TP);
+    ST(doc, L.gemstones, 32);
+    
     autoTable(doc,{
         startY:38, margin:{left:15},
-        head:[['Type','Gemstone','Wear Day','Finger','Metal','Weight','Mantra']],
+        head:[[
+            useUnicode && locale === 'hi' ? 'प्रकार' : 'Type',
+            useUnicode && locale === 'hi' ? 'रत्न' : 'Gemstone',
+            useUnicode && locale === 'hi' ? 'धारण दिन' : 'Wear Day',
+            useUnicode && locale === 'hi' ? 'अंगुली' : 'Finger',
+            useUnicode && locale === 'hi' ? 'धातु' : 'Metal',
+            useUnicode && locale === 'hi' ? 'वजन' : 'Weight',
+            useUnicode && locale === 'hi' ? 'मंत्र' : 'Mantra'
+        ]],
         body:[
-            ['Life Stone',    EN.gemstones.Sun||'Ruby',             'Sunday',   'Ring Finger',   'Gold',  '3-5 Ratti','Om Suryaya Namah'],
-            ['Lucky Stone',   EN.gemstones.Jupiter||'Yel. Sapphire','Thursday', 'Index Finger',  'Gold',  '5-7 Ratti','Om Guruve Namah'],
-            ['Benefic Stone', EN.gemstones.Moon||'Pearl',           'Monday',   'Little Finger', 'Silver','5-7 Ratti','Om Chandraya Namah'],
+            [
+                useUnicode && locale === 'hi' ? 'जीवन रत्न' : 'Life Stone',
+                T.gemstones?.Sun || 'Ruby',
+                useUnicode && locale === 'hi' ? 'रविवार' : 'Sunday',
+                useUnicode && locale === 'hi' ? 'अनामिका' : 'Ring Finger',
+                useUnicode && locale === 'hi' ? 'सोना' : 'Gold',
+                '3-5 Ratti',
+                'Om Suryaya Namah'
+            ],
+            [
+                useUnicode && locale === 'hi' ? 'भाग्य रत्न' : 'Lucky Stone',
+                T.gemstones?.Jupiter || 'Yellow Sapphire',
+                useUnicode && locale === 'hi' ? 'गुरुवार' : 'Thursday',
+                useUnicode && locale === 'hi' ? 'तर्जनी' : 'Index Finger',
+                useUnicode && locale === 'hi' ? 'सोना' : 'Gold',
+                '5-7 Ratti',
+                'Om Guruve Namah'
+            ],
+            [
+                useUnicode && locale === 'hi' ? 'कारक रत्न' : 'Benefic Stone',
+                T.gemstones?.Moon || 'Pearl',
+                useUnicode && locale === 'hi' ? 'सोमवार' : 'Monday',
+                useUnicode && locale === 'hi' ? 'कनिष्ठिका' : 'Little Finger',
+                useUnicode && locale === 'hi' ? 'चांदी' : 'Silver',
+                '5-7 Ratti',
+                'Om Chandraya Namah'
+            ],
         ],
-        styles:{fontSize:8.5,cellPadding:3},
+        styles:{fontSize:useUnicode?8:8.5,cellPadding:3},
         headStyles:{fillColor:[161,98,7],textColor:255},
         alternateRowStyles:{fillColor:[255,251,235]},
     });
+    
     const yR=(doc as any).lastAutoTable.finalY+10;
-    ST(doc,'Spiritual Remedies',yR,79,70,229);
+    ST(doc, L.remedies, yR, 79,70,229);
     autoTable(doc,{
         startY:yR+5, margin:{left:15},
-        head:[['Remedy','Detailed Instructions']],
+        head:[[
+            useUnicode && locale === 'hi' ? 'उपाय प्रकार' : 'Remedy', 
+            useUnicode && locale === 'hi' ? 'मार्गदर्शन' : 'Detailed Instructions'
+        ]],
         body:[
-            ['Mahadasha Remedy', `${pl(chart.dasha?.currentLords?.[0]||'Sun')} Mahadasha is active. Recite its Beej Mantra 108 times daily, preferably after sunrise.`],
-            ['Shani (Saturn) Remedy', 'Every Saturday, offer water to a peepal tree. Donate black sesame, urad dal, or mustard oil. Install Shani Yantra at home.'],
-            ['Mangal (Mars) Remedy', 'Every Tuesday, recite Hanuman Chalisa. Donate red cloth or red lentils. Blood donation is also highly beneficial.'],
-            ['Surya (Sun) Remedy', 'Every morning, offer water to the Sun with red flowers and sandalwood. Recite Aditya Hridayam. Wear copper ring on right hand.'],
-            ['Rahu Remedy', 'Donate blue/black items on Saturdays. Recite "Om Rahave Namah" 18 times. Avoid non-vegetarian food on Saturdays.'],
+            [
+                useUnicode && locale === 'hi' ? 'सक्रिय महादशा उपाय' : 'Mahadasha Remedy', 
+                useUnicode && locale === 'hi' 
+                    ? `${pl(chart.dasha?.currentLords?.[0]||'Sun', T)} महादशा सक्रिय है। प्रतिदिन सूर्योदय के बाद 108 बार इसके बीज मंत्र का जाप करें।`
+                    : `${pl(chart.dasha?.currentLords?.[0]||'Sun', T)} Mahadasha is active. Recite its Beej Mantra 108 times daily, preferably after sunrise.`
+            ],
+            [
+                useUnicode && locale === 'hi' ? 'शनि देव उपाय' : 'Shani (Saturn) Remedy', 
+                useUnicode && locale === 'hi'
+                    ? 'प्रत्येक शनिवार को पीपल के पेड़ पर जल चढ़ाएं। काले तिल, उड़द की दाल या सरसों के तेल का दान करें। घर में शनि यंत्र स्थापित करें।'
+                    : 'Every Saturday, offer water to a peepal tree. Donate black sesame, urad dal, or mustard oil. Install Shani Yantra at home.'
+            ],
+            [
+                useUnicode && locale === 'hi' ? 'मंगल देव उपाय' : 'Mangal (Mars) Remedy', 
+                useUnicode && locale === 'hi'
+                    ? 'प्रत्येक मंगलवार को हनुमान चालीसा का पाठ करें। लाल कपड़ा या लाल मसूर की दाल दान करें। रक्तदान भी अत्यधिक लाभकारी है।'
+                    : 'Every Tuesday, recite Hanuman Chalisa. Donate red cloth or red lentils. Blood donation is also highly beneficial.'
+            ],
+            [
+                useUnicode && locale === 'hi' ? 'सूर्य देव उपाय' : 'Surya (Sun) Remedy', 
+                useUnicode && locale === 'hi'
+                    ? 'प्रतिदिन सुबह तांबे के लोटे में जल भरकर सूर्य को अर्घ्य दें। आदित्य हृदय स्तोत्र का पाठ करें। दाहिने हाथ में तांबे की अंगूठी धारण करें।'
+                    : 'Every morning, offer water to the Sun with red flowers and sandalwood. Recite Aditya Hridayam. Wear copper ring on right hand.'
+            ],
+            [
+                useUnicode && locale === 'hi' ? 'राहु देव उपाय' : 'Rahu Remedy', 
+                useUnicode && locale === 'hi'
+                    ? 'शनिवार के दिन नीली या काली वस्तुओं का दान करें। "ॐ राहवे नमः" का १८ बार जाप करें। शनिवार को तामसिक भोजन से बचें।'
+                    : 'Donate blue/black items on Saturdays. Recite "Om Rahave Namah" 18 times. Avoid non-vegetarian food on Saturdays.'
+            ],
         ],
-        styles:{fontSize:9.5,cellPadding:4},
+        styles:{fontSize:useUnicode?9:9.5,cellPadding:4},
         headStyles:{fillColor:[79,70,229],textColor:255},
         alternateRowStyles:{fillColor:[245,245,255]},
-        columnStyles:{0:{fontStyle:'bold',cellWidth:42}},
+        columnStyles:{0:{fontStyle:'bold',cellWidth:useUnicode?45:42}},
     });
 
     // PAGE 18: Conclusion
-    doc.addPage(); H(doc,'Summary & Blessings',18,TP);
+    doc.addPage(); H(doc, useUnicode && locale === 'hi' ? 'निष्कर्ष एवं आशीर्वाद' : 'Summary & Blessings', 18, TP);
     doc.setFillColor(10,10,30); doc.rect(0,22,210,275,'F');
     doc.setFontSize(20); doc.setTextColor(249,115,22); doc.setFont('helvetica','bold');
-    doc.text('Blessings & Divine Guidance', 105, 80, {align:'center'});
+    
+    doc.text(L.conclusion, 105, 80, {align:'center'});
     doc.setFontSize(12); doc.setTextColor(200,200,200); doc.setFont('helvetica','normal');
-    doc.text(`Dear ${formData.name},`, 105, 105, {align:'center'});
-    const bl=doc.splitTextToSize('May the celestial alignments of your birth chart guide you towards peace, prosperity, and purpose. The stars illuminate your path — it is your karma and free will that shape your destiny. Walk forward with courage and wisdom, guided by the divine light of Jyotish.', 160);
+    doc.text(
+        useUnicode && locale === 'hi' 
+            ? `प्रिय ${safeText(doc, formData.name, 'साधक')},`
+            : `Dear ${safeText(doc, formData.name, 'Seeker')},`, 
+        105, 105, {align:'center'}
+    );
+    
+    const bl=doc.splitTextToSize(
+        useUnicode && locale === 'hi'
+            ? 'ईश्वर से प्रार्थना है कि आपकी कुंडली के दिव्य ग्रह संरेखण आपको शांति, समृद्धि और जीवन के उद्देश्य की ओर ले जाएं। सितारे आपके मार्ग को आलोकित करते हैं - यह आपका कर्म और स्वतंत्र इच्छा है जो आपके भाग्य को आकार देती है। पूर्ण विश्वास और बुद्धि के साथ आगे बढ़ें।'
+            : 'May the celestial alignments of your birth chart guide you towards peace, prosperity, and purpose. The stars illuminate your path — it is your karma and free will that shape your destiny. Walk forward with courage and wisdom, guided by the divine light of Jyotish.', 
+        160
+    );
     doc.text(bl, 105, 118, {align:'center'});
+    
     doc.setFontSize(10); doc.setTextColor(150,150,150);
-    doc.text(`Lagna: ${sg(chart.ascendantSign)}  |  Moon Sign: ${sg(chart.moonSign)}  |  Nakshatra: ${nakshatraEn}`, 105, 185, {align:'center'});
-    doc.text(`Active Mahadasha: ${pl(maha)}  |  Antardasha: ${pl(antar)}`, 105, 195, {align:'center'});
+    doc.text(
+        `${useUnicode && locale === 'hi' ? 'लग्न' : 'Lagna'}: ${sg(chart.ascendantSign, T)}  |  ${useUnicode && locale === 'hi' ? 'चंद्र राशि' : 'Moon Sign'}: ${sg(chart.moonSign, T)}  |  ${useUnicode && locale === 'hi' ? 'नक्षत्र' : 'Nakshatra'}: ${nakshatraVal}`, 
+        105, 185, {align:'center'}
+    );
+    doc.text(
+        `${useUnicode && locale === 'hi' ? 'सक्रिय महादशा' : 'Active Mahadasha'}: ${pl(maha, T)}  |  ${useUnicode && locale === 'hi' ? 'अंतर्दशा' : 'Antardasha'}: ${pl(antar, T)}`, 
+        105, 195, {align:'center'}
+    );
+    
     doc.setFontSize(8); doc.setTextColor(100,100,100);
-    doc.text(`Report generated: ${new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`, 105, 215, {align:'center'});
+    const dateFormatted = new Date().toLocaleDateString(locale === 'hi' ? 'hi-IN' : 'en-IN', {
+        weekday:'long',year:'numeric',month:'long',day:'numeric'
+    });
+    doc.text(`${useUnicode && locale === 'hi' ? 'रिपोर्ट जनरेट की गई' : 'Report generated'}: ${dateFormatted}`, 105, 215, {align:'center'});
     doc.text('JyotishConnect — Premium Vedic Astrology Platform', 105, 225, {align:'center'});
 
-    doc.save(`Kundli_Report_${formData.name||'Report'}.pdf`);
+    // Whiteout and update total dynamic page numbers precisely
+    const finalPageCount = doc.getNumberOfPages();
+    for (let p = 1; p <= finalPageCount; p++) {
+        doc.setPage(p);
+        // Cover page doesn't have standard header rectangle, but other pages do
+        if (p > 1) {
+            doc.setFillColor(15, 15, 35);
+            doc.rect(170, 8, 30, 8, 'F');
+            doc.setFontSize(7); doc.setTextColor(180, 180, 180); doc.setFont('helvetica', 'normal');
+            doc.text(`${useUnicode && locale === 'hi' ? 'पृष्ठ' : 'Page'} ${p} / ${finalPageCount}`, 195, 14, {align: 'right'});
+        }
+    }
+
+    doc.save(`Kundli_Report_${safeText(doc, formData.name, 'Report')}.pdf`);
 }

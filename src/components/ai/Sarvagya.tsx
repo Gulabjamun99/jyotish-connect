@@ -200,20 +200,58 @@ export function Sarvagya({ userData }: SarvagyaProps) {
                         let lat = 28.6139;
                         let lng = 77.2090; // Default to Delhi
                         
-                        const lowerPlace = (parsedDetails.place || "").toLowerCase();
-                        if (lowerPlace.includes("jamshedpur")) {
-                            lat = 22.8046;
-                            lng = 86.2029;
+                        const lowerPlace = (parsedDetails.place || "").toLowerCase().trim();
+                        const localGeoIndex: Record<string, { lat: number, lng: number }> = {
+                            "delhi": { lat: 28.6139, lng: 77.2090 },
+                            "new delhi": { lat: 28.6139, lng: 77.2090 },
+                            "mumbai": { lat: 19.0760, lng: 72.8777 },
+                            "bombay": { lat: 19.0760, lng: 72.8777 },
+                            "kolkata": { lat: 22.5726, lng: 88.3639 },
+                            "calcutta": { lat: 22.5726, lng: 88.3639 },
+                            "chennai": { lat: 13.0827, lng: 80.2707 },
+                            "madras": { lat: 13.0827, lng: 80.2707 },
+                            "bangalore": { lat: 12.9716, lng: 77.5946 },
+                            "bengaluru": { lat: 12.9716, lng: 77.5946 },
+                            "hyderabad": { lat: 17.3850, lng: 78.4867 },
+                            "pune": { lat: 18.5204, lng: 73.8567 },
+                            "ahmedabad": { lat: 23.0225, lng: 72.5714 },
+                            "jamshedpur": { lat: 22.8046, lng: 86.2029 },
+                            "tatanagar": { lat: 22.8046, lng: 86.2029 },
+                            "patna": { lat: 25.5941, lng: 85.1376 },
+                            "lucknow": { lat: 26.8467, lng: 80.9462 },
+                            "jaipur": { lat: 26.9124, lng: 75.7873 },
+                            "chandigarh": { lat: 30.7333, lng: 76.7794 },
+                            "ranchi": { lat: 23.3441, lng: 85.3096 },
+                            "bhopal": { lat: 23.2599, lng: 77.4126 },
+                            "indore": { lat: 22.7196, lng: 75.8577 },
+                            "kochi": { lat: 9.9312, lng: 76.2673 },
+                            "cochin": { lat: 9.9312, lng: 76.2673 },
+                            "london": { lat: 51.5074, lng: -0.1278 },
+                            "new york": { lat: 40.7128, lng: -74.0060 },
+                            "san francisco": { lat: 37.7749, lng: -122.4194 },
+                            "dubai": { lat: 25.2048, lng: 55.2708 },
+                            "singapore": { lat: 1.3521, lng: 103.8198 },
+                            "toronto": { lat: 43.6532, lng: -79.3832 }
+                        };
+
+                        let foundCity = Object.keys(localGeoIndex).find(city => lowerPlace.includes(city));
+                        if (foundCity) {
+                            lat = localGeoIndex[foundCity].lat;
+                            lng = localGeoIndex[foundCity].lng;
                         } else {
-                            const geoRes = await fetch(
-                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parsedDetails.place || "")}&limit=1`
-                            );
-                            if (geoRes.ok) {
-                                const geoData = await geoRes.json();
-                                if (geoData && geoData[0]) {
-                                    lat = parseFloat(geoData[0].lat);
-                                    lng = parseFloat(geoData[0].lon);
+                            try {
+                                const geoRes = await fetch(
+                                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parsedDetails.place || "")}&limit=1`
+                                );
+                                if (geoRes.ok) {
+                                    const geoData = await geoRes.json();
+                                    if (geoData && geoData[0]) {
+                                        lat = parseFloat(geoData[0].lat);
+                                        lng = parseFloat(geoData[0].lon);
+                                    }
                                 }
+                            } catch (e) {
+                                console.error("Nominatim geocoding failed, using default Delhi coordinates:", e);
                             }
                         }
 

@@ -113,7 +113,7 @@ export interface Astrologer {
     };
 }
 
-export const getAstrologers = async (filters?: any, limitCount: number = 50, lastDoc?: any) => {
+export const getAstrologers = async (filters?: any, limitCount: number = 15, lastDoc?: any) => {
     try {
         if (!db) {
             console.warn("Firestore not initialized. Returning empty list.");
@@ -122,11 +122,22 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
 
         const astroRef = collection(db, "astrologers");
 
-        // Fetch all verified. We will sort in-memory to prevent requiring Firestore Composite Indexes.
-        const q = query(astroRef, where("verified", "==", true));
+        // Build dynamic query constraints
+        const qConstraints: any[] = [
+            where("verified", "==", true)
+        ];
 
+        // Apply pagination cursor if provided
+        if (lastDoc) {
+            qConstraints.push(startAfter(lastDoc));
+        }
+
+        // Apply query limit
+        qConstraints.push(limit(limitCount));
+
+        const q = query(astroRef, ...qConstraints);
         const querySnapshot = await getDocs(q);
-        const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
 
         const ensureArray = (data: any) => {
             if (Array.isArray(data)) return data;
@@ -152,7 +163,7 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
             } as Astrologer;
         });
 
-        // In-memory filter by expertise if requested
+        // In-memory filter by expertise if requested (safe fallback for paginated chunks)
         if (filters?.expertise && filters.expertise.length > 0) {
             data = data.filter(a => filters.expertise.includes(a.expertise));
         }
@@ -160,7 +171,7 @@ export const getAstrologers = async (filters?: any, limitCount: number = 50, las
         // In-memory sort by rating
         data.sort((a, b) => b.rating - a.rating);
 
-        return { astrologers: data.slice(0, limitCount), lastDoc: lastVisible };
+        return { astrologers: data, lastDoc: lastVisible };
     } catch (error: any) {
         console.error("Error fetching astrologers:", error);
         // Return empty array if Firestore is offline

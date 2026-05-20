@@ -70,15 +70,47 @@ export function calculateGuna(boyMoon: any, girlMoon: any) {
 
     // 7. Bhakoot (7 points)
     const diff = (girlMoon.signId - boyMoon.signId + 12) % 12 + 1;
-    if ([1, 7, 3, 11, 4, 10].includes(diff)) ashtakoot.bhakoot.score = 7;
-    else ashtakoot.bhakoot.score = 0;
+    let bhakootCancelled = false;
+    let bhakootScore = 0;
+    if ([1, 7, 3, 11, 4, 10].includes(diff)) {
+        bhakootScore = 7;
+    } else {
+        // Check Bhakoot Dosha cancellation
+        if (bLord === gLord) {
+            bhakootCancelled = true;
+            bhakootScore = 7;
+        } else {
+            const friendship1 = LORD_FRIENDSHIP[bLord]?.[gLord] ?? 0;
+            const friendship2 = LORD_FRIENDSHIP[gLord]?.[bLord] ?? 0;
+            if (friendship1 >= 4 && friendship2 >= 4) {
+                bhakootCancelled = true;
+                bhakootScore = 7;
+            }
+        }
+    }
+    ashtakoot.bhakoot.score = bhakootScore;
 
     // 8. Nadi (8 points)
     const bNadi = NADI_TABLE[boyMoon.nakshatra];
     const gNadi = NADI_TABLE[girlMoon.nakshatra];
     ashtakoot.nadi.boyVal = bNadi;
     ashtakoot.nadi.girlVal = gNadi;
-    ashtakoot.nadi.score = bNadi !== gNadi ? 8 : 0;
+    
+    let nadiCancelled = false;
+    let nadiScore = 0;
+    if (bNadi !== gNadi) {
+        nadiScore = 8;
+    } else {
+        // Check Nadi Dosha cancellation
+        if (boyMoon.signId === girlMoon.signId && boyMoon.nakshatra !== girlMoon.nakshatra) {
+            nadiCancelled = true;
+            nadiScore = 8;
+        } else if (boyMoon.signId !== girlMoon.signId && boyMoon.nakshatra === girlMoon.nakshatra) {
+            nadiCancelled = true;
+            nadiScore = 8;
+        }
+    }
+    ashtakoot.nadi.score = nadiScore;
 
     // --- Interpretations ---
     ashtakoot.varna.interpretation = ashtakoot.varna.score === 1 ? "Excellent ego compatibility and work ethics." : "Work ethics and status may require adjustment.";
@@ -87,8 +119,16 @@ export function calculateGuna(boyMoon: any, girlMoon: any) {
     ashtakoot.yoni.interpretation = ashtakoot.yoni.score >= 3 ? "Physical and biological compatibility is excellent." : "Physical needs and habits may differ.";
     ashtakoot.maitri.interpretation = ashtakoot.maitri.score >= 4 ? "Strong intellectual and psychological bond." : "Intellectual differences might arise.";
     ashtakoot.gana.interpretation = ashtakoot.gana.score >= 4 ? "Behavioral and social temperament is well-matched." : "Temperamental differences likely.";
-    ashtakoot.bhakoot.interpretation = ashtakoot.bhakoot.score === 7 ? "Excellent financial and family growth." : "Potential financial or family disagreements.";
-    ashtakoot.nadi.interpretation = ashtakoot.nadi.score === 8 ? "Superior genetic and physiological compatibility." : "Caution: Potential health or progeny issues (Nadi Dosha).";
+    ashtakoot.bhakoot.interpretation = bhakootCancelled 
+        ? "Bhakoot Dosha cancelled due to auspicious planetary friendship of sign lords. Highly favorable."
+        : ashtakoot.bhakoot.score === 7 
+            ? "Excellent financial and family growth." 
+            : "Potential financial or family disagreements.";
+    ashtakoot.nadi.interpretation = nadiCancelled 
+        ? "Nadi Dosha cancelled due to same Moon sign with different Nakshatras or vice-versa. Safe for union."
+        : ashtakoot.nadi.score === 8 
+            ? "Superior genetic and physiological compatibility." 
+            : "Caution: Potential health or progeny issues (Nadi Dosha).";
 
     const totalScore = Object.values(ashtakoot).reduce((acc: number, curr: any) => acc + curr.score, 0);
 
