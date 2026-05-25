@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useState, useCallback } from "react";
 import { Sparkles } from "lucide-react";
 import { translateSign, getTrans } from "@/lib/astrology/i18n";
+import { SIGN_PREDICTIONS } from "@/lib/astrology/horoscope-data";
+
 
 // ─── Zodiac Sign Metadata ─────────────────────────────────────────────────────
 
@@ -227,8 +229,27 @@ function buildHoroscopePrediction(sign: string, locale: string, apiData?: any) {
     const colorHouse = satH >= 6 ? ((moonH % 12) + 1) : moonH;
     const luckyColor = isHi ? LUCKY_COLORS_HI[colorHouse] : LUCKY_COLORS_EN[colorHouse];
 
-    // Positive (general): pure Moon-house based
-    const positive = L(MOON_GENERAL[moonH]);
+    // Retrieve sign-specific horoscope from the database in horoscope-data.ts
+    const signData = SIGN_PREDICTIONS[sign];
+    // Map custom locales with fallbacks
+    const predictionsForLocale = signData?.[locale as keyof typeof signData]
+                              || signData?.hi
+                              || signData?.en;
+
+    // Stable daily seed index to choose 1 of 4 unique options differently every day and sign
+    const now = new Date();
+    const daySeed = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+    const idx = (daySeed + signIdx) % 4;
+
+    const corePersonal = predictionsForLocale?.personal?.[idx] || "";
+    const coreCareer   = predictionsForLocale?.career?.[idx]   || "";
+    const coreHealth   = predictionsForLocale?.health?.[idx]   || "";
+    const coreLove     = predictionsForLocale?.love?.[idx]     || "";
+
+    // Positive (general): Combine sign-specific core with relative transit house theme
+    const positive = corePersonal 
+        ? `${corePersonal} ${L(MOON_GENERAL[moonH])}`
+        : L(MOON_GENERAL[moonH]);
 
     // Negative: based on Saturn house (universal Saturn wisdom)
     const negativeByHouse: Record<number, Lang2> = {
@@ -247,14 +268,20 @@ function buildHoroscopePrediction(sign: string, locale: string, apiData?: any) {
     };
     const negative = L(negativeByHouse[satH] || negativeByHouse[1]);
 
-    // Career: Moon house + Sun suffix
-    const career = L(MOON_CAREER[moonH]) + L(SUN_CAREER_SUFFIX[sunH] || { hi: "", en: "" });
+    // Career: Combine sign-specific core with relative transit house theme + Sun suffix
+    const career = coreCareer
+        ? `${coreCareer} ${L(MOON_CAREER[moonH])}${L(SUN_CAREER_SUFFIX[sunH] || { hi: "", en: "" })}`
+        : L(MOON_CAREER[moonH]) + L(SUN_CAREER_SUFFIX[sunH] || { hi: "", en: "" });
 
-    // Health: Moon house
-    const health = L(MOON_HEALTH[moonH]);
+    // Health: Combine sign-specific core with relative transit house theme
+    const health = coreHealth
+        ? `${coreHealth} ${L(MOON_HEALTH[moonH])}`
+        : L(MOON_HEALTH[moonH]);
 
-    // Love: Moon house
-    const love = L(MOON_LOVE[moonH]);
+    // Love: Combine sign-specific core with relative transit house theme
+    const love = coreLove
+        ? `${coreLove} ${L(MOON_LOVE[moonH])}`
+        : L(MOON_LOVE[moonH]);
 
     // Transit info
     const trans = getTrans(locale);
