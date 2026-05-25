@@ -212,7 +212,23 @@ function buildHoroscopePrediction(sign: string, locale: string, apiData?: any) {
     const signIdx = ZODIAC_SIGNS.findIndex(s => s.name === sign);
     if (signIdx < 0) return null;
 
-    const transits = computeTransits();
+    let transits = computeTransits();
+    if (apiData?.planets) {
+        const moon = apiData.planets.find((p: any) => p.name === "Moon");
+        const sun = apiData.planets.find((p: any) => p.name === "Sun");
+        const jup = apiData.planets.find((p: any) => p.name === "Jupiter");
+        const sat = apiData.planets.find((p: any) => p.name === "Saturn");
+        if (moon && sun && jup && sat) {
+            transits = {
+                moonSign: moon.signId - 1, // Convert 1-indexed to 0-indexed
+                sunSign: sun.signId - 1,
+                jupiterSign: jup.signId - 1,
+                saturnSign: sat.signId - 1,
+                moonDeg: moon.longitude % 30,
+            };
+        }
+    }
+
     const moonH    = house(signIdx, transits.moonSign);
     const sunH     = house(signIdx, transits.sunSign);
     const jupH     = house(signIdx, transits.jupiterSign);
