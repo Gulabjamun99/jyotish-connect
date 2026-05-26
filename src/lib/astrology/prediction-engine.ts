@@ -502,18 +502,211 @@ export const generateAvakahadaChakra = (chart: any, lang: string = 'en') => {
 };
 
 export const generateLifePredictions = (chart: any, lang: string = 'en') => {
-    const t = getTrans(lang);
-    
-    // In a real engine, these would be deep lookups. 
-    // Here we use a structured generator based on the chart's unique signatures.
-    const lp = t.life_predictions || {};
-    
+    if (!chart || !chart.planets) {
+        return {
+            Career: "Your career path is influenced by the 10th house and its lord. A strong Sun or Saturn indicates authority and government roles.",
+            Health: "The 6th house governs acute illnesses, while the 8th house rules chronic conditions.",
+            Marriage: "The 7th house and its lord define your marital life. Venus is the significator for men, and Jupiter for women.",
+            Wealth: "Your financial status is determined by the 2nd house and the 11th house.",
+            Education: "The 4th house rules primary education, and the 5th house rules intelligence and higher learning."
+        };
+    }
+
+    const isHi = lang === 'hi';
+    const signsEn = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+    const signsHi = ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
+
+    const ascSign = chart.ascendantSign || "Aries";
+    const ascIdx = signsEn.indexOf(ascSign) >= 0 ? signsEn.indexOf(ascSign) : 0;
+    const lagnaLabel = isHi ? signsHi[ascIdx] : signsEn[ascIdx];
+
+    const sign10Idx = (ascIdx + 9) % 12;
+    const sign10Label = isHi ? signsHi[sign10Idx] : signsEn[sign10Idx];
+
+    const getPlanetsInHouse = (houseNum: number) => {
+        return chart.planets
+            ?.filter((p: any) => p.house === houseNum && p.name !== 'Asc')
+            .map((p: any) => {
+                const planetNamesHi: Record<string, string> = {
+                    "Sun": "सूर्य", "Moon": "चंद्रमा", "Mars": "मंगल", "Mercury": "बुध",
+                    "Jupiter": "बृहस्पति (गुरु)", "Venus": "शुक्र", "Saturn": "शनि",
+                    "Rahu": "राहु", "Ketu": "केतु"
+                };
+                return isHi ? (planetNamesHi[p.name] || p.name) : p.name;
+            }) || [];
+    };
+
+    // 1. CAREER PREDICTION
+    let career = "";
+    const p10 = getPlanetsInHouse(10);
+    if (isHi) {
+        career = `आपकी जन्म कुंडली में लग्न **${lagnaLabel}** है और दशम (करियर) भाव **${sign10Label}** राशि में स्थित है। `;
+        if (p10.length > 0) {
+            const listStr = p10.join(", ");
+            if (p10.some(p => p.includes("सूर्य") || p.includes("मंगल"))) {
+                career += `दशम भाव में ${listStr} की उपस्थिति प्रशासनिक शक्ति, सरकारी सेवा, कानून प्रवर्तन या संगठन के नेतृत्व क्षेत्र में असाधारण सफलता का संकेत देती है। आपकी निर्णय क्षमता और नेतृत्व शैली बहुत मजबूत है, जो आपको समाज में उच्च पद दिलाएगी।`;
+            } else if (p10.some(p => p.includes("बुध") || p.includes("शुक्र"))) {
+                career += `दशम भाव में ${listStr} का प्रभाव व्यापार, वित्तीय प्रबंधन, कला, रचनात्मक मीडिया या संचार के क्षेत्र में उत्कृष्ट करियर का संकेत देता है। आप अपने कौशल, वाणी और तीक्ष्ण बुद्धि से उच्च प्रतिष्ठा और धन अर्जित करेंगे।`;
+            } else if (p10.some(p => p.includes("बृहस्पति"))) {
+                career += `दशम भाव में देवगुरु बृहस्पति की शुभ उपस्थिति दर्शाती है कि आप शिक्षण, परामर्श, कानून, दर्शन या उच्च सलाहकार (Advisory) के रूप में एक अत्यंत सम्मानित और प्रतिष्ठित करियर प्राप्त करेंगे। लोग आपके ज्ञान का आदर करेंगे।`;
+            } else {
+                career += `दशम भाव में ${listStr} का गोचर/स्थान तकनीकी क्षेत्रों, आईटी, इंजीनियरिंग, या गहन अनुसंधान में प्रगति कराता है। करियर की शुरुआत में कुछ संघर्ष के बाद आप निरंतर सफलता की ओर अग्रसर रहेंगे।`;
+            }
+        } else {
+            career += `दशम भाव में किसी क्रूर ग्रह का अशुभ प्रभाव नहीं है। दशमेश की स्थिति के अनुसार आपका करियर स्वतंत्र उद्यमों, पेशेवर स्थिरता और व्यावसायिक सूझबूझ की ओर सकारात्मक इशारा करता है। आप जीवन के मध्य में एक सफल अधिकारी या उद्यमी बनेंगे।`;
+        }
+    } else {
+        career = `Your Lagna (Ascendant) is **${lagnaLabel}**, which places your 10th house of profession and career in the sign of **${sign10Label}**. `;
+        if (p10.length > 0) {
+            const listStr = p10.join(", ");
+            if (p10.some(p => p.includes("Sun") || p.includes("Mars"))) {
+                career += `The presence of ${listStr} in the 10th house is a highly powerful combination indicating administrative authority, government roles, leadership, or law enforcement. You possess executive decision-making skills that command respect.`;
+            } else if (p10.some(p => p.includes("Mercury") || p.includes("Venus"))) {
+                career += `The influence of ${listStr} in your house of profession indicates success in business, finance, creative arts, media, or communication. Your intellect, presentation skills, and commercial acumen will be the pillars of your professional rise.`;
+            } else if (p10.some(p => p.includes("Jupiter"))) {
+                career += `Jupiter transiting your 10th house promises an honorable career in education, consulting, legal affairs, mentorship, or high-level advisory positions. You will be looked up to as a figure of wisdom and integrity.`;
+            } else {
+                career += `The placement of ${listStr} in the 10th house points toward a career in technology, engineering, information systems, or deep research. While initial years may require intense hard work, you will secure high professional status in the long run.`;
+            }
+        } else {
+            career += `With the 10th house free from major afflictions, the lord of your profession promises a stable, secure, and progressive career path. You are naturally geared toward leadership, independent consulting, or entrepreneurship as you mature.`;
+        }
+    }
+
+    // 2. WEALTH PREDICTION
+    let wealth = "";
+    const p2 = getPlanetsInHouse(2);
+    const p11 = getPlanetsInHouse(11);
+    const wealthPlanets = [...p2, ...p11];
+    if (isHi) {
+        wealth = "द्वितीय भाव (संचित धन व परिवार) और एकादश भाव (आय व लाभ) आपके वित्तीय भाग्य को निर्धारित करते हैं। ";
+        if (wealthPlanets.length > 0) {
+            const listStr = wealthPlanets.join(", ");
+            if (wealthPlanets.some(p => p.includes("बृहस्पति") || p.includes("शुक्र"))) {
+                wealth += `आपकी कुंडली के धन/लाभ स्थान पर अत्यंत शुभ ग्रह (${listStr}) की उपस्थिति जीवन में निरंतर धन के प्रवाह, पैतृक संपत्ति के लाभ और वित्तीय विलासिता को दर्शाती है। आपका हाथ हमेशा तंग नहीं रहेगा और आप आरामदेह जीवन जीएंगे।`;
+            } else if (wealthPlanets.some(p => p.includes("बुध") || p.includes("सूर्य"))) {
+                wealth += `धन या आय भाव में ${listStr} का प्रभाव आपके व्यावसायिक कौशल, कुशल वाणी, कुशल वित्तीय निवेश और व्यापार के माध्यम से समृद्धि प्राप्त करने की आपकी अद्भुत क्षमता को दर्शाता है।`;
+            } else {
+                wealth += `इन भावों में ${listStr} की उपस्थिति संकेत देती है कि जीवन में धन संचय के लिए आपको अनुशासित प्रयास करने होंगे। शुरुआती जीवन में खर्चों पर नियंत्रण और समझदारी से किया गया दीर्घकालिक निवेश आपको बड़ी वित्तीय सुरक्षा प्रदान करेगा।`;
+            }
+        } else {
+            wealth += "आपके धन और आय भाव के स्वामी अनुकूल स्थिति में हैं। जीवन के मध्यकाल (32 वर्ष की आयु) के बाद आपकी आर्थिक स्थिति में तेजी से सुधार होगा और आप स्थायी संपत्ति तथा वाहनों का सुख प्राप्त करेंगे।";
+        }
+    } else {
+        wealth = "The 2nd house of accumulated assets and the 11th house of regular gains are the key indicators of your financial prosperity. ";
+        if (wealthPlanets.length > 0) {
+            const listStr = wealthPlanets.join(", ");
+            if (wealthPlanets.some(p => p.includes("Jupiter") || p.includes("Venus"))) {
+                wealth += `A highly auspicious placement of benefic planets (${listStr}) in your money houses guarantees steady flow of income, financial comfort, and gains from investments or ancestral inheritance. You are bound to enjoy material luxuries in life.`;
+            } else if (wealthPlanets.some(p => p.includes("Mercury") || p.includes("Sun"))) {
+                wealth += `The influence of ${listStr} in these houses emphasizes that your speech, strategic investment choices, trade connections, and intellectual skills will be primary sources of your wealth generation.`;
+            } else {
+                wealth += `The presence of ${listStr} in your financial houses indicates that wealth building requires highly disciplined savings and realistic budgets. Avoid speculative risks and focus on long-term assets to enjoy solid financial security.`;
+            }
+        } else {
+            wealth += "The lords of your wealth and income houses are well-placed. Your financial trajectory shows robust growth after the age of 30, paving the way for purchasing permanent properties, land, and vehicles.";
+        }
+    }
+
+    // 3. HEALTH PREDICTION
+    let health = "";
+    const p6 = getPlanetsInHouse(6);
+    const p8 = getPlanetsInHouse(8);
+    const healthPlanets = [...p6, ...p8];
+    const isSadeSati = chart.doshas?.SadeSati?.present || false;
+    if (isHi) {
+        health = "षष्ठ भाव तीव्र रोगों का और अष्टम भाव दीर्घायु व गूढ़ शारीरिक प्रवृत्तियों का प्रतिनिधित्व करता है। ";
+        if (isSadeSati) {
+            health += "वर्तमान में आपकी कुंडली में शनि की साढ़ेसाती सक्रिय है। जोड़ों के दर्द, मानसिक तनाव, थकान और हड्डियों के स्वास्थ्य के प्रति विशेष सावधानी बरतें। प्रतिदिन योग और प्राणायाम आपके लिए अत्यंत आवश्यक है। ";
+        }
+        if (healthPlanets.length > 0) {
+            const listStr = healthPlanets.join(", ");
+            health += `आपके स्वास्थ्य भावों में ${listStr} की उपस्थिति दर्शाती है कि आपको वात या पित्त असंतुलन, पाचन संबंधी संवेदनशीलता या मौसमी एलर्जी जैसी समस्याएं हो सकती हैं। संतुलित शाकाहारी भोजन और समय पर नींद लेने से आप इन पर विजय प्राप्त कर सकते हैं।`;
+        } else {
+            health += "आपका लग्नेश (Ascendant Lord) और छठे भाव का स्वामी बहुत मजबूत है, जो एक उत्कृष्ट रोग प्रतिरोधक क्षमता (Immunity) और मजबूत जीवन शक्ति का संकेत देता है। आप शारीरिक और मानसिक रूप से मजबूत बने रहेंगे।";
+        }
+    } else {
+        health = "The 6th house governs acute diseases and daily vitality, while the 8th house rules longevity, transformation, and chronic conditions. ";
+        if (isSadeSati) {
+            health += "You are currently under the astrological influence of Saturn's Sade Sati. Take extra care of your joint health, skeletal system, and avoid mental over-stress through meditation. ";
+        }
+        if (healthPlanets.length > 0) {
+            const listStr = healthPlanets.join(", ");
+            health += `With ${listStr} occupying your health houses, you are advised to maintain healthy dietary habits to avoid minor digestive issues, skin sensitivities, or fatigue. Regular physical exercise will act as a natural shield.`;
+        } else {
+            health += "Your Lagna Lord and the 6th lord hold strong positions, signifying excellent immunity, robust physical stamina, and the capacity to recover quickly from minor seasonal ailments.";
+        }
+    }
+
+    // 4. MARRIAGE PREDICTION
+    let marriage = "";
+    const p7 = getPlanetsInHouse(7);
+    const isManglik = chart.doshas?.Manglik?.present || false;
+    if (isHi) {
+        marriage = "सप्तम भाव और उसका अधिपति आपके दाम्पत्य जीवन, विवाह समय और साझेदारी की दिशा तय करते हैं। ";
+        if (isManglik) {
+            marriage += "चूँकि आपकी कुंडली में मांगलिक योग (Manglik Dosha) उपस्थित है, इसलिए विवाह में जल्दबाजी करने से बचें। कुंडली मिलान के उपरांत विवाह करना आपके लिए अत्यंत शुभ, सुखद और स्थाई दाम्पत्य जीवन सुनिश्चित करेगा। ";
+        }
+        if (p7.length > 0) {
+            const listStr = p7.join(", ");
+            marriage += `सप्तम भाव में ${listStr} की स्थिति दर्शाती है कि आपका जीवनसाथी बुद्धिमान, स्वतंत्र विचारों वाला और कर्तव्यनिष्ठ होगा। वैवाहिक जीवन में आदर और मधुर आपसी संवाद बनाए रखना रिश्ते को हमेशा मजबूत रखेगा।`;
+        } else {
+            marriage += "आपका सप्तम भाव संतुलित और शुभ प्रभावों में है। आपकी कुंडली के अनुसार, विवाह आपके जीवन में अपार भावनात्मक परिपक्वता, भाग्योदय और सामाजिक प्रतिष्ठा लेकर आएगा। आपका पार्टनर सहायक होगा।";
+        }
+    } else {
+        marriage = "The 7th house and its planetary ruler define your marital compatibility, partnerships, and relationship dynamics. ";
+        if (isManglik) {
+            marriage += "Since Manglik Dosha is present in your chart, it is scripturally advised to perform proper Kundli matching before finalizing a marriage. This will guarantee immense marital harmony and prevent conflicts. ";
+        }
+        if (p7.length > 0) {
+            const listStr = p7.join(", ");
+            marriage += `The presence of ${listStr} in the 7th house suggests that your spouse will be an intelligent, highly responsible, and charismatic individual. Fostering transparent communication and mutual respect will keep your bond unbreakable.`;
+        } else {
+            marriage += "Your 7th house is highly stable and free from severe afflictions. Marriage will trigger a highly fortunate phase of life, bringing emotional security, prosperity, and a deeply cooperative life partner.";
+        }
+    }
+
+    // 5. EDUCATION PREDICTION
+    let education = "";
+    const p4 = getPlanetsInHouse(4);
+    const p5 = getPlanetsInHouse(5);
+    const eduPlanets = [...p4, ...p5];
+    if (isHi) {
+        education = "चतुर्थ भाव प्राथमिक शिक्षा व बौद्धिक आधार का है, तथा पंचम भाव उच्च शिक्षा, बुद्धिमत्ता व रचनात्मक विवेक का स्थान है। ";
+        if (eduPlanets.length > 0) {
+            const listStr = eduPlanets.join(", ");
+            if (eduPlanets.some(p => p.includes("बुध") || p.includes("बृहस्पति"))) {
+                education += `इन भावों में शुभ ग्रह (${listStr}) की स्थिति आपकी तीव्र स्मरण शक्ति, अद्भुत सीखने की क्षमता और उत्कृष्ट अकादमिक रिकॉर्ड को दर्शाती है। आप अनुसंधान, कानून, परामर्श या शैक्षणिक क्षेत्रों में सर्वोच्च डिग्री प्राप्त कर सकते हैं।`;
+            } else if (eduPlanets.some(p => p.includes("सूर्य") || p.includes("मंगल"))) {
+                education += `शिक्षा भावों में ${listStr} का प्रभाव आपकी उत्कृष्ट तकनीकी समझ, गणितीय विश्लेषणात्मक कौशल और प्रतियोगी परीक्षाओं (Competitive Exams) में सफल होने के मजबूत इरादे को दर्शाता है।`;
+            } else {
+                education += `इन भावों में ${listStr} की उपस्थिति पढ़ाई में शुरुआती ध्यान भटकाव या विषय में बदलाव का संकेत देती है, लेकिन आपकी गहरी खोजी और व्यावहारिक प्रकृति आपको बाद के वर्षों में विशेषज्ञ बनाएगी।`;
+            }
+        } else {
+            education += "आपकी कुंडली के अनुसार आपकी शिक्षा संतुलित और व्यावहारिक रहेगी। आपका दिमाग किताबी ज्ञान की तुलना में व्यावहारिक और वास्तविक अनुभवों से सीखने की ओर अधिक आकर्षित होता है, जो भविष्य में बहुत काम आएगा।";
+        }
+    } else {
+        education = "The 4th house rules primary education and domestic peace, while the 5th house governs higher learning, memory, intelligence, and cognitive creativity. ";
+        if (eduPlanets.length > 0) {
+            const listStr = eduPlanets.join(", ");
+            if (eduPlanets.some(p => p.includes("Mercury") || p.includes("Jupiter"))) {
+                education += `The strong influence of benefic planets (${listStr}) indicates excellent memory retention, logical skills, and high academic performance. You are likely to pursue research, law, corporate advisory, or professional education.`;
+            } else if (eduPlanets.some(p => p.includes("Sun") || p.includes("Mars"))) {
+                education += `The presence of ${listStr} in your houses of education points toward strong technical aptitude, mathematical reasoning, and a powerful competitive spirit that ensures success in major examinations.`;
+            } else {
+                education += `The placement of ${listStr} indicates minor interruptions or changes in your subjects early on. However, your deep-seated practical intelligence and curiosity will enable you to gain supreme expertise in your chosen field later.`;
+            }
+        } else {
+            education += "Your chart suggests a highly practical and standard academic path. You learn best through experiential and hands-on methods rather than rote memorization, which will serve you exceptionally well in your professional life.";
+        }
+    }
+
     return {
-        Career: lp.Career || "Your career path is influenced by the 10th house and its lord. A strong Sun or Saturn indicates authority and government roles.",
-        Health: lp.Health || "The 6th house governs acute illnesses, while the 8th house rules chronic conditions.",
-        Marriage: lp.Marriage || "The 7th house and its lord define your marital life. Venus is the significator for men, and Jupiter for women.",
-        Wealth: lp.Wealth || "Your financial status is determined by the 2nd house and the 11th house.",
-        Education: lp.Education || "The 4th house rules primary education, and the 5th house rules intelligence and higher learning."
+        Career: career,
+        Wealth: wealth,
+        Health: health,
+        Marriage: marriage,
+        Education: education
     };
 };
 
