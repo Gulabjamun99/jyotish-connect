@@ -87,13 +87,13 @@ export async function makeCall(
 
             // Debug logs
             pc.oniceconnectionstatechange = () => {
-                console.log(`🧊 [Caller] ICE: ${pc?.iceConnectionState}`);
+                console.log(`🧊 [Caller] ICE State: ${pc?.iceConnectionState}`);
                 if (pc?.iceConnectionState === 'failed' || pc?.iceConnectionState === 'disconnected') {
                     console.error('❌ [Caller] ICE failed/disconnected');
                 }
             };
             pc.onconnectionstatechange = () => {
-                console.log(`🔗 [Caller] Connection: ${pc?.connectionState}`);
+                console.log(`🔗 [Caller] Connection State: ${pc?.connectionState}`);
                 if (pc?.connectionState === 'failed') {
                     clearTimeout(timeout);
                     reject(new Error("WebRTC connection failed."));
@@ -138,6 +138,7 @@ export async function makeCall(
 
             // Listen for Answer + Callee ICE Candidates
             const addedCandidates = new Set<string>();
+            const queuedCandidates: any[] = [];
 
             unsubRoom = onSnapshot(roomRef, async (snapshot: any) => {
                 const data = snapshot.data();
@@ -145,9 +146,19 @@ export async function makeCall(
 
                 // Handle Answer
                 if (!pc.currentRemoteDescription && data.answer) {
-                    console.log("📥 [Caller] Got Answer from Astrologer!");
+                    console.log("📥 [Caller] Got Answer from Astrologer! Setting remote description...");
                     try {
                         await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                        console.log("✅ [Caller] Remote description set successfully. Draining queued candidates...");
+                        while (queuedCandidates.length > 0) {
+                            const cand = queuedCandidates.shift();
+                            try {
+                                await pc.addIceCandidate(new RTCIceCandidate(cand));
+                                console.log("✅ [Caller] Drained queued candidate successfully.");
+                            } catch (e) {
+                                console.error("❌ [Caller] Failed to add drained candidate:", e);
+                            }
+                        }
                     } catch (e) {
                         console.error("[Caller] setRemoteDescription failed", e);
                     }
@@ -159,10 +170,16 @@ export async function makeCall(
                         const sig = JSON.stringify(candidate);
                         if (!addedCandidates.has(sig)) {
                             addedCandidates.add(sig);
-                            try {
-                                await pc?.addIceCandidate(new RTCIceCandidate(candidate));
-                            } catch (e) {
-                                console.error("[Caller] addIceCandidate failed", e);
+                            if (pc.currentRemoteDescription) {
+                                try {
+                                    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                                    console.log("✅ [Caller] Added candidate immediately.");
+                                } catch (e) {
+                                    console.error("[Caller] addIceCandidate failed", e);
+                                }
+                            } else {
+                                console.log("⏳ [Caller] Queuing candidate (remote description not set yet).");
+                                queuedCandidates.push(candidate);
                             }
                         }
                     }
@@ -211,10 +228,10 @@ export function answerCall(
 
     // Debug logs
     pc.oniceconnectionstatechange = () => {
-        console.log(`🧊 [Callee] ICE: ${pc?.iceConnectionState}`);
+        console.log(`🧊 [Callee] ICE State: ${pc?.iceConnectionState}`);
     };
     pc.onconnectionstatechange = () => {
-        console.log(`🔗 [Callee] Connection: ${pc?.connectionState}`);
+        console.log(`🔗 [Callee] Connection State: ${pc?.connectionState}`);
     };
 
     const roomRef = doc(db, "consultations", roomId);
@@ -234,6 +251,7 @@ export function answerCall(
 
     let answerCreated = false;
     const addedCandidates = new Set<string>();
+    const queuedCandidates: any[] = [];
 
     // Subscribe immediately — onSnapshot fires with current doc state first
     unsubRoom = onSnapshot(roomRef, async (snapshot: any) => {
@@ -247,6 +265,7 @@ export function answerCall(
 
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                console.log("✅ [Callee] Remote description set successfully. Draining queued candidates...");
 
                 const answer = await pc.createAnswer();
                 if (answer && pc) {
@@ -257,6 +276,16 @@ export function answerCall(
                         answer: { type: answer.type, sdp: answer.sdp }
                     });
                     console.log("✅ [Callee] Answer saved!");
+                }
+
+                while (queuedCandidates.length > 0) {
+                    const cand = queuedCandidates.shift();
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(cand));
+                        console.log("✅ [Callee] Drained queued candidate successfully.");
+                    } catch (e) {
+                        console.error("❌ [Callee] Failed to add drained candidate:", e);
+                    }
                 }
             } catch (e) {
                 console.error("[Callee] Error processing offer:", e);
@@ -270,10 +299,16 @@ export function answerCall(
                 const sig = JSON.stringify(candidate);
                 if (!addedCandidates.has(sig)) {
                     addedCandidates.add(sig);
-                    try {
-                        await pc?.addIceCandidate(new RTCIceCandidate(candidate));
-                    } catch (e) {
-                        console.error("[Callee] addIceCandidate failed", e);
+                    if (pc.currentRemoteDescription) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                            console.log("✅ [Callee] Added candidate immediately.");
+                        } catch (e) {
+                            console.error("[Callee] addIceCandidate failed", e);
+                        }
+                    } else {
+                        console.log("⏳ [Callee] Queuing candidate (remote description not set yet).");
+                        queuedCandidates.push(candidate);
                     }
                 }
             }

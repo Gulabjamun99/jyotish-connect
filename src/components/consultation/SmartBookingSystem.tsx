@@ -1,15 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Video, ChevronDown, CheckCircle2 } from "lucide-react";
 import { format, addDays, isSameDay, startOfDay } from "date-fns";
 import { toast } from "react-hot-toast";
 import { createBooking } from "@/services/firestore";
-import { sendBookingConfirmation, sendAstrologerAlert } from "@/services/email";
 import { useRouter } from "@/i18n/navigation";
+
+// Helper to parse "h:mm AM/PM" or "HH:MM" into minutes since midnight
+const timeStringToMinutes = (timeStr: string): number => {
+    const clean = timeStr.trim().toUpperCase();
+    const parts = clean.split(" ");
+    const timeParts = parts[0].split(":");
+    let hours = parseInt(timeParts[0], 10);
+    const minutes = parseInt(timeParts[1] || "0", 10);
+    
+    if (parts[1] === "PM" && hours < 12) hours += 12;
+    if (parts[1] === "AM" && hours === 12) hours = 0;
+    
+    return hours * 60 + minutes;
+};
 
 interface SmartBookingProps {
     astrologerId: string;
@@ -49,7 +62,7 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
         fetchAstro();
     }, [astrologerId]);
 
-    // Generate slots based on availability
+    // Generate slots based on availability and existing bookings
     useEffect(() => {
         const fetchSlots = async () => {
             setFetchingSlots(true);
@@ -69,6 +82,30 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                     return;
                 }
 
+                // 1. Fetch all bookings for this astrologer on the selected date to prevent collisions
+                const bookedSlots: { startMin: number, endMin: number }[] = [];
+                if (db) {
+                    const bookingsRef = collection(db, "bookings");
+                    const q = query(
+                        bookingsRef,
+                        where("astrologerId", "==", astrologerId),
+                        where("date", "==", selectedDate)
+                    );
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.status !== "cancelled" && data.status !== "canceled") {
+                            const startMin = timeStringToMinutes(data.time);
+                            const durationMin = Number(data.duration) || 30;
+                            bookedSlots.push({
+                                startMin,
+                                endMin: startMin + durationMin
+                            });
+                        }
+                    });
+                }
+
+                // 2. Generate slots and filter out overlapping ones
                 const slots: string[] = [];
                 const [startH, startM] = av.startTime.split(":").map(Number);
                 const [endH, endM] = av.endTime.split(":").map(Number);
@@ -78,10 +115,20 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                 const dur = parseInt(duration);
 
                 while (current <= end - dur) {
-                    const hours = Math.floor(current / 60);
-                    const minutes = current % 60;
-                    const timeString = `${hours % 12 || 12}:${minutes === 0 ? "00" : (minutes < 10 ? "0" + minutes : minutes)} ${hours >= 12 ? "PM" : "AM"}`;
-                    slots.push(timeString);
+                    // Check if current slot overlaps with any existing booking
+                    const slotStartMin = current;
+                    const slotEndMin = current + dur;
+                    
+                    const isOverlapping = bookedSlots.some(
+                        booking => slotStartMin < booking.endMin && slotEndMin > booking.startMin
+                    );
+
+                    if (!isOverlapping) {
+                        const hours = Math.floor(current / 60);
+                        const minutes = current % 60;
+                        const timeString = `${hours % 12 || 12}:${minutes === 0 ? "00" : (minutes < 10 ? "0" + minutes : minutes)} ${hours >= 12 ? "PM" : "AM"}`;
+                        slots.push(timeString);
+                    }
                     current += 30; // 30 min intervals for slot starts
                 }
                 setAvailableSlots(slots);
@@ -95,7 +142,7 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
         if (astrologerData) {
             fetchSlots();
         }
-    }, [selectedDate, duration, astrologerData]);
+    }, [selectedDate, duration, astrologerData, astrologerId]);
 
     const handleBookSession = async () => {
         if (!user || !userData) {
@@ -130,30 +177,23 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                 meetingLink: `/consult/${bookingId}`
             } as any);
 
-            // Send Emails
+            // Send Emails via robust Server-Side API Routing
             try {
-                await sendBookingConfirmation({
-                    userEmail: user.email,
-                    userName: user.displayName || userData?.displayName || "Seeker",
-                    astrologerName,
-                    date: new Date(selectedDate),
-                    time: selectedSlot,
-                    bookingId,
-                    amount: 0,
-                    type: mode // Added type
-                } as any);
-                
-                if (astrologerEmail) {
-                    await sendAstrologerAlert({
-                        astrologerEmail,
-                        astrologerName,
+                await fetch("/api/email/booking-confirmation", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: user.uid,
+                        userEmail: user.email || "",
                         userName: user.displayName || userData?.displayName || "Seeker",
-                        date: new Date(selectedDate),
+                        astrologerId,
+                        astrologerName,
+                        date: selectedDate,
                         time: selectedSlot,
                         bookingId,
-                        type: mode // Added type
-                    } as any);
-                }
+                        type: mode
+                    })
+                });
             } catch (e) {
                 console.error("Non-blocking email error:", e);
             }

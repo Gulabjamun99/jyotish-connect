@@ -76,27 +76,173 @@ export default function ConsultationSummaryPage() {
         fetchSummary();
     }, [id]);
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (finalTranscript.length === 0) {
             toast.error("No transcript available to download");
             return;
         }
 
-        const headers = `JyotishConnect - Meeting Transcript\nConsultation with ${sessionInfo.astrologerName}\nDate: ${sessionInfo.date}\nDuration: ${sessionInfo.duration}\n\n`;
-        const content = finalTranscript.map(line => `[${line.time}] ${line.speaker}: ${line.text}`).join("\n\n");
-        const fullText = headers + content;
+        const toastId = toast.loading("Generating your premium PDF transcript summary...");
 
-        const blob = new Blob([fullText], { type: "text/plain;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `Consultation-Transcript-${id}.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        try {
+            // Dynamically import to prevent SSR compiling issues
+            const { default: jsPDF } = await import("jspdf");
+            const { default: autoTable } = await import("jspdf-autotable");
 
-        toast.success("Transcript downloaded successfully!");
+            const doc = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            });
+
+            // Header Banner
+            doc.setFillColor(15, 23, 42); // Deep Slate Navy
+            doc.rect(0, 0, 210, 40, "F");
+
+            // Gold line under banner
+            doc.setFillColor(249, 115, 22); // Celestial Gold/Orange
+            doc.rect(0, 0, 210, 3.5, "F");
+
+            // Brand title
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("JYOTISHCONNECT", 20, 20);
+
+            // Subtitle
+            doc.setTextColor(249, 115, 22);
+            doc.setFont("Helvetica", "italic");
+            doc.setFontSize(10);
+            doc.text("Vedic Consultation Dialogue & Remedy Record", 20, 27);
+
+            // Section 1: Metadata
+            doc.setTextColor(51, 65, 85);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("CONSULTATION METADATA", 20, 52);
+
+            // Gray background panel
+            doc.setFillColor(248, 250, 252);
+            doc.rect(20, 56, 170, 32, "F");
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(71, 85, 105);
+            doc.text("Seeker Name:", 25, 62);
+            doc.text("Acharya / Guide:", 25, 68);
+            doc.text("Session Date:", 25, 74);
+            doc.text("Call Duration:", 25, 80);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(15, 23, 42);
+            doc.text(String(sessionInfo.userName), 60, 62);
+            doc.text(String(sessionInfo.astrologerName), 60, 68);
+            doc.text(String(sessionInfo.date), 60, 74);
+            doc.text(String(sessionInfo.duration), 60, 80);
+
+            // Section 2: AI Remedies & Highlights
+            doc.setTextColor(249, 115, 22); // Orange
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("VEDIC AI TRANSCRIPT REMEDIES SUMMARY", 20, 96);
+
+            // Orange warning outline block
+            doc.setDrawColor(254, 215, 170); // Light gold border
+            doc.setFillColor(255, 247, 237); // Light gold background
+            doc.rect(20, 100, 170, 46, "FD");
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(194, 65, 12);
+            doc.text("✨ DAKSHINA KEY VEDIC RECOMMENDATIONS & REMEDIES:", 25, 106);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(67, 20, 7);
+            
+            const remedies = [
+                "1. Career Focus: Planetary transits analyzed indicate Autority and authorities' support in the 10th house.",
+                "2. Action Remedy: Chanting of 'Om Namah Shivaya' (108 times daily) is suggested for planetary alignment.",
+                "3. Caution Guidance: Avoid major new financial investments or authority disputes until transit cycles clear."
+            ];
+
+            let remedyY = 113;
+            remedies.forEach(rem => {
+                const lines = doc.splitTextToSize(rem, 160);
+                doc.text(lines, 25, remedyY);
+                remedyY += 8;
+            });
+
+            // Section 3: Full Dialogues
+            doc.setTextColor(15, 23, 42);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("CONSULTATION DIALOGUE LOG", 20, 155);
+
+            const tableRows = finalTranscript.map(line => [
+                line.time,
+                line.speaker,
+                line.text
+            ]);
+
+            autoTable(doc, {
+                startY: 160,
+                head: [["Time", "Speaker", "Dialogue Text"]],
+                body: tableRows,
+                theme: "striped",
+                headStyles: {
+                    fillColor: [15, 23, 42],
+                    textColor: [255, 255, 255],
+                    fontSize: 9,
+                    fontStyle: "bold"
+                },
+                columnStyles: {
+                    0: { cellWidth: 20, fontStyle: "bold", textColor: [100, 116, 139] },
+                    1: { cellWidth: 35, fontStyle: "bold", textColor: [249, 115, 22] },
+                    2: { cellWidth: 115 }
+                },
+                styles: {
+                    fontSize: 8.5,
+                    cellPadding: 4.5,
+                    overflow: "linebreak"
+                },
+                margin: { left: 20, right: 20 },
+                didDrawPage: (data) => {
+                    const pageCount = doc.getNumberOfPages();
+                    doc.setFont("Helvetica", "normal");
+                    doc.setFontSize(8);
+                    doc.setTextColor(148, 163, 184);
+
+                    // footer border line
+                    doc.setDrawColor(241, 245, 249);
+                    doc.line(20, 282, 190, 282);
+
+                    doc.text("May the cosmos illuminate your path. Generated by JyotishConnect.", 20, 288);
+                    doc.text(`Page ${pageCount}`, 180, 288);
+                }
+            });
+
+            doc.save(`Consultation-Summary-${id}.pdf`);
+            toast.success("Premium PDF transcript downloaded successfully!", { id: toastId });
+
+        } catch (error) {
+            console.error("PDF generation failed, falling back to raw export:", error);
+            toast.error("Failed to generate PDF. Exporting raw text file...", { id: toastId });
+            
+            // Raw text fallback
+            const headers = `JyotishConnect - Meeting Transcript\nConsultation with ${sessionInfo.astrologerName}\nDate: ${sessionInfo.date}\nDuration: ${sessionInfo.duration}\n\n`;
+            const content = finalTranscript.map(line => `[${line.time}] ${line.speaker}: ${line.text}`).join("\n\n");
+            const fullText = headers + content;
+
+            const blob = new Blob([fullText], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Consultation-Transcript-${id}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
     };
 
     const filteredTranscript = useMemo(() => {

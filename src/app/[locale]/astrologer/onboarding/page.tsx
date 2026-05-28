@@ -24,6 +24,10 @@ const LANGUAGES = [
     "Bengali", "Gujarati", "Kannada", "Malayalam", "Punjabi"
 ];
 
+const FOCUS_AREAS = [
+    "Career & Profession", "Marriage & Matchmaking", "Wealth & Finance", "Health & Wellness", "Education & Higher Learning"
+];
+
 export default function AstrologerOnboardingPage() {
     const { user, userData, loading: authLoading } = useAuth();
     const router = useRouter();
@@ -34,12 +38,19 @@ export default function AstrologerOnboardingPage() {
         displayName: userData?.displayName || "",
         phoneNumber: userData?.phoneNumber || "",
         email: userData?.email || "",
-        experience: "" as string | number, // Changed to allow empty strings during typing
+        govIdNumber: "", // New mandatory security field
+        experience: "" as string | number,
         specializations: [] as string[],
         languages: [] as string[],
-        consultationRate: "" as string | number, // Changed to allow empty strings during typing
+        focusAreas: [] as string[], // New core focus fields
+        consultationRate: "" as string | number,
         bio: "",
         education: "",
+        bankHolderName: "", // New payout fields
+        bankName: "",
+        bankAccountNumber: "",
+        bankIfsc: "",
+        agreedToGuidelines: false // Guideline consent
     });
 
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -54,7 +65,7 @@ export default function AstrologerOnboardingPage() {
         }
     };
 
-    const handleCheckboxChange = (field: "specializations" | "languages", value: string) => {
+    const handleCheckboxChange = (field: "specializations" | "languages" | "focusAreas", value: string) => {
         setFormData(prev => ({
             ...prev,
             [field]: prev[field].includes(value)
@@ -67,6 +78,10 @@ export default function AstrologerOnboardingPage() {
         if (step === 1) {
             if (!formData.displayName || !formData.email) {
                 toast.error("Please fill in all mandatory personal details.");
+                return false;
+            }
+            if (!formData.govIdNumber || formData.govIdNumber.trim().length < 6) {
+                toast.error("Please enter a valid Government ID / Passport number for credentials checks.");
                 return false;
             }
             if (!photoFile && !photoPreview) {
@@ -87,14 +102,26 @@ export default function AstrologerOnboardingPage() {
                 toast.error("Please select at least one language to communicate.");
                 return false;
             }
+            if (formData.focusAreas.length === 0) {
+                toast.error("Please select at least one spiritual focus area.");
+                return false;
+            }
         } else if (step === 3) {
             const rate = Number(formData.consultationRate);
             if (formData.consultationRate === "" || isNaN(rate) || rate < 100 || rate > 10000) {
                 toast.error("Please set a session rate between ₹100 and ₹10,000.");
                 return false;
             }
+            if (!formData.bankHolderName || !formData.bankName || !formData.bankAccountNumber || !formData.bankIfsc) {
+                toast.error("Please enter all mandatory bank payout details to enable automated routing.");
+                return false;
+            }
             if (!formData.bio || formData.bio.length < 50) {
                 toast.error("Your bio must be at least 50 characters to build trust with seekers.");
+                return false;
+            }
+            if (!formData.agreedToGuidelines) {
+                toast.error("You must agree to the spiritual consulting guidelines and availability code of ethics.");
                 return false;
             }
         }
@@ -111,7 +138,7 @@ export default function AstrologerOnboardingPage() {
     const handleBack = () => {
         setStep(step - 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
     const handleSubmit = async () => {
         if (!validateStep() || !user) return;
@@ -141,20 +168,26 @@ export default function AstrologerOnboardingPage() {
                 displayName: formData.displayName,
                 phoneNumber: formData.phoneNumber,
                 email: formData.email,
+                govIdNumber: formData.govIdNumber,
                 photoURL,
                 experience: Number(formData.experience),
                 specializations: formData.specializations,
                 languages: formData.languages,
+                focusAreas: formData.focusAreas,
                 consultationRate: Number(formData.consultationRate),
                 bio: formData.bio,
                 education: formData.education,
+                bankHolderName: formData.bankHolderName,
+                bankName: formData.bankName,
+                bankAccountNumber: formData.bankAccountNumber,
+                bankIfsc: formData.bankIfsc,
                 certificationURL,
                 profileComplete: true,
                 rating: 5.0,
                 consultations: 0,
                 walletBalance: 0,
                 totalEarnings: 0,
-                verified: true,
+                verified: true, // Verification approved instantly for onboarding flow
                 updatedAt: new Date().toISOString()
             }, { merge: true });
 
@@ -272,6 +305,15 @@ export default function AstrologerOnboardingPage() {
                                                 placeholder="e.g. Acharya Krishnakant"
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Government ID / Passport / National ID Number *</Label>
+                                            <Input
+                                                className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl px-6 text-lg focus-visible:ring-orange-500"
+                                                value={formData.govIdNumber}
+                                                onChange={e => setFormData({ ...formData, govIdNumber: e.target.value })}
+                                                placeholder="e.g. Aadhar, Passport or National ID Number"
+                                            />
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Email Address *</Label>
@@ -341,6 +383,27 @@ export default function AstrologerOnboardingPage() {
 
                                 <div className="space-y-4">
                                     <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex justify-between">
+                                        <span>Spiritual Focus Areas *</span>
+                                        <span className="text-orange-500">{formData.focusAreas.length} Selected</span>
+                                    </Label>
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                        {FOCUS_AREAS.map(area => (
+                                            <button
+                                                key={area}
+                                                onClick={() => handleCheckboxChange("focusAreas", area)}
+                                                className={`h-12 rounded-xl text-[10px] leading-tight font-bold transition-all border ${formData.focusAreas.includes(area)
+                                                    ? 'bg-orange-500/10 border-orange-500/50 text-orange-400'
+                                                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                                                    }`}
+                                            >
+                                                {area}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex justify-between">
                                         <span>Languages Spoken *</span>
                                         <span className="text-orange-500">{formData.languages.length} Selected</span>
                                     </Label>
@@ -393,7 +456,7 @@ export default function AstrologerOnboardingPage() {
                                             <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-zinc-500">₹</span>
                                             <Input
                                                 type="number"
-                                                className="bg-zinc-950 border-zinc-800 h-14 xl rounded-2xl pl-12 pr-6 text-lg focus-visible:ring-orange-500 text-white font-bold"
+                                                className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl pl-12 pr-6 text-lg focus-visible:ring-orange-500 text-white font-bold"
                                                 placeholder="800"
                                                 value={formData.consultationRate}
                                                 onChange={e => setFormData({ ...formData, consultationRate: e.target.value })}
@@ -412,6 +475,49 @@ export default function AstrologerOnboardingPage() {
                                     </div>
                                 </div>
 
+                                <div className="space-y-4 border-t border-zinc-800/80 pt-6">
+                                    <Label className="text-xs uppercase tracking-widest text-orange-500 font-bold">Bank Payout Information (Mandatory) *</Label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Account Holder Name *</Label>
+                                            <Input
+                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 focus-visible:ring-orange-500"
+                                                value={formData.bankHolderName}
+                                                onChange={e => setFormData({ ...formData, bankHolderName: e.target.value })}
+                                                placeholder="Full name as in bank passbook"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Bank Name *</Label>
+                                            <Input
+                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 focus-visible:ring-orange-500"
+                                                value={formData.bankName}
+                                                onChange={e => setFormData({ ...formData, bankName: e.target.value })}
+                                                placeholder="e.g. State Bank of India"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Account Number *</Label>
+                                            <Input
+                                                type="text"
+                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 focus-visible:ring-orange-500"
+                                                value={formData.bankAccountNumber}
+                                                onChange={e => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+                                                placeholder="Enter account number"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">IFSC / SWIFT Code *</Label>
+                                            <Input
+                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 uppercase focus-visible:ring-orange-500"
+                                                value={formData.bankIfsc}
+                                                onChange={e => setFormData({ ...formData, bankIfsc: e.target.value })}
+                                                placeholder="e.g. SBIN0001234"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="p-6 border border-dashed border-zinc-800 rounded-3xl bg-zinc-950 flex flex-col items-center justify-center text-center">
                                     <Upload className="w-8 h-8 text-zinc-600 mb-4" />
                                     <h3 className="font-bold mb-1">Upload Certifications</h3>
@@ -422,6 +528,19 @@ export default function AstrologerOnboardingPage() {
                                         </span>
                                         <input type="file" accept=".pdf" onChange={e => setCertFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     </div>
+                                </div>
+
+                                <div className="flex items-start gap-3 p-4 bg-zinc-950 rounded-2xl border border-zinc-800/80">
+                                    <input
+                                        type="checkbox"
+                                        id="agreedToGuidelines"
+                                        checked={formData.agreedToGuidelines}
+                                        onChange={e => setFormData({ ...formData, agreedToGuidelines: e.target.checked })}
+                                        className="w-5 h-5 rounded border-zinc-850 bg-zinc-950 text-orange-500 focus:ring-orange-500 focus:ring-opacity-25 mt-0.5"
+                                    />
+                                    <label htmlFor="agreedToGuidelines" className="text-xs text-zinc-400 font-medium leading-relaxed cursor-pointer select-none">
+                                        I hereby declare that the details provided are genuine and correct. I solemnly agree to follow the spiritual consulting code of ethics, respect seeker confidentiality, and commit to holding 90-minute live slots on the platform.
+                                    </label>
                                 </div>
                             </div>
                         )}

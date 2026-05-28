@@ -100,31 +100,23 @@ export default function ProfilePage() {
                 paymentMode: 'lead-gen'
             } as any);
 
-            // Send Emails
+            // Send Emails via robust Server-Side API Routing
             try {
-                const { sendBookingConfirmation, sendAstrologerAlert } = await import("@/services/email");
-                await sendBookingConfirmation({
-                    userEmail: user.email || "",
-                    userName: user.displayName || userData?.displayName || "Seeker",
-                    astrologerName: profile.name,
-                    date: new Date(),
-                    time: "Now",
-                    bookingId: newBooking.id!,
-                    amount: 0,
-                    type: consultationType
-                });
-
-                if (profile.email) {
-                    await sendAstrologerAlert({
-                        astrologerEmail: profile.email,
-                        astrologerName: profile.name,
+                await fetch("/api/email/booking-confirmation", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: user.uid,
+                        userEmail: user.email || "",
                         userName: user.displayName || userData?.displayName || "Seeker",
-                        date: new Date(),
+                        astrologerId: profile.id,
+                        astrologerName: profile.name,
+                        date: new Date().toISOString(),
                         time: "Now",
                         bookingId: newBooking.id!,
                         type: consultationType
-                    });
-                }
+                    })
+                });
             } catch (e) {
                 console.error("Non-blocking email error in direct connect:", e);
             }
