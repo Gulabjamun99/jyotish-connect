@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
-import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User } from "lucide-react";
+import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User, Star } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect, useRef } from "react";
 import { subscribeAstrologerBookings } from "@/services/firestore";
@@ -232,7 +232,7 @@ export default function AstrologerDashboard() {
                         { label: "Total Earnings", value: "₹" + (userData?.totalEarnings || "0"), icon: IndianRupee, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
                         { label: "Today's Consults", value: "8", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
                         { label: "Active Seekers", value: userData?.consultations || "0", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
-                        { label: "Expert Rating", value: userData?.rating?.toFixed(1) || "5.0", icon: Star, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+                        { label: "Expert Rating", value: Number(userData?.rating || 5.0).toFixed(1), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
                     ].map((stat, i) => (
                         <div key={i} className="glass bg-zinc-900 border border-white/5 p-8 rounded-[2.5rem] group hover:border-white/20 transition-all hover:-translate-y-1 relative overflow-hidden">
                             <div className={`absolute -top-10 -right-10 w-32 h-32 ${stat.bg} blur-[60px] rounded-full opacity-40 group-hover:opacity-60 transition-opacity`} />
@@ -349,10 +349,18 @@ export default function AstrologerDashboard() {
                                 }
 
                                 return filteredBookings.map((booking: any, index: number) => {
-                                    const isActive = booking.status === 'active';
-                                    const isCompleted = booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'canceled';
-                                    const bookingDate = new Date(booking.date?.seconds ? booking.date.seconds * 1000 : booking.date);
-                                    const typeIcon = booking.type === 'video' ? '🎥' : booking.type === 'audio' ? '🎙️' : '💬';
+                                     const isActive = booking.status === 'active';
+                                     const isCompleted = booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'canceled';
+                                     
+                                     const getSafeDate = (val: any) => {
+                                         if (!val) return new Date();
+                                         if (val.seconds) return new Date(val.seconds * 1000);
+                                         if (val._seconds) return new Date(val._seconds * 1000);
+                                         const d = new Date(val);
+                                         return isNaN(d.getTime()) ? new Date() : d;
+                                     };
+                                     const bookingDate = getSafeDate(booking.date);
+                                     const typeIcon = booking.type === 'video' ? '🎥' : booking.type === 'audio' ? '🎙️' : '💬';
 
                                     return (
                                         <div key={booking.id} className={`glass bg-zinc-900 border p-3 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${isActive && index === 0 && activeTab === 'upcoming' ? 'border-orange-500/30 ring-1 ring-orange-500/20 bg-orange-500/[0.02]' : isCompleted ? 'border-zinc-800/30 opacity-60' : 'border-white/5 hover:border-zinc-700'}`}>

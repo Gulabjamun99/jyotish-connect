@@ -39,6 +39,7 @@ export default function ConsultPage() {
     // Media States
     const [micOn, setMicOn] = useState(true);
     const [videoOn, setVideoOn] = useState(consultationType === "video");
+    const [showPermissionGuide, setShowPermissionGuide] = useState(false); // Permission Guide State
 
     // Presence States
     const [isRemoteOnline, setIsRemoteOnline] = useState(false);
@@ -76,6 +77,9 @@ export default function ConsultPage() {
                     setStream(localStream);
                 } catch (err: any) {
                     console.warn("Media access failed:", err);
+                    if (err.name === 'NotAllowedError' || err.message?.includes('permission') || err.message?.includes('denied')) {
+                        setShowPermissionGuide(true);
+                    }
                     toast.error(err.message || "Please allow camera/mic access");
                 }
             }
@@ -176,6 +180,7 @@ export default function ConsultPage() {
                     toast('Camera denied — joining with audio only', { icon: '🎙️' });
                 } catch (audioErr: any) {
                     addDebug(`❌ All media failed: ${audioErr.message}`);
+                    setShowPermissionGuide(true);
                     toast.warn("Camera/mic blocked. Joining in listen/chat-only mode.", { duration: 6000 });
                     // Fallback to empty stream so Peer Connection doesn't fail
                     activeStream = new MediaStream();
@@ -532,6 +537,92 @@ export default function ConsultPage() {
                             )}
                         </>
                     )}
+                </div>
+            )}
+
+            {/* Render the Permission Guide Overlay when showPermissionGuide is true */}
+            {showPermissionGuide && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 overflow-y-auto">
+                    <div className="relative w-full max-w-2xl bg-zinc-950/80 border border-orange-500/30 rounded-[2.5rem] shadow-[0_0_50px_rgba(249,115,22,0.25)] p-6 md:p-10 text-slate-100 flex flex-col overflow-hidden max-h-[90vh]">
+                        {/* Upper golden accent bar */}
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-amber-400 to-red-500" />
+                        
+                        {/* Starry background glow */}
+                        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500/10 blur-[100px] rounded-full -z-10" />
+                        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-amber-500/10 blur-[100px] rounded-full -z-10" />
+
+                        {/* Title and Icon */}
+                        <div className="text-center space-y-3 mb-6 relative">
+                            <div className="w-16 h-16 mx-auto bg-orange-500/15 rounded-2xl flex items-center justify-center border border-orange-500/30 text-2xl animate-pulse">
+                                🔮
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-amber-300">
+                                Restore Cosmic Senses
+                            </h2>
+                            <p className="text-sm text-zinc-400 max-w-md mx-auto italic">
+                                Camera and Microphone permissions are currently blocked by your browser/device settings. Choose your device below to restore connection:
+                            </p>
+                        </div>
+
+                        {/* Tab Content / Grid for Instructions */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-4 overflow-y-auto pr-1">
+                            {/* Safari / iPhone Guide */}
+                            <div className="glass bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] flex flex-col space-y-4">
+                                <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                                    <span className="text-2xl">🍎</span>
+                                    <div>
+                                        <h3 className="font-bold text-sm text-white">iPhone / Safari</h3>
+                                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Apple iOS</p>
+                                    </div>
+                                </div>
+                                <ol className="space-y-3 text-xs text-zinc-300 list-decimal list-inside font-medium leading-relaxed">
+                                    <li>Tap the <span className="font-bold text-orange-400">"aA"</span> icon on the left of Safari search bar.</li>
+                                    <li>Select <span className="font-bold text-orange-400">Website Settings</span> from the menu.</li>
+                                    <li>Change <span className="font-bold text-white">Camera</span> and <span className="font-bold text-white">Microphone</span> from 'Ask' or 'Deny' to <span className="font-bold text-green-400">Allow</span>.</li>
+                                    <li>Tap Done & reload this page.</li>
+                                </ol>
+                            </div>
+
+                            {/* Chrome / Android Guide */}
+                            <div className="glass bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] flex flex-col space-y-4">
+                                <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                                    <span className="text-2xl">🤖</span>
+                                    <div>
+                                        <h3 className="font-bold text-sm text-white">Android / Chrome</h3>
+                                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Google Android</p>
+                                    </div>
+                                </div>
+                                <ol className="space-y-3 text-xs text-zinc-300 list-decimal list-inside font-medium leading-relaxed">
+                                    <li>Tap the <span className="font-bold text-orange-400">settings / lock 🔒</span> icon next to the website URL.</li>
+                                    <li>Select <span className="font-bold text-orange-400">Permissions</span> or <span className="font-bold text-orange-400">Site Settings</span>.</li>
+                                    <li>Toggle both <span className="font-bold text-white">Camera</span> and <span className="font-bold text-white">Microphone</span> to <span className="font-bold text-green-400">Allowed</span>.</li>
+                                    <li>Reload this page.</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        {/* Note about private tabs */}
+                        <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3 text-[11px] text-orange-200 text-center italic mt-2">
+                            ⚠️ Note: If you are in Incognito/Private mode, browser restrictions might block cameras automatically. Try opening this page in a normal browser tab.
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-white/5 mt-6 shrink-0">
+                            <Button
+                                onClick={() => window.location.reload()}
+                                className="flex-1 h-12 bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg"
+                            >
+                                🔄 Reload Sanctuary Page
+                            </Button>
+                            <Button
+                                onClick={() => setShowPermissionGuide(false)}
+                                variant="ghost"
+                                className="h-12 border border-white/10 hover:bg-white/5 text-zinc-400 hover:text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all"
+                            >
+                                💬 Continue as listen-only
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             )}
         </main>
