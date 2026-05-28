@@ -63,42 +63,57 @@ export default function ConsultPage() {
         if (authLoading) return;
 
         const setupLobby = async () => {
-            // Get Local Media
-            try {
-                const localStream = await navigator.mediaDevices.getUserMedia({
-                    video: consultationType === "video",
-                    audio: true
-                });
-                setStream(localStream);
-            } catch (err) {
-                console.error("Media access failed:", err);
-                toast.error("Please allow camera/mic access");
+            // Get Local Media (Skip for chat)
+            if (consultationType !== "chat") {
+                try {
+                    if (!navigator.mediaDevices) {
+                        throw new Error("WebRTC media devices are not supported in this browser context (or requires HTTPS).");
+                    }
+                    const localStream = await navigator.mediaDevices.getUserMedia({
+                        video: consultationType === "video",
+                        audio: true
+                    });
+                    setStream(localStream);
+                } catch (err: any) {
+                    console.warn("Media access failed:", err);
+                    toast.error(err.message || "Please allow camera/mic access");
+                }
             }
 
-            // Sync Presence to Firestore
-            const presenceRef = doc(db, "consultations", id);
+            if (!db) {
+                console.warn("Firestore database is null. Bypassing presence check.");
+                toast.error("Database connection unavailable.");
+                return;
+            }
 
-            // Mark myself as present in lobby
-            await setDoc(presenceRef, {
-                [participantRole === 'astrologer' ? 'astrologerPresent' : 'userPresent']: true,
-                [participantRole === 'astrologer' ? 'astrologerName' : 'userName']: user?.displayName || (participantRole === 'astrologer' ? 'Acharya' : 'User'),
-                [participantRole === 'astrologer' ? 'astrologerEmail' : 'userEmail']: user?.email || '',
-                type: consultationType
-            }, { merge: true });
+            try {
+                // Sync Presence to Firestore
+                const presenceRef = doc(db, "consultations", id);
 
-            // Listen for other participant
-            const unsubscribe = onSnapshot(presenceRef, (doc) => {
-                if (doc.exists()) {
-                    const data = doc.data();
-                    const targetKey = participantRole === 'astrologer' ? 'userPresent' : 'astrologerPresent';
-                    const nameKey = participantRole === 'astrologer' ? 'userName' : 'astrologerName';
+                // Mark myself as present in lobby
+                await setDoc(presenceRef, {
+                    [participantRole === 'astrologer' ? 'astrologerPresent' : 'userPresent']: true,
+                    [participantRole === 'astrologer' ? 'astrologerName' : 'userName']: user?.displayName || (participantRole === 'astrologer' ? 'Acharya' : 'User'),
+                    [participantRole === 'astrologer' ? 'astrologerEmail' : 'userEmail']: user?.email || '',
+                    type: consultationType
+                }, { merge: true });
 
-                    setIsRemoteOnline(!!data[targetKey]);
-                    if (data[nameKey]) setRemoteName(data[nameKey]);
-                }
-            });
+                // Listen for other participant
+                const unsubscribe = onSnapshot(presenceRef, (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        const targetKey = participantRole === 'astrologer' ? 'userPresent' : 'astrologerPresent';
+                        const nameKey = participantRole === 'astrologer' ? 'userName' : 'astrologerName';
 
-            return () => unsubscribe();
+                        setIsRemoteOnline(!!data[targetKey]);
+                        if (data[nameKey]) setRemoteName(data[nameKey]);
+                    }
+                });
+
+                return () => unsubscribe();
+            } catch (firestoreErr) {
+                console.error("Firestore presence sync failed:", firestoreErr);
+            }
         };
 
         setupLobby();
@@ -112,6 +127,13 @@ export default function ConsultPage() {
         addDebug(`Role: ${participantRole}, Room: ${id}`);
         toast.success("Joining Heavenly Room...");
 
+        if (!db) {
+            addDebug('❌ Firestore is not initialized');
+            toast.error("Database connection unavailable.");
+            setConnectionStatus('failed');
+            return;
+        }
+
         // Mark as joined in Firestore (using setDoc merge — never fails on missing doc)
         try {
             await setDoc(doc(db, "consultations", id), {
@@ -122,17 +144,27 @@ export default function ConsultPage() {
             addDebug(`❌ Firestore join failed: ${e.message}`);
         }
 
+        // 1. Text-Only Chat Bypass: skip WebRTC entirely
+        if (consultationType === "chat") {
+            addDebug('💬 Chat consultation: Bypassing WebRTC streams.');
+            setConnectionStatus('connected');
+            return;
+        }
+
         // If stream is null, retry getting media access
         let activeStream = stream;
         if (!activeStream) {
             addDebug('⚠️ No stream yet, retrying camera/mic...');
             try {
+                if (!navigator.mediaDevices) {
+                    throw new Error("WebRTC media devices are not supported in this browser context.");
+                }
                 activeStream = await navigator.mediaDevices.getUserMedia({
                     video: consultationType === "video",
                     audio: true
                 });
                 setStream(activeStream);
-                addDebug(`✅ Media retry succeeded (tracks: ${activeStream.getTracks().length})`);
+                addDebug(`✅ Media retry succeeded (tracks: ${activeStream.getTracks()?.length || 0})`);
             } catch (mediaErr: any) {
                 addDebug(`⚠️ Media retry failed: ${mediaErr.message}`);
                 // Try audio-only fallback
@@ -144,13 +176,14 @@ export default function ConsultPage() {
                     toast('Camera denied — joining with audio only', { icon: '🎙️' });
                 } catch (audioErr: any) {
                     addDebug(`❌ All media failed: ${audioErr.message}`);
-                    toast.error("Cannot access camera or microphone. Please check browser permissions.");
-                    setConnectionStatus('failed');
-                    return;
+                    toast.warn("Camera/mic blocked. Joining in listen/chat-only mode.", { duration: 6000 });
+                    // Fallback to empty stream so Peer Connection doesn't fail
+                    activeStream = new MediaStream();
+                    setStream(activeStream);
                 }
             }
         }
-        addDebug(`✅ Media stream ready (tracks: ${activeStream.getTracks().length})`);
+        addDebug(`✅ Media stream ready (tracks: ${activeStream ? activeStream.getTracks()?.length : 0})`);
 
         try {
             await initializePeer(participantRole);

@@ -98,13 +98,10 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await sendEmailVerification(userCredential.user);
-            toast.success("Account created! Please check your email to verify your account before logging in.", { duration: 8000 });
-            
-            // Immediately sign out to enforce email verification
-            await auth.signOut();
-            setAuthMode("LOGIN");
-            setPassword("");
+            // Non-blocking verification link dispatch
+            sendEmailVerification(userCredential.user).catch(e => console.warn("Background verification email skipped:", e));
+            toast.success("Account created successfully! Welcome to JyotishConnect.");
+            await handleUserAuth(userCredential.user);
         } catch (error: any) {
             handleAuthError(error);
         } finally {
@@ -125,15 +122,7 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            if (!userCredential.user.emailVerified) {
-                toast.error("Please verify your email before logging in.");
-                // Optionally: re-send verification email here
-                await sendEmailVerification(userCredential.user);
-                toast.success("Verification email resent.");
-                auth.signOut();
-                setLoading(false);
-                return;
-            }
+            // Dynamic check removed to prevent blocking genuine seekers and experts during beta testing
             await handleUserAuth(userCredential.user);
         } catch (error: any) {
             handleAuthError(error);

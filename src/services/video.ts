@@ -73,10 +73,12 @@ export async function makeCall(
             console.log('📞 [Caller] Creating WebRTC offer...');
             pc = new RTCPeerConnection(configuration);
 
-            // Add local tracks
-            localStream.getTracks().forEach(track => {
-                pc?.addTrack(track, localStream);
-            });
+            // Add local tracks only if localStream is available
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    pc?.addTrack(track, localStream);
+                });
+            }
 
             // Resolve when we get the remote stream
             pc.ontrack = event => {
@@ -215,10 +217,12 @@ export function answerCall(
 
     pc = new RTCPeerConnection(configuration);
 
-    // Add local tracks
-    localStream.getTracks().forEach(track => {
-        pc?.addTrack(track, localStream);
-    });
+    // Add local tracks only if localStream is available
+    if (localStream) {
+        localStream.getTracks().forEach(track => {
+            pc?.addTrack(track, localStream);
+        });
+    }
 
     // Resolve when we get the remote stream
     pc.ontrack = event => {
