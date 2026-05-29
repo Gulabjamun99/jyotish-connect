@@ -150,7 +150,7 @@ export default function ConsultPage() {
                     type: consultationType
                 }, { merge: true });
 
-                // Listen for other participant
+                // Listen for other participant & live transcript/chat messages
                 const unsubscribe = onSnapshot(presenceRef, (doc) => {
                     if (doc.exists()) {
                         const data = doc.data();
@@ -159,6 +159,18 @@ export default function ConsultPage() {
 
                         setIsRemoteOnline(!!data[targetKey]);
                         if (data[nameKey]) setRemoteName(data[nameKey]);
+
+                        // Sync messages from transcript dynamically in Chat Mode
+                        if (data.transcript && Array.isArray(data.transcript)) {
+                            const mappedMessages = data.transcript.map((entry: any, index: number) => ({
+                                id: entry.id || `${index}_${entry.time}`,
+                                sender: entry.speaker === 'Astrologer' || entry.speaker === 'astrologer' ? 'astrologer' : 'user',
+                                senderName: entry.speaker,
+                                text: entry.text,
+                                time: entry.time
+                            }));
+                            setMessages(mappedMessages);
+                        }
                     }
                 });
 
@@ -350,7 +362,7 @@ export default function ConsultPage() {
 
     // Timer Logic
     useEffect(() => {
-        if (!isJoined || !isRemoteOnline) return; // Only start timer after BOTH join
+        if (!isJoined || !isRemoteOnline || consultationType === 'chat') return; // Only start timer after BOTH join and NOT in Chat Mode
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
@@ -496,6 +508,7 @@ export default function ConsultPage() {
                         messages={messages}
                         timeLeft={timeLeft}
                         onEndSession={handleDisconnect}
+                        participantRole={participantRole}
                     />
                 </div>
             ) : (

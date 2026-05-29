@@ -19,11 +19,12 @@ interface ChatInterfaceProps {
     astrologerName: string;
     onSendMessage: (message: Message) => void;
     messages: Message[];
-    timeLeft: number;
+    timeLeft?: number;
     onEndSession: () => void;
+    participantRole: string;
 }
 
-export function ChatInterface({ consultationId, userName, astrologerName, onSendMessage, messages, timeLeft, onEndSession }: ChatInterfaceProps) {
+export function ChatInterface({ consultationId, userName, astrologerName, onSendMessage, messages, timeLeft = 0, onEndSession, participantRole }: ChatInterfaceProps) {
     const [inputText, setInputText] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -78,10 +79,12 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
     const handleSend = () => {
         if (!inputText.trim()) return;
 
+        const isAstro = participantRole === "astrologer";
+
         const newMessage: Message = {
             id: Date.now().toString(),
-            sender: "user",
-            senderName: userName,
+            sender: isAstro ? "astrologer" : "user",
+            senderName: isAstro ? astrologerName : userName,
             text: inputText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
@@ -114,10 +117,10 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                     </div>
                 </div>
                 <div className="flex flex-col items-end">
-                    <div className={`text-2xl font-black tabular-nums tracking-tight ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>
-                        {formatTime(timeLeft)}
+                    <div className="text-xs font-black text-orange-500 uppercase tracking-widest bg-orange-500/10 border border-orange-500/20 px-3.5 py-2 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
+                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
+                        Convenient Chat
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Remaining</span>
                 </div>
             </div>
 
