@@ -15,6 +15,8 @@ interface LobbyInterfaceProps {
     remoteParticipantName: string; // "Acharya Ravi" or "User"
     isRemoteParticipantOnline: boolean; // Real-time status
     userName: string;
+    onShowPermissionGuide?: () => void;
+    permissionDenied?: boolean;
 }
 
 export function LobbyInterface({
@@ -27,7 +29,9 @@ export function LobbyInterface({
     participantRole,
     remoteParticipantName,
     isRemoteParticipantOnline,
-    userName
+    userName,
+    onShowPermissionGuide,
+    permissionDenied = false
 }: LobbyInterfaceProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -54,6 +58,27 @@ export function LobbyInterface({
                             playsInline
                             className={`w-full h-full object-cover transform scale-x-[-1] transition-opacity duration-500 ${videoOn ? 'opacity-100' : 'opacity-0'}`}
                         />
+                    ) : permissionDenied ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 p-6 text-center space-y-4">
+                            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 text-red-500">
+                                <VideoOff className="w-8 h-8" />
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-white font-bold text-sm">Cosmic Access Blocked</p>
+                                <p className="text-[11px] text-zinc-500 max-w-[240px] leading-relaxed mx-auto">
+                                    Camera and Microphone permissions are blocked by your browser settings.
+                                </p>
+                            </div>
+                            {onShowPermissionGuide && (
+                                <Button 
+                                    onClick={onShowPermissionGuide}
+                                    variant="outline" 
+                                    className="h-9 px-4 border-orange-500/30 text-orange-400 hover:text-white hover:bg-orange-500/10 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all animate-pulse"
+                                >
+                                    🔮 Open Unblock Guide
+                                </Button>
+                            )}
+                        </div>
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-16 h-16 rounded-full border-4 border-orange-500/30 border-t-orange-500 animate-spin" />
@@ -143,6 +168,14 @@ export function LobbyInterface({
                             <ShieldCheck className="w-3 h-3 inline mr-1" />
                             End-to-End Encrypted Session
                         </p>
+                        {onShowPermissionGuide && (
+                            <button
+                                onClick={onShowPermissionGuide}
+                                className="text-[10px] text-orange-500 hover:text-orange-400 font-black uppercase tracking-wider flex items-center justify-center gap-1.5 mt-2 transition-colors border border-dashed border-orange-500/20 rounded-xl py-2.5 px-4 hover:border-orange-500/40 w-full"
+                            >
+                                🔮 Camera/Mic Blocked? Click for Guide
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

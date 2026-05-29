@@ -40,6 +40,7 @@ export default function ConsultPage() {
     const [micOn, setMicOn] = useState(true);
     const [videoOn, setVideoOn] = useState(consultationType === "video");
     const [showPermissionGuide, setShowPermissionGuide] = useState(false); // Permission Guide State
+    const [permissionDenied, setPermissionDenied] = useState(false); // Track blocked permissions
 
     // Presence States
     const [isRemoteOnline, setIsRemoteOnline] = useState(false);
@@ -75,9 +76,12 @@ export default function ConsultPage() {
                         audio: true
                     });
                     setStream(localStream);
+                    setPermissionDenied(false);
                 } catch (err: any) {
                     console.warn("Media access failed:", err);
-                    if (err.name === 'NotAllowedError' || err.message?.includes('permission') || err.message?.includes('denied')) {
+                    const isPermissionErr = err.name === 'NotAllowedError' || err.message?.includes('permission') || err.message?.includes('denied') || err.name === 'PermissionDeniedError';
+                    if (isPermissionErr) {
+                        setPermissionDenied(true);
                         setShowPermissionGuide(true);
                     }
                     toast.error(err.message || "Please allow camera/mic access");
@@ -168,6 +172,7 @@ export default function ConsultPage() {
                     audio: true
                 });
                 setStream(activeStream);
+                setPermissionDenied(false);
                 addDebug(`✅ Media retry succeeded (tracks: ${activeStream.getTracks()?.length || 0})`);
             } catch (mediaErr: any) {
                 addDebug(`⚠️ Media retry failed: ${mediaErr.message}`);
@@ -176,10 +181,12 @@ export default function ConsultPage() {
                     activeStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                     setStream(activeStream);
                     setVideoOn(false);
+                    setPermissionDenied(false);
                     addDebug('✅ Audio-only fallback succeeded');
                     toast('Camera denied — joining with audio only', { icon: '🎙️' });
                 } catch (audioErr: any) {
                     addDebug(`❌ All media failed: ${audioErr.message}`);
+                    setPermissionDenied(true);
                     setShowPermissionGuide(true);
                     toast.warn("Camera/mic blocked. Joining in listen/chat-only mode.", { duration: 6000 });
                     // Fallback to empty stream so Peer Connection doesn't fail
@@ -404,6 +411,7 @@ export default function ConsultPage() {
             const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setStream(s);
             setVideoOn(true);
+            setPermissionDenied(false);
             toast.success("Camera restored");
         } catch (e) {
             toast.error("Still no camera access");
@@ -461,6 +469,8 @@ export default function ConsultPage() {
                             remoteParticipantName={remoteName}
                             isRemoteParticipantOnline={isRemoteOnline}
                             userName={user?.displayName || (participantRole === 'astrologer' ? 'Acharya' : 'User')}
+                            onShowPermissionGuide={() => setShowPermissionGuide(true)}
+                            permissionDenied={permissionDenied}
                         />
                     ) : (
                         <>
