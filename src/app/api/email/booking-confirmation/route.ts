@@ -180,7 +180,8 @@ export async function POST(req: Request) {
             results.push({ to: 'astrologer', ...res });
         }
 
-        return NextResponse.json({ success: true, results });
+        const allSimulated = results.every(r => r.method === 'simulation');
+        return NextResponse.json({ success: true, results, simulated: allSimulated });
 
     } catch (error: any) {
         console.error("Booking Confirmation Email Error:", error);

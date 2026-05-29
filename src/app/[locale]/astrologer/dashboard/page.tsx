@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
-import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User, Star } from "lucide-react";
+import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User, Star, Volume2, VolumeX } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect, useRef } from "react";
 import { subscribeAstrologerBookings } from "@/services/firestore";
@@ -58,6 +58,29 @@ export default function AstrologerDashboard() {
     const [isOnline, setIsOnline] = useState(true);
     const prevBookingsLength = useRef(0);
     const seenBookingIds = useRef<Set<string>>(new Set());
+    const [alertsUnlocked, setAlertsUnlocked] = useState(false);
+
+    const unlockAlerts = () => {
+        // Unlock sound instantly by playing a preview chime
+        playCosmicChime();
+        
+        // Unlock background permissions
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    toast.success("🔔 Sound & Push Alerts Fully Aligned!");
+                    setAlertsUnlocked(true);
+                } else if (permission === 'denied') {
+                    toast.error("⚠️ Browser push notifications blocked!");
+                    setAlertsUnlocked(true);
+                } else {
+                    setAlertsUnlocked(true);
+                }
+            });
+        } else {
+            setAlertsUnlocked(true);
+        }
+    };
 
     useEffect(() => {
         // Request Native Notification Permission for background alerts
@@ -263,6 +286,30 @@ export default function AstrologerDashboard() {
                                     className={`flex-1 sm:flex-none h-14 px-8 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all ${!isOnline ? "bg-zinc-800 text-white border border-white/10 shadow-inner" : "bg-transparent text-zinc-500 hover:text-white"}`}
                                 >
                                     Go Offline
+                                </Button>
+                            </div>
+
+                            {/* Sound & Notifications Activator */}
+                            <div className="w-full sm:w-auto">
+                                <Button
+                                    onClick={unlockAlerts}
+                                    className={`w-full h-14 px-8 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all ${
+                                        alertsUnlocked 
+                                            ? "bg-zinc-900 text-green-400 border border-green-500/30" 
+                                            : "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-2xl shadow-orange-500/20 hover:scale-[1.02]"
+                                    }`}
+                                >
+                                    {alertsUnlocked ? (
+                                        <>
+                                            <Volume2 className="w-4 h-4 text-green-400 animate-pulse shrink-0" />
+                                            Alerts Active
+                                        </>
+                                    ) : (
+                                        <>
+                                            <VolumeX className="w-4 h-4 text-white animate-bounce shrink-0" />
+                                            Activate Alerts
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                             
