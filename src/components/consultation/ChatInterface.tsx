@@ -26,6 +26,14 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ consultationId, userName, astrologerName, onSendMessage, messages, timeLeft = 0, onEndSession, participantRole }: ChatInterfaceProps) {
     const [inputText, setInputText] = useState("");
+    
+    const isAstro = participantRole === "astrologer";
+    const quickGreetings = [
+        { label: isAstro ? "🙏 Ashirwad" : "🙏 Pranam", text: isAstro ? "🙏 Kalyan ho, Subh Ashirwad!" : "🙏 Pranam Acharya ji!" },
+        { label: "🌸 Namaskar", text: "🌸 Namaskar!" },
+        { label: "❤️ Prem", text: "❤️" },
+        { label: "🪷 Lotus", text: "🪷" }
+    ];
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -133,26 +141,29 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                     </div>
                 )}
 
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                        <div className={`max-w-[70%] ${msg.sender === "user" ? "order-2" : "order-1"}`}>
-                            <div className="text-[10px] font-bold text-muted-foreground mb-1 px-2">
-                                {msg.senderName} • {msg.time}
-                            </div>
-                            <div
-                                className={`p-4 rounded-2xl ${msg.sender === "user"
-                                    ? "bg-primary text-primary-foreground rounded-tr-sm"
-                                    : "glass border border-primary/10 rounded-tl-sm"
-                                    }`}
-                            >
-                                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                {messages.map((msg) => {
+                    const isMyMessage = msg.sender === participantRole;
+                    return (
+                        <div
+                            key={msg.id}
+                            className={`flex ${isMyMessage ? "justify-end" : "justify-start"}`}
+                        >
+                            <div className="max-w-[70%]">
+                                <div className={`text-[10px] font-bold text-muted-foreground mb-1 px-2 ${isMyMessage ? "text-right" : "text-left"}`}>
+                                    {isMyMessage ? "You" : msg.senderName} • {msg.time}
+                                </div>
+                                <div
+                                    className={`p-4 rounded-2xl shadow-md ${isMyMessage
+                                        ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-tr-sm"
+                                        : "bg-zinc-900 border border-white/5 text-slate-100 rounded-tl-sm"
+                                        }`}
+                                >
+                                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {isTyping && (
                     <div className="flex justify-start">
@@ -167,6 +178,28 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                 )}
 
                 <div ref={messagesEndRef} />
+            </div>
+
+            {/* Quick Greetings Row */}
+            <div className="px-6 py-3 flex flex-wrap gap-2 border-t border-white/5 bg-zinc-950/40 shrink-0">
+                {quickGreetings.map((greet, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => {
+                            const newMessage: Message = {
+                                id: Date.now().toString(),
+                                sender: isAstro ? "astrologer" : "user",
+                                senderName: isAstro ? astrologerName : userName,
+                                text: greet.text,
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            };
+                            onSendMessage(newMessage);
+                        }}
+                        className="text-[10px] font-bold text-orange-400 hover:text-white bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 rounded-full px-3 py-1.5 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-sm"
+                    >
+                        {greet.label}
+                    </button>
+                ))}
             </div>
 
             {/* Input Area */}

@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { NextIntlClientProvider } from "next-intl";
+import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
 const HelpChatWidget = dynamic(
@@ -19,6 +20,10 @@ interface ClientWrapperProps {
 }
 
 export function ClientWrapper({ children, messages, locale }: ClientWrapperProps) {
+  const pathname = usePathname();
+  // Render support widget only on root landing page or localized homepage
+  const isHomePage = pathname === "/" || pathname === `/${locale}` || pathname === `/${locale}/`;
+
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <ThemeProvider
@@ -30,7 +35,7 @@ export function ClientWrapper({ children, messages, locale }: ClientWrapperProps
         <AuthProvider>
           {children}
           <Toaster position="bottom-right" />
-          <HelpChatWidget />
+          {isHomePage && <HelpChatWidget />}
         </AuthProvider>
 
       </ThemeProvider>
