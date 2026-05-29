@@ -162,13 +162,21 @@ export default function ConsultPage() {
 
                         // Sync messages from transcript dynamically in Chat Mode
                         if (data.transcript && Array.isArray(data.transcript)) {
-                            const mappedMessages = data.transcript.map((entry: any, index: number) => ({
-                                id: entry.id || `${index}_${entry.time}`,
-                                sender: entry.speaker === 'Astrologer' || entry.speaker === 'astrologer' ? 'astrologer' : 'user',
-                                senderName: entry.speaker,
-                                text: entry.text,
-                                time: entry.time
-                            }));
+                            const mappedMessages = data.transcript.map((entry: any, index: number) => {
+                                const isAstro = entry.role === 'astrologer' || 
+                                                entry.speaker === astrologerName || 
+                                                entry.speaker === remoteName || 
+                                                entry.speaker?.toLowerCase() === 'astrologer' ||
+                                                entry.speaker?.toLowerCase()?.includes('acharya') ||
+                                                entry.speaker?.toLowerCase()?.includes('purohit');
+                                return {
+                                    id: entry.id || `${index}_${entry.time}`,
+                                    sender: isAstro ? 'astrologer' : 'user',
+                                    senderName: entry.speaker,
+                                    text: entry.text,
+                                    time: entry.time
+                                };
+                            });
                             setMessages(mappedMessages);
                         }
                     }
@@ -479,8 +487,9 @@ export default function ConsultPage() {
         addTranscriptLine(id, {
             speaker: message.senderName,
             text: message.text,
-            time: message.time
-        });
+            time: message.time,
+            role: participantRole
+        } as any);
     };
 
     return (
