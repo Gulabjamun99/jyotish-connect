@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Video, ChevronDown, CheckCircle2 } from "lucide-react";
@@ -157,11 +157,8 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
         }
 
         setLoading(true);
-        const bookingId = `book_${Math.random().toString(36).substring(2, 9)}`;
-
         try {
-            await createBooking({
-                id: bookingId,
+            const newBooking = await createBooking({
                 userId: user.uid,
                 userName: user.displayName || userData?.displayName || "Seeker",
                 userEmail: user.email || "",
@@ -174,8 +171,19 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                 type: mode,
                 status: "scheduled",
                 paymentStatus: "completed",
-                meetingLink: `/consult/${bookingId}`
+                meetingLink: ""
             } as any);
+
+            const actualBookingId = newBooking.id;
+
+            // Update meetingLink in Firestore with actual ID
+            try {
+                await updateDoc(doc(db, "bookings", actualBookingId), {
+                    meetingLink: `/consult/${actualBookingId}`
+                });
+            } catch (updateErr) {
+                console.error("Non-blocking meetingLink update error:", updateErr);
+            }
 
             // Send Emails via robust Server-Side API Routing
             try {
@@ -190,7 +198,7 @@ export const SmartBookingSystem = ({ astrologerId, astrologerName, astrologerEma
                         astrologerName,
                         date: selectedDate,
                         time: selectedSlot,
-                        bookingId,
+                        bookingId: actualBookingId,
                         type: mode
                     })
                 });

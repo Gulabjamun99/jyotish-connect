@@ -58,7 +58,7 @@ export function SchedulingModal({ isOpen, onClose, astrologerId, astrologerName,
 
         setIsBooking(true);
         try {
-            await createBooking({
+            const newBooking = await createBooking({
                 userId: user.uid,
                 userName: user.displayName || "Seeker",
                 userEmail: user.email || "",
@@ -82,7 +82,8 @@ export function SchedulingModal({ isOpen, onClose, astrologerId, astrologerName,
                     astrologerName,
                     date: date.toISOString(),
                     time: selectedSlot,
-                    type: bookingType
+                    type: bookingType,
+                    bookingId: newBooking.id!
                 })
             }).catch(e => console.error("Failed to trigger email API", e));
 

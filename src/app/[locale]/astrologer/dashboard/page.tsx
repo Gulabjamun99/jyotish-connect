@@ -13,6 +13,42 @@ import toast from "react-hot-toast";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+const playCosmicChime = () => {
+    try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+        
+        // Osc 1 - Sine Wave fundamental E5
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(659.25, now); // E5
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        
+        // Osc 2 - Triangle Wave harmony B5 (delayed slightly for cosmic echo)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = "triangle";
+        osc2.frequency.setValueAtTime(987.77, now + 0.1); // B5 (fifth)
+        gain2.gain.setValueAtTime(0.15, now + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        
+        osc1.start(now);
+        osc1.stop(now + 1.5);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 1.2);
+    } catch (e) {
+        console.warn("Failed to play procedural chime sound:", e);
+    }
+};
+
 export default function AstrologerDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["astrologer"]);
     const router = useRouter();
@@ -22,6 +58,13 @@ export default function AstrologerDashboard() {
     const [isOnline, setIsOnline] = useState(true);
     const prevBookingsLength = useRef(0);
     const seenBookingIds = useRef<Set<string>>(new Set());
+
+    useEffect(() => {
+        // Request Native Notification Permission for background alerts
+        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -42,10 +85,7 @@ export default function AstrologerDashboard() {
                 const newActiveBookings = activeBookings.filter(b => !seenBookingIds.current.has(b.id));
 
                 if (newActiveBookings.length > 0) {
-                    try {
-                        const audio = new Audio('/sounds/bell.mp3');
-                        audio.play().catch(e => console.log("Audio play prevented by browser", e));
-                    } catch (e) { }
+                    playCosmicChime();
 
                     toast((t) => (
                         <div className="flex flex-col gap-2">
@@ -62,6 +102,19 @@ export default function AstrologerDashboard() {
                             </Button>
                         </div>
                     ), { duration: 15000, position: 'top-center' });
+
+                    // Trigger a native browser push notification
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        try {
+                            new Notification("🚨 LIVE SEEKER WAITING!", {
+                                body: "A seeker is waiting for your guidance live in the consultation room right now!",
+                                tag: "live-seeker-alert",
+                                requireInteraction: true
+                            });
+                        } catch (err) {
+                            console.warn("Failed to dispatch browser notification:", err);
+                        }
+                    }
 
                     // Mark these as seen
                     newActiveBookings.forEach(b => seenBookingIds.current.add(b.id));
