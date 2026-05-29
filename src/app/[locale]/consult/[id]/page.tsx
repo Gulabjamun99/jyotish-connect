@@ -45,6 +45,8 @@ export default function ConsultPage() {
     // Presence States
     const [isRemoteOnline, setIsRemoteOnline] = useState(false);
     const [remoteName, setRemoteName] = useState(participantRole === 'astrologer' ? "User" : "Acharya");
+    const [astrologerName, setAstrologerName] = useState(participantRole === 'astrologer' ? (user?.displayName || "Acharya") : "Acharya");
+    const [seekerName, setSeekerName] = useState(participantRole === 'astrologer' ? "Seeker" : (user?.displayName || "Seeker"));
     const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle');
     const [debugLog, setDebugLog] = useState<string[]>([]);
 
@@ -92,6 +94,48 @@ export default function ConsultPage() {
                 console.warn("Firestore database is null. Bypassing presence check.");
                 toast.error("Database connection unavailable.");
                 return;
+            }
+
+            // 1. Fetch metadata from the bookings collection
+            if (id) {
+                try {
+                    const bookingSnap = await getDoc(doc(db, "bookings", id));
+                    if (bookingSnap.exists()) {
+                        const bookingData = bookingSnap.data();
+                        if (bookingData.astrologerName) {
+                            setAstrologerName(bookingData.astrologerName);
+                            if (participantRole !== 'astrologer') {
+                                setRemoteName(bookingData.astrologerName);
+                            }
+                        }
+                        if (bookingData.userName) {
+                            setSeekerName(bookingData.userName);
+                            if (participantRole === 'astrologer') {
+                                setRemoteName(bookingData.userName);
+                            }
+                        }
+                    }
+                } catch (bookingErr) {
+                    console.warn("Failed to fetch booking metadata:", bookingErr);
+                }
+            }
+
+            // 2. Fetch directly from the astrologers collection if astrologer param is present
+            const astrologerIdParam = searchParams.get("astrologer");
+            if (astrologerIdParam) {
+                try {
+                    const astroSnap = await getDoc(doc(db, "astrologers", astrologerIdParam));
+                    if (astroSnap.exists()) {
+                        const astroData = astroSnap.data();
+                        const name = astroData.name || astroData.displayName || "Acharya";
+                        setAstrologerName(name);
+                        if (participantRole !== 'astrologer') {
+                            setRemoteName(name);
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Failed to fetch astrologer profile details:", e);
+                }
             }
 
             try {
@@ -446,8 +490,8 @@ export default function ConsultPage() {
                 <div className="flex-grow h-[calc(100vh-64px)]">
                     <ChatInterface
                         consultationId={id}
-                        userName={user?.displayName || "You"}
-                        astrologerName="Acharya Ravi Singh"
+                        userName={user?.displayName || seekerName || "You"}
+                        astrologerName={astrologerName || "Acharya"}
                         onSendMessage={handleSendMessage}
                         messages={messages}
                         timeLeft={timeLeft}
@@ -481,13 +525,6 @@ export default function ConsultPage() {
                                         <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
                                         <p className="text-white font-bold text-lg">Establishing connection...</p>
                                         <p className="text-white/40 text-sm">Connecting to the other participant</p>
-                                        {/* Debug Panel */}
-                                        <div className="mt-4 text-left bg-black/50 rounded-xl p-4 max-h-40 overflow-y-auto">
-                                            <p className="text-[10px] text-orange-500 font-bold uppercase tracking-widest mb-2">Connection Log</p>
-                                            {debugLog.map((log, i) => (
-                                                <p key={i} className="text-[11px] text-white/60 font-mono leading-relaxed">{log}</p>
-                                            ))}
-                                        </div>
                                     </div>
                                 </div>
                             )}
