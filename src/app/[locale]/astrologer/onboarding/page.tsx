@@ -43,14 +43,8 @@ export default function AstrologerOnboardingPage() {
         specializations: [] as string[],
         languages: [] as string[],
         focusAreas: [] as string[], // New core focus fields
-        consultationRate: "" as string | number,
         bio: "",
-        education: "",
-        bankHolderName: "", // New payout fields
-        bankName: "",
-        bankAccountNumber: "",
-        bankIfsc: "",
-        agreedToGuidelines: false // Guideline consent
+        education: ""
     });
 
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -106,22 +100,8 @@ export default function AstrologerOnboardingPage() {
                 toast.error("Please select at least one spiritual focus area.");
                 return false;
             }
-        } else if (step === 3) {
-            const rate = Number(formData.consultationRate);
-            if (formData.consultationRate === "" || isNaN(rate) || rate < 100 || rate > 10000) {
-                toast.error("Please set a session rate between ₹100 and ₹10,000.");
-                return false;
-            }
-            if (!formData.bankHolderName || !formData.bankName || !formData.bankAccountNumber || !formData.bankIfsc) {
-                toast.error("Please enter all mandatory bank payout details to enable automated routing.");
-                return false;
-            }
             if (!formData.bio || formData.bio.length < 50) {
                 toast.error("Your bio must be at least 50 characters to build trust with seekers.");
-                return false;
-            }
-            if (!formData.agreedToGuidelines) {
-                toast.error("You must agree to the spiritual consulting guidelines and availability code of ethics.");
                 return false;
             }
         }
@@ -174,13 +154,10 @@ export default function AstrologerOnboardingPage() {
                 specializations: formData.specializations,
                 languages: formData.languages,
                 focusAreas: formData.focusAreas,
-                consultationRate: Number(formData.consultationRate),
+                consultationRate: 50, // Default pricing rate
+                price: 50,
                 bio: formData.bio,
                 education: formData.education,
-                bankHolderName: formData.bankHolderName,
-                bankName: formData.bankName,
-                bankAccountNumber: formData.bankAccountNumber,
-                bankIfsc: formData.bankIfsc,
                 certificationURL,
                 profileComplete: true,
                 rating: 5.0,
@@ -240,13 +217,12 @@ export default function AstrologerOnboardingPage() {
                     {/* Elite Stepper */}
                     <div className="mb-12 relative max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '0.1s' }}>
                         <div className="absolute top-1/2 left-0 w-full h-1 bg-zinc-800 -translate-y-1/2 rounded-full overflow-hidden">
-                            <div className="h-full bg-orange-500 transition-all duration-500 ease-out" style={{ width: `${((step - 1) / 2) * 100}%` }} />
+                            <div className="h-full bg-orange-500 transition-all duration-500 ease-out" style={{ width: `${((step - 1) / 1) * 100}%` }} />
                         </div>
                         <div className="relative flex justify-between">
                             {[
                                 { icon: User, label: "Identity" },
-                                { icon: Briefcase, label: "Expertise" },
-                                { icon: BookOpen, label: "Portfolio" }
+                                { icon: Briefcase, label: "Expertise & Bio" }
                             ].map((s, i) => {
                                 const isCompleted = i + 1 < step;
                                 const isCurrent = i + 1 === step;
@@ -422,18 +398,7 @@ export default function AstrologerOnboardingPage() {
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* STEP 3: PORTFOLIO */}
-                        {step === 3 && (
-                            <div className="space-y-8 animate-fade-in">
-                                <div className="space-y-2">
-                                    <h2 className="text-2xl font-black">Portfolio & Rates</h2>
-                                    <p className="text-zinc-400 text-sm">Complete your profile to inspire trust and set your worth.</p>
-                                </div>
-
-                                <div className="space-y-4">
+                                <div className="space-y-4 border-t border-zinc-800/80 pt-6">
                                     <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold flex justify-between">
                                         <span>Professional Bio *</span>
                                         <span className={formData.bio.length >= 50 ? 'text-green-500' : 'text-orange-500'}>
@@ -441,7 +406,7 @@ export default function AstrologerOnboardingPage() {
                                         </span>
                                     </Label>
                                     <textarea
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-6 text-zinc-300 min-h-[150px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all resize-none"
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-6 text-zinc-300 min-h-[120px] focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all resize-none"
                                         placeholder="Greetings! I am an expert in Vedic astrology with a lineage spanning 3 generations. My focus is providing clear, actionable remedies..."
                                         value={formData.bio}
                                         onChange={e => setFormData({ ...formData, bio: e.target.value })}
@@ -449,21 +414,7 @@ export default function AstrologerOnboardingPage() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Indicative Dakshina (₹) *</Label>
-                                        <div className="relative">
-                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-zinc-500">₹</span>
-                                            <Input
-                                                type="number"
-                                                className="bg-zinc-950 border-zinc-800 h-14 rounded-2xl pl-12 pr-6 text-lg focus-visible:ring-orange-500 text-white font-bold"
-                                                placeholder="800"
-                                                value={formData.consultationRate}
-                                                onChange={e => setFormData({ ...formData, consultationRate: e.target.value })}
-                                            />
-                                        </div>
-                                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Base fee for up to 90 min consultation.</p>
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Education (Optional)</Label>
                                         <Input
@@ -473,74 +424,16 @@ export default function AstrologerOnboardingPage() {
                                             onChange={e => setFormData({ ...formData, education: e.target.value })}
                                         />
                                     </div>
-                                </div>
-
-                                <div className="space-y-4 border-t border-zinc-800/80 pt-6">
-                                    <Label className="text-xs uppercase tracking-widest text-orange-500 font-bold">Bank Payout Information (Mandatory) *</Label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Account Holder Name *</Label>
-                                            <Input
-                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 focus-visible:ring-orange-500"
-                                                value={formData.bankHolderName}
-                                                onChange={e => setFormData({ ...formData, bankHolderName: e.target.value })}
-                                                placeholder="Full name as in bank passbook"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Bank Name *</Label>
-                                            <Input
-                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 focus-visible:ring-orange-500"
-                                                value={formData.bankName}
-                                                onChange={e => setFormData({ ...formData, bankName: e.target.value })}
-                                                placeholder="e.g. State Bank of India"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Account Number *</Label>
-                                            <Input
-                                                type="text"
-                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 focus-visible:ring-orange-500"
-                                                value={formData.bankAccountNumber}
-                                                onChange={e => setFormData({ ...formData, bankAccountNumber: e.target.value })}
-                                                placeholder="Enter account number"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">IFSC / SWIFT Code *</Label>
-                                            <Input
-                                                className="bg-zinc-950 border-zinc-800 h-12 rounded-xl px-4 uppercase focus-visible:ring-orange-500"
-                                                value={formData.bankIfsc}
-                                                onChange={e => setFormData({ ...formData, bankIfsc: e.target.value })}
-                                                placeholder="e.g. SBIN0001234"
-                                            />
+                                    <div className="space-y-2">
+                                        <Label className="text-xs uppercase tracking-widest text-zinc-500 font-bold">Upload Vedic Certifications (PDF, Optional)</Label>
+                                        <div className="relative cursor-pointer bg-zinc-950 border border-zinc-800 hover:border-orange-500 transition-colors h-14 rounded-2xl px-6 flex items-center justify-between">
+                                            <span className="text-xs font-bold truncate text-zinc-400">
+                                                {certFile ? certFile.name : "Select PDF Document"}
+                                            </span>
+                                            <Upload className="w-4 h-4 text-orange-500" />
+                                            <input type="file" accept=".pdf" onChange={e => setCertFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="p-6 border border-dashed border-zinc-800 rounded-3xl bg-zinc-950 flex flex-col items-center justify-center text-center">
-                                    <Upload className="w-8 h-8 text-zinc-600 mb-4" />
-                                    <h3 className="font-bold mb-1">Upload Certifications</h3>
-                                    <p className="text-xs text-zinc-500 mb-4">PDF format only. Highly recommended for trust.</p>
-                                    <div className="relative cursor-pointer bg-zinc-900 border border-zinc-800 hover:border-orange-500 transition-colors px-6 py-3 rounded-xl">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-orange-500">
-                                            {certFile ? certFile.name : "Select File"}
-                                        </span>
-                                        <input type="file" accept=".pdf" onChange={e => setCertFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-3 p-4 bg-zinc-950 rounded-2xl border border-zinc-800/80">
-                                    <input
-                                        type="checkbox"
-                                        id="agreedToGuidelines"
-                                        checked={formData.agreedToGuidelines}
-                                        onChange={e => setFormData({ ...formData, agreedToGuidelines: e.target.checked })}
-                                        className="w-5 h-5 rounded border-zinc-850 bg-zinc-950 text-orange-500 focus:ring-orange-500 focus:ring-opacity-25 mt-0.5"
-                                    />
-                                    <label htmlFor="agreedToGuidelines" className="text-xs text-zinc-400 font-medium leading-relaxed cursor-pointer select-none">
-                                        I hereby declare that the details provided are genuine and correct. I solemnly agree to follow the spiritual consulting code of ethics, respect seeker confidentiality, and commit to holding 90-minute live slots on the platform.
-                                    </label>
                                 </div>
                             </div>
                         )}
@@ -553,7 +446,7 @@ export default function AstrologerOnboardingPage() {
                                 </Button>
                             ) : <div></div>}
 
-                            {step < 3 ? (
+                            {step < 2 ? (
                                 <Button onClick={handleNext} className="bg-white text-black hover:bg-zinc-200 h-12 px-8 rounded-xl text-xs uppercase font-bold tracking-widest shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all">
                                     Continue <ChevronRight className="w-4 h-4 ml-2" />
                                 </Button>
