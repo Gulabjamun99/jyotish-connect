@@ -100,7 +100,7 @@ export default function LoginPage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             // Non-blocking verification link dispatch
             sendEmailVerification(userCredential.user).catch(e => console.warn("Background verification email skipped:", e));
-            toast.success("Account created successfully! Welcome to JyotishConnect.");
+            toast.success("Account created successfully! A verification link has been sent to your email. Please check your inbox and verify to secure your account. Welcome to JyotishConnect.", { duration: 6000 });
             await handleUserAuth(userCredential.user);
         } catch (error: any) {
             handleAuthError(error);

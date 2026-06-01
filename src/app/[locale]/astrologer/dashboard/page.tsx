@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
 import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User, Star, Volume2, VolumeX } from "lucide-react";
@@ -177,6 +178,7 @@ export default function AstrologerDashboard() {
         return (
             <main className="min-h-screen flex flex-col bg-transparent overflow-hidden selection:bg-primary/30">
                 <Navbar />
+                <EmailVerificationBanner />
                 <div className="flex-grow flex items-center justify-center p-6 relative">
                     <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -z-10 animate-float" />
                     <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-accent/5 blur-[120px] rounded-full -z-10 animate-float" style={{ animationDelay: '-2s' }} />
@@ -217,6 +219,7 @@ export default function AstrologerDashboard() {
     return (
         <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
+            <EmailVerificationBanner />
 
             {/* Top Status & Greeting Section */}
             <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-20 overflow-hidden">

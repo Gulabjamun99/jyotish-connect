@@ -360,7 +360,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: "model",
-                content: "The planetary alignments are disruptive right now. Please try again. \n\n*(Error: " + (error.message || "Unknown cosmic interference") + ")*"
+                content: "The cosmic energy channels are highly active right now, causing temporary planetary interference. The stars are realigning. Please try asking your question again in a few moments. ✨"
             }]);
         } finally {
             setIsLoading(false);

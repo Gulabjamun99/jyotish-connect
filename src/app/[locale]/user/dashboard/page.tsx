@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
 import { 
@@ -54,6 +55,7 @@ export default function UserDashboard() {
     return (
         <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
+            <EmailVerificationBanner />
 
             {/* Top Greeting Section */}
             <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-16 overflow-hidden">
