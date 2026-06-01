@@ -138,9 +138,11 @@ export function Navbar() {
                                 </Button>
                             </div>
                         ) : (
-                            <Button onClick={handleLogin} className="h-9 px-6 rounded-lg orange-gradient font-black text-[10px] uppercase tracking-widest text-white shadow-md shadow-primary/10">
-                                {tNav("login")}
-                            </Button>
+                            <Link href="/login">
+                                <Button className="h-9 px-6 rounded-lg orange-gradient font-black text-[10px] uppercase tracking-widest text-white shadow-md shadow-primary/10">
+                                    {tNav("login")}
+                                </Button>
+                            </Link>
                         )}
                     </div>
                 </div>
@@ -186,9 +188,11 @@ export function Navbar() {
                             </Button>
                         </div>
                     ) : (
-                        <Button onClick={handleLogin} className="w-full bg-orange-500 text-white">
-                            {tNav("login")}
-                        </Button>
+                        <Link href="/login" className="block w-full">
+                            <Button className="w-full bg-orange-500 text-white justify-center">
+                                {tNav("login")}
+                            </Button>
+                        </Link>
                     )}
                 </div>
             )}
