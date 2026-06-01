@@ -173,12 +173,23 @@ export default function AstrologerDashboard() {
         );
     }
 
+    if (user && !user.emailVerified) {
+        return (
+            <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans flex flex-col justify-between">
+                <Navbar />
+                <div className="flex-grow flex items-center justify-center">
+                    <EmailVerificationBanner />
+                </div>
+                <Footer />
+            </main>
+        );
+    }
+
     // Show pending verification screen
     if (userData?.profileComplete && !userData?.verified) {
         return (
             <main className="min-h-screen flex flex-col bg-transparent overflow-hidden selection:bg-primary/30">
                 <Navbar />
-                <EmailVerificationBanner />
                 <div className="flex-grow flex items-center justify-center p-6 relative">
                     <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -z-10 animate-float" />
                     <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-accent/5 blur-[120px] rounded-full -z-10 animate-float" style={{ animationDelay: '-2s' }} />
@@ -219,7 +230,6 @@ export default function AstrologerDashboard() {
     return (
         <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
-            <EmailVerificationBanner />
 
             {/* Top Status & Greeting Section */}
             <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-20 overflow-hidden">

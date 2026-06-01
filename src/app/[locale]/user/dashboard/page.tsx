@@ -52,10 +52,21 @@ export default function UserDashboard() {
         );
     }
 
+    if (user && !user.emailVerified) {
+        return (
+            <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans flex flex-col justify-between">
+                <Navbar />
+                <div className="flex-grow flex items-center justify-center">
+                    <EmailVerificationBanner />
+                </div>
+                <Footer />
+            </main>
+        );
+    }
+
     return (
         <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
-            <EmailVerificationBanner />
 
             {/* Top Greeting Section */}
             <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-16 overflow-hidden">

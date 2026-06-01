@@ -2,9 +2,10 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
-import { sendEmailVerification } from "firebase/auth";
+import { sendEmailVerification, signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { toast } from "react-hot-toast";
-import { Mail, RefreshCw, CheckCircle, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Mail, RefreshCw, LogOut, ShieldAlert, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function EmailVerificationBanner() {
@@ -14,14 +15,14 @@ export function EmailVerificationBanner() {
     const [checking, setChecking] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 
-    // Sync with Firebase user instance
+    // Sync state with Firebase Auth user instance
     useEffect(() => {
         if (user) {
             setIsVerified(user.emailVerified);
         }
     }, [user]);
 
-    // Handle verification email resending cooldown
+    // Cooldown timer for resending verification mail
     useEffect(() => {
         if (cooldown > 0) {
             const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
@@ -29,7 +30,7 @@ export function EmailVerificationBanner() {
         }
     }, [cooldown]);
 
-    // Show banner only if the user is authenticated via email and is NOT verified
+    // If verified or no user, render nothing
     if (!user || !user.email || isVerified) {
         return null;
     }
@@ -40,7 +41,7 @@ export function EmailVerificationBanner() {
         try {
             await sendEmailVerification(user);
             toast.success("Verification link sent! Please check your email inbox and spam folder.");
-            setCooldown(60); // 1 minute cooldown
+            setCooldown(60); // 1-minute cooldown
         } catch (error: any) {
             console.error("Resend Verification Error:", error);
             if (error.code === "auth/too-many-requests") {
@@ -56,14 +57,16 @@ export function EmailVerificationBanner() {
     const handleCheckStatus = async () => {
         setChecking(true);
         try {
-            // Force Firebase to reload user token and status
+            // Force Firebase to reload user token and verify state
             await user.reload();
             if (user.emailVerified) {
                 setIsVerified(true);
                 toast.success("Congratulations! Your email has been successfully verified. ✨", {
                     icon: "✨",
-                    duration: 5000
+                    duration: 6000
                 });
+                // Force page refresh to update auth status globally
+                setTimeout(() => window.location.reload(), 1000);
             } else {
                 toast.error("Email not verified yet. Please check your inbox and click the verification link.");
             }
@@ -75,50 +78,92 @@ export function EmailVerificationBanner() {
         }
     };
 
-    return (
-        <div className="w-full bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border-b border-orange-500/20 backdrop-blur-md relative overflow-hidden animate-in fade-in slide-in-from-top duration-500">
-            {/* Subtle glow effect */}
-            <div className="absolute inset-0 bg-orange-500/[0.02] -z-10" />
-            <div className="absolute -left-20 -top-20 w-48 h-48 bg-amber-500/10 blur-[80px] rounded-full -z-10" />
+    const handleSignOut = async () => {
+        try {
+            if (auth) {
+                await signOut(auth);
+                toast.success("Signed out successfully.");
+                window.location.href = "/";
+            }
+        } catch (error: any) {
+            toast.error("Failed to sign out.");
+        }
+    };
 
-            <div className="container mx-auto px-4 md:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5 text-center sm:text-left flex-col sm:flex-row">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.15)] animate-pulse">
-                        <Mail className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-0.5">
-                        <h4 className="text-xs font-black text-amber-200 uppercase tracking-widest flex items-center gap-1.5 justify-center sm:justify-start">
-                            <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
-                            Email Verification Required
-                        </h4>
-                        <p className="text-[11px] text-zinc-300 font-medium">
-                            Please verify <span className="text-white font-semibold">{user.email}</span> to secure your account and unlock all features.
-                        </p>
+    return (
+        <div className="w-full min-h-[70vh] flex items-center justify-center p-4 relative overflow-hidden bg-zinc-950">
+            {/* Celestial background graphics */}
+            <div className="absolute inset-0 z-0 opacity-40">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-500/10 blur-[130px] rounded-full animate-pulse" />
+                <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-amber-500/5 blur-[100px] rounded-full" />
+            </div>
+
+            <div className="max-w-[480px] w-full glass p-8 sm:p-10 rounded-[3rem] border border-orange-500/20 shadow-2xl relative z-10 text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                {/* Glowing border stripe */}
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500" />
+                
+                {/* Icon Wrapper */}
+                <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-orange-500/15 to-amber-500/5 rounded-[2.5rem] border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.15)] group hover:scale-105 transition-transform duration-500">
+                    <Mail className="w-10 h-10 animate-pulse text-amber-300" />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-zinc-950">
+                        <ShieldAlert className="w-3.5 h-3.5 text-white" />
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-center">
+                {/* Typography and Descriptions */}
+                <div className="space-y-3.5">
+                    <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em] mb-1 flex items-center justify-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-orange-400" />
+                        Align Your Cosmic Profile
+                    </p>
+                    <h2 className="text-3xl font-black text-white tracking-tight leading-none">
+                        Verification Required
+                    </h2>
+                    <p className="text-xs text-zinc-400 font-medium px-2 leading-relaxed">
+                        A verification link has been sent to <span className="text-amber-200 font-bold">{user.email}</span>. To protect your identity and access your dashboard, consultations, Kundli, and horoscopes, please verify your email first.
+                    </p>
+                </div>
+
+                {/* Helpful Reminder Hint */}
+                <div className="p-4 bg-orange-500/5 border border-orange-500/10 rounded-2xl text-[10px] text-zinc-400 font-bold uppercase tracking-wider text-left leading-relaxed">
+                    💡 <span className="text-white">Did not receive it?</span> Check your email spam or junk folder, or click the "Resend Link" button below to dispatch a new one.
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3.5 pt-2">
+                    <div className="grid grid-cols-2 gap-3.5">
+                        <Button
+                            onClick={handleCheckStatus}
+                            disabled={checking}
+                            variant="outline"
+                            className="h-14 rounded-2xl border border-white/10 glass text-white hover:bg-white/5 font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                        >
+                            <RefreshCw className={`w-4 h-4 text-orange-400 ${checking ? 'animate-spin' : ''}`} />
+                            {checking ? "Checking..." : "Verify Status"}
+                        </Button>
+
+                        <Button
+                            onClick={handleResend}
+                            disabled={sending || cooldown > 0}
+                            className="h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:shadow-orange-500/20 active:scale-95 disabled:opacity-50"
+                        >
+                            {sending ? (
+                                "Sending..."
+                            ) : cooldown > 0 ? (
+                                `Resend in ${cooldown}s`
+                            ) : (
+                                "Resend Link"
+                            )}
+                        </Button>
+                    </div>
+
                     <Button
-                        onClick={handleCheckStatus}
-                        disabled={checking}
+                        onClick={handleSignOut}
                         variant="ghost"
-                        className="h-9 px-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-wider transition-all flex items-center gap-1.5"
+                        className="h-12 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2"
                     >
-                        <RefreshCw className={`w-3 h-3 ${checking ? 'animate-spin' : ''}`} />
-                        Verify Status
-                    </Button>
-                    <Button
-                        onClick={handleResend}
-                        disabled={sending || cooldown > 0}
-                        className="h-9 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[10px] uppercase tracking-wider transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95 disabled:opacity-50"
-                    >
-                        {sending ? (
-                            "Sending..."
-                        ) : cooldown > 0 ? (
-                            `Resend in ${cooldown}s`
-                        ) : (
-                            "Resend Link"
-                        )}
+                        <LogOut className="w-4 h-4 text-zinc-600" />
+                        Sign Out / Change Account
                     </Button>
                 </div>
             </div>
