@@ -10,6 +10,7 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
+  cacheStartUrl: false, // Eliminate start-url Babel transpile helper reference crash
 });
 
 const nextConfig: NextConfig = {
