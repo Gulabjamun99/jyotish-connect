@@ -8,30 +8,35 @@ let unsubRoom: (() => void) | null = null;
  * ICE Server Configuration
  * STUN + free TURN servers for NAT traversal on Indian mobile networks.
  */
+const METERED_USERNAME = process.env.NEXT_PUBLIC_METERED_USERNAME || "e8dd65f92aea25c159e32478";
+const METERED_CREDENTIAL = process.env.NEXT_PUBLIC_METERED_CREDENTIAL || "kRKr/OVDgQWJLpmj";
+
 const configuration: RTCConfiguration = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
         { urls: 'stun:global.stun.twilio.com:3478' },
         {
             urls: "turn:a.relay.metered.ca:80",
-            username: "e8dd65f92aea25c159e32478",
-            credential: "kRKr/OVDgQWJLpmj",
+            username: METERED_USERNAME,
+            credential: METERED_CREDENTIAL,
         },
         {
             urls: "turn:a.relay.metered.ca:80?transport=tcp",
-            username: "e8dd65f92aea25c159e32478",
-            credential: "kRKr/OVDgQWJLpmj",
+            username: METERED_USERNAME,
+            credential: METERED_CREDENTIAL,
         },
         {
             urls: "turn:a.relay.metered.ca:443",
-            username: "e8dd65f92aea25c159e32478",
-            credential: "kRKr/OVDgQWJLpmj",
+            username: METERED_USERNAME,
+            credential: METERED_CREDENTIAL,
         },
         {
             urls: "turns:a.relay.metered.ca:443?transport=tcp",
-            username: "e8dd65f92aea25c159e32478",
-            credential: "kRKr/OVDgQWJLpmj",
+            username: METERED_USERNAME,
+            credential: METERED_CREDENTIAL,
         },
     ],
     iceCandidatePoolSize: 10,
