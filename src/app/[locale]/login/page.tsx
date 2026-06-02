@@ -312,16 +312,33 @@ export default function LoginPage() {
     };
 
     const handleAuthError = (error: any) => {
-        let msg = error.message || "Authentication failed";
-        if (error.code === 'auth/popup-closed-by-user') msg = "Login popup was closed.";
-        else if (error.code === 'auth/cancelled-popup-request') msg = "Only one popup allowed at a time.";
-        else if (error.code === 'auth/network-request-failed') msg = "Network error. Check your connection.";
-        else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') msg = "Invalid email or password.";
-        else if (error.code === 'auth/user-not-found') msg = "No user found with this email.";
-        else if (error.code === 'auth/email-already-in-use') msg = "Email is already registered. Please sign in.";
-        else if (error.code === 'auth/invalid-phone-number') msg = "Invalid phone number format.";
+        console.error("🔥 Firebase Auth Error Details:", error);
         
-        toast.error(msg, { duration: 5000 });
+        let msg = error.message || "Authentication failed. Please try again.";
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+            msg = "Login popup was closed.";
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            msg = "Only one login popup allowed at a time.";
+        } else if (error.code === 'auth/network-request-failed') {
+            msg = "Network connection error. Check your internet connectivity.";
+        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+            msg = "Invalid email or password. Please verify your details.";
+        } else if (error.code === 'auth/user-not-found') {
+            msg = "No registered user found with this email. Please Sign Up first!";
+        } else if (error.code === 'auth/email-already-in-use') {
+            msg = "This email is already registered. Please sign in instead.";
+        } else if (error.code === 'auth/invalid-phone-number') {
+            msg = "Invalid phone number format.";
+        } else if (error.code === 'auth/operation-not-allowed') {
+            msg = "Email/Password sign-ups are disabled in your Firebase console. Please open your Firebase Console -> Authentication -> Sign-in Method, and enable 'Email/Password' under Sign-in providers, then click Save.";
+        } else if (error.code === 'auth/invalid-email') {
+            msg = "Badly formatted or invalid email address format. Please check the spelling.";
+        } else if (error.code === 'auth/weak-password') {
+            msg = "Password is too weak. It must be at least 6 characters.";
+        }
+        
+        toast.error(msg, { duration: 7000 });
     };
 
     // --- RENDER HELPERS ---
@@ -440,7 +457,7 @@ export default function LoginPage() {
 
                             <p className="text-center text-xs text-zinc-400 pt-4">
                                 Don't have an account?{" "}
-                                <button onClick={() => setAuthMode("SIGNUP")} className="text-orange-400 hover:text-orange-300 font-bold hover:underline">
+                                <button type="button" onClick={() => setAuthMode("SIGNUP")} className="text-orange-400 hover:text-orange-300 font-bold hover:underline">
                                     Sign Up
                                 </button>
                             </p>
@@ -500,7 +517,7 @@ export default function LoginPage() {
 
                             <p className="text-center text-xs text-zinc-400 pt-4">
                                 Already have an account?{" "}
-                                <button onClick={() => setAuthMode("LOGIN")} className="text-orange-400 hover:text-orange-300 font-bold hover:underline">
+                                <button type="button" onClick={() => setAuthMode("LOGIN")} className="text-orange-400 hover:text-orange-300 font-bold hover:underline">
                                     Sign In
                                 </button>
                             </p>
@@ -512,6 +529,7 @@ export default function LoginPage() {
                     {authMode === "OTP" && (
                         <div className="space-y-4 animate-in fade-in">
                             <button 
+                                type="button"
                                 onClick={() => setAuthMode("LOGIN")}
                                 className="flex items-center gap-1 text-xs text-foreground/50 hover:text-white transition-colors mb-4"
                             >
@@ -576,6 +594,7 @@ export default function LoginPage() {
                     {authMode === "FORGOT_PASSWORD" && (
                         <div className="space-y-4 animate-in fade-in">
                             <button 
+                                type="button"
                                 onClick={() => setAuthMode("LOGIN")}
                                 className="flex items-center gap-1 text-xs text-foreground/50 hover:text-white transition-colors mb-4"
                             >
