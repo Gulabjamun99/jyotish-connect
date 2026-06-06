@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { dbAdmin } from '@/lib/firebase-admin';
 
 export async function GET(req: Request) {
     try {
@@ -15,8 +14,17 @@ export async function GET(req: Request) {
             });
         }
 
+        // Check if dbAdmin is properly initialized
+        if (!dbAdmin || typeof dbAdmin.collection !== 'function') {
+            console.error("Firebase Admin SDK is not properly configured.");
+            return new NextResponse('<h1>Configuration Error</h1><p>Firebase Admin credentials are missing on the server.</p>', {
+                headers: { 'Content-Type': 'text/html' },
+                status: 500
+            });
+        }
+
         if (action === 'approve') {
-            await updateDoc(doc(db, "astrologers", uid), {
+            await dbAdmin.collection("astrologers").doc(uid).update({
                 verified: true,
                 rating: 5.0,
                 consultations: 0,
@@ -52,7 +60,7 @@ export async function GET(req: Request) {
             });
 
         } else if (action === 'reject') {
-            await updateDoc(doc(db, "astrologers", uid), {
+            await dbAdmin.collection("astrologers").doc(uid).update({
                 rejected: true,
                 rejectedAt: new Date().toISOString(),
                 rejectionReason: "Rejected directly via email link."
