@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-hot-toast";
 import { doc, setDoc } from "firebase/firestore";
-import { db, storage } from "@/lib/firebase";
+import { db, storage, auth } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { CheckCircle, Upload, Sparkles, User, BookOpen, Star, Briefcase, Camera, ChevronRight, ChevronLeft } from "lucide-react";
 
@@ -50,6 +50,26 @@ export default function AstrologerOnboardingPage() {
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(userData?.photoURL || null);
     const [certFile, setCertFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        if (userData) {
+            setFormData(prev => ({
+                displayName: prev.displayName || userData.displayName || "",
+                phoneNumber: prev.phoneNumber || userData.phoneNumber || "",
+                email: prev.email || userData.email || "",
+                govIdNumber: prev.govIdNumber || userData.govIdNumber || "",
+                experience: prev.experience !== "" ? prev.experience : (userData.experience !== undefined ? String(userData.experience) : ""),
+                specializations: prev.specializations.length > 0 ? prev.specializations : (userData.specializations || []),
+                languages: prev.languages.length > 0 ? prev.languages : (userData.languages || []),
+                focusAreas: prev.focusAreas.length > 0 ? prev.focusAreas : (userData.focusAreas || []),
+                bio: prev.bio || userData.bio || "",
+                education: prev.education || userData.education || ""
+            }));
+            if (userData.photoURL && !photoPreview) {
+                setPhotoPreview(userData.photoURL);
+            }
+        }
+    }, [userData, photoPreview]);
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -149,24 +169,40 @@ export default function AstrologerOnboardingPage() {
                 phoneNumber: formData.phoneNumber,
                 email: formData.email,
                 govIdNumber: formData.govIdNumber,
-                photoURL,
+                photoURL: photoURL || userData?.photoURL || "",
                 experience: Number(formData.experience),
                 specializations: formData.specializations,
                 languages: formData.languages,
                 focusAreas: formData.focusAreas,
-                consultationRate: 50, // Default pricing rate
-                price: 50,
+                consultationRate: userData?.consultationRate !== undefined ? userData.consultationRate : 50,
+                price: userData?.price !== undefined ? userData.price : 50,
                 bio: formData.bio,
                 education: formData.education,
-                certificationURL,
+                certificationURL: certificationURL || userData?.certificationURL || "",
                 profileComplete: true,
-                rating: 5.0,
-                consultations: 0,
-                walletBalance: 0,
-                totalEarnings: 0,
-                verified: true, // Verification approved instantly for onboarding flow
+                rating: userData?.rating !== undefined ? userData.rating : 5.0,
+                consultations: userData?.consultations !== undefined ? userData.consultations : 0,
+                walletBalance: userData?.walletBalance !== undefined ? userData.walletBalance : 0,
+                totalEarnings: userData?.totalEarnings !== undefined ? userData.totalEarnings : 0,
+                verified: userData?.verified !== undefined ? userData.verified : true,
                 updatedAt: new Date().toISOString()
             }, { merge: true });
+
+            await setDoc(doc(db, "users", user.uid), {
+                displayName: formData.displayName,
+                phoneNumber: formData.phoneNumber,
+                photoURL: photoURL || userData?.photoURL || "",
+                profileComplete: true,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+
+            if (auth.currentUser) {
+                const { updateProfile } = await import("firebase/auth");
+                await updateProfile(auth.currentUser, {
+                    displayName: formData.displayName,
+                    photoURL: photoURL || userData?.photoURL || ""
+                });
+            }
 
             toast.success("Profile Activated! You are now live.", { id: toastId });
             router.push("/astrologer/dashboard");

@@ -41,6 +41,7 @@ export default function KundliMatchingPage() {
     const [result, setResult] = useState<any>(null);
     const [detailedReport, setDetailedReport] = useState<any>(null);
     const [activeTab, setActiveTab] = useState("overview");
+    const [isAlreadyMarried, setIsAlreadyMarried] = useState(false);
     const pdfContentRef = useRef<HTMLDivElement>(null);
     const pdfBoyChartRef = useRef<HTMLDivElement>(null);
     const pdfGirlChartRef = useRef<HTMLDivElement>(null);
@@ -78,8 +79,8 @@ export default function KundliMatchingPage() {
             if (!response.ok) throw new Error("API failure");
             const matchResult = await response.json();
 
-            const fullReport = generateFullMatchAnalysis(matchResult, locale);
-            const detailedReportPart = generateDetailedMatchingReport(matchResult, locale);
+            const fullReport = generateFullMatchAnalysis(matchResult, locale, isAlreadyMarried);
+            const detailedReportPart = generateDetailedMatchingReport(matchResult, locale, isAlreadyMarried);
             const mergedReport = {
                 ...fullReport,
                 ...detailedReportPart
@@ -246,6 +247,21 @@ export default function KundliMatchingPage() {
                                 />
                             </div>
                         </div>
+                    </div>
+                </div>
+ 
+                <div className="max-w-6xl mx-auto flex justify-center mt-8">
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                        <input 
+                            type="checkbox" 
+                            id="alreadyMarried"
+                            checked={isAlreadyMarried}
+                            onChange={e => setIsAlreadyMarried(e.target.checked)}
+                            className="w-5 h-5 rounded border-white/20 bg-white/10 text-orange-500 focus:ring-orange-500 focus:ring-offset-0 focus:outline-none cursor-pointer"
+                        />
+                        <label htmlFor="alreadyMarried" className="text-sm font-bold text-white/80 cursor-pointer select-none">
+                            {locale === 'hi' ? 'पहले से विवाहित हैं?' : 'Already Married?'}
+                        </label>
                     </div>
                 </div>
 

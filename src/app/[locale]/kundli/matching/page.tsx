@@ -44,6 +44,7 @@ export default function MatchingPage() {
     const [result, setResult] = useState<any>(null);
     const [analysis, setAnalysis] = useState<any>(null);
     const [calcStep, setCalcStep] = useState(0);
+    const [isAlreadyMarried, setIsAlreadyMarried] = useState(false);
 
     const calculateMatch = async () => {
         if (!boyData.name || !girlData.name) {
@@ -86,7 +87,7 @@ export default function MatchingPage() {
             if (!response.ok) throw new Error(await response.text());
 
             const matchResult = await response.json();
-            const fullAnalysis = generateFullMatchAnalysis(matchResult, locale);
+            const fullAnalysis = generateFullMatchAnalysis(matchResult, locale, isAlreadyMarried);
             setResult(matchResult);
             setAnalysis(fullAnalysis);
 
@@ -109,7 +110,7 @@ export default function MatchingPage() {
         toast.loading(l('decoding_starlight', "Crafting your premium report..."), { id: "pdf-match" });
 
         try {
-            const reportData = dynamicReport || generateDetailedMatchingReport(result, locale);
+            const reportData = dynamicReport || generateDetailedMatchingReport(result, locale, isAlreadyMarried);
             if (!reportData) throw new Error("Could not generate report data");
 
             const baseResult = {
@@ -159,7 +160,7 @@ export default function MatchingPage() {
 
     if (!mounted) return null;
 
-    const dynamicReport = result ? generateDetailedMatchingReport(result, locale) : null;
+    const dynamicReport = result ? generateDetailedMatchingReport(result, locale, isAlreadyMarried) : null;
 
     return (
         <main className="min-h-screen bg-[#050510] text-white overflow-x-hidden selection:bg-orange-500/30">
@@ -242,6 +243,19 @@ export default function MatchingPage() {
                                         <LocationInput value={girlData.birthplace} onChange={(loc, lat, lng) => setGirlData({ ...girlData, birthplace: loc, lat: lat || 28.6, lng: lng || 77.2 })} />
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
+                                <input 
+                                    type="checkbox" 
+                                    id="alreadyMarried"
+                                    checked={isAlreadyMarried}
+                                    onChange={e => setIsAlreadyMarried(e.target.checked)}
+                                    className="w-5 h-5 rounded border-white/20 bg-white/10 text-orange-500 focus:ring-orange-500 focus:ring-offset-0 focus:outline-none cursor-pointer"
+                                />
+                                <label htmlFor="alreadyMarried" className="text-sm font-bold text-white/80 cursor-pointer select-none">
+                                    {locale === 'hi' ? 'पहले से विवाहित हैं?' : 'Already Married?'}
+                                </label>
                             </div>
 
                             <Button onClick={calculateMatch} disabled={loading} className="w-full h-16 mt-12 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-orange-500/20 active:scale-95 transition-transform">
@@ -477,15 +491,29 @@ export default function MatchingPage() {
                                                     </div>
                                                 );
                                             })}
-                                            <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 shadow-sm">
-                                                <h4 className="font-black text-orange-500 text-xs uppercase mb-4 tracking-widest">{l('marriageTiming', 'Marriage Window')}</h4>
-                                                {analysis.section14.periods.map((p: any) => (
-                                                    <div key={p.time} className="flex justify-between items-center mb-2 last:mb-0 border-b border-white/5 pb-2">
-                                                        <span className="font-bold text-white">{p.time}</span>
-                                                        <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-lg text-[10px] font-black uppercase">{p.strength}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                            {!isAlreadyMarried ? (
+                                                <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 shadow-sm">
+                                                    <h4 className="font-black text-orange-500 text-xs uppercase mb-4 tracking-widest">{l('marriageTiming', 'Marriage Window')}</h4>
+                                                    {analysis.section14.periods.map((p: any) => (
+                                                        <div key={p.time} className="flex justify-between items-center mb-2 last:mb-0 border-b border-white/5 pb-2">
+                                                            <span className="font-bold text-white">{p.time}</span>
+                                                            <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-lg text-[10px] font-black uppercase">{p.strength}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 shadow-sm flex flex-col justify-center items-center text-center p-6 min-h-[150px]">
+                                                    <h4 className="font-black text-orange-500 text-xs uppercase mb-4 tracking-widest">{l('marriageTiming', 'Marriage Window')}</h4>
+                                                    <Heart className="w-8 h-8 text-orange-500 mb-2 mt-2 animate-pulse" />
+                                                    <p className="text-sm text-white font-bold">{locale === 'hi' ? 'पहले से विवाहित' : 'Already Married'}</p>
+                                                    <span className="text-[10px] text-white/40 mt-1 max-w-[220px]">
+                                                        {locale === 'hi'
+                                                            ? 'यह रिपोर्ट पहले से विवाहित जोड़े के लिए है। विवाह के समय की भविष्यवाणियां छिपी हुई हैं।'
+                                                            : 'This report is for an already married couple. Future marriage timing predictions are hidden.'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 

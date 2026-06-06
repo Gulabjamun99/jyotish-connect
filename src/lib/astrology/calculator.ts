@@ -157,6 +157,7 @@ export function calculateVimshottari(nakshatraId: number, longitude: number, bir
             lord: lords[lordIdx],
             start: currentPtr.toISOString(),
             end: endDate.toISOString(),
+            duration: duration,
             antardashas
         });
 

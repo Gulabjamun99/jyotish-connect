@@ -432,7 +432,7 @@ export function generateMatchVerdict(score: number, boyManglik: boolean, girlMan
     return res;
 }
 
-export const generateDetailedMatchingReport = (result: any, lang: string = "en") => {
+export const generateDetailedMatchingReport = (result: any, lang: string = "en", isAlreadyMarried: boolean = false) => {
     if (!result || !result.milan) return null;
     const score = result.milan.totalScore || 0;
     const boyData = result.boy;
@@ -447,7 +447,12 @@ export const generateDetailedMatchingReport = (result: any, lang: string = "en")
         family: { title: l("labels_life_predictions_Family") || (lang === 'hi' ? "परिवार और संतान" : "Family & Children"), verdict: (ash.nadi?.score || 0) === 8 ? l("excellent") : l("average") },
         finance: { title: l("labels_life_predictions_Wealth") || (lang === 'hi' ? "धन और समृद्धि" : "Wealth & Prosperity"), verdict: (ash.bhakoot?.score || 0) === 7 ? l("prosperous") : l("average") },
         bond: { title: l("labels_life_predictions_Spirituality") || (lang === 'hi' ? "नवांश तालमेल" : "Navamsa Synergy"), verdict: analyzeNavamsaBond(boyData, girlData, lang) },
-        timing: { title: l("marriageYoga") || (lang === 'hi' ? "विवाह समय" : "Marriage Timing"), verdict: calculateLikelyMarriagePeriod(boyData, girlData, lang) },
+        timing: { 
+            title: l("marriageYoga") || (lang === 'hi' ? "विवाह समय" : "Marriage Timing"), 
+            verdict: isAlreadyMarried 
+                ? (lang === 'hi' ? "यह जोड़ा पहले से ही विवाहित है।" : "This couple is already married.") 
+                : calculateLikelyMarriagePeriod(boyData, girlData, lang) 
+        },
         forecast: { title: l("labels_life_predictions_Forecast") || (lang === 'hi' ? "जीवन पूर्वानुमान" : "Life Forecast"), verdict: generateLifeForecastSummary(score, lang) },
         remedies: { title: l("labels_life_predictions_Remedies") || (lang === 'hi' ? "उपाय" : "Remedies"), list: getContextualRemedies(result, lang) },
         summary: { verdict: score >= 18 ? l("conclusionGood") : l("conclusionCaution"), confidence: 60 + score, nextSteps: score >= 24 ? l("auspicious") : l("remedyVishnu") }
@@ -545,7 +550,7 @@ export const calculateDynamicMarriagePeriods = (result: any, score: number, lang
     ];
 };
 
-export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
+export const generateFullMatchAnalysis = (result: any, lang: string = "en", isAlreadyMarried: boolean = false) => {
     if (!result || !result.boy || !result.girl || !result.milan) return null;
 
     const score = result.milan.totalScore || 0;
@@ -610,7 +615,7 @@ export const generateFullMatchAnalysis = (result: any, lang: string = "en") => {
             verdict: analyzeManglikCancellation(result.boy, result.girl, lang)
         },
         section14: {
-            periods: calculateDynamicMarriagePeriods(result, score, lang)
+            periods: isAlreadyMarried ? [] : calculateDynamicMarriagePeriods(result, score, lang)
         },
         section15: {
             boyRemedies: getContextualRemedies(result, lang),

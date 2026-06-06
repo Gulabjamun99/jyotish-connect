@@ -175,7 +175,7 @@ export default function AstrologerDashboard() {
 
     if (user && !user.emailVerified) {
         return (
-            <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans flex flex-col justify-between">
+            <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-indigo-500/30 font-sans flex flex-col justify-between">
                 <Navbar />
                 <div className="flex-grow flex items-center justify-center">
                     <EmailVerificationBanner />
@@ -228,27 +228,27 @@ export default function AstrologerDashboard() {
     }
 
     return (
-        <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-orange-500/30 font-sans pb-24 md:pb-0">
+        <main className="min-h-screen bg-zinc-950 text-slate-50 selection:bg-indigo-500/30 font-sans pb-24 md:pb-0">
             <Navbar />
 
             {/* Top Status & Greeting Section */}
-            <div className="relative w-full bg-zinc-900 border-b border-white/5 pt-12 pb-20 overflow-hidden">
+            <div className="relative w-full bg-slate-950 border-b border-purple-500/10 pt-12 pb-20 overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 left-0 w-[800px] h-full bg-gradient-to-r from-orange-500/10 to-transparent" />
-                    <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-orange-500/20 blur-[150px] rounded-full" />
+                    <div className="absolute top-0 left-0 w-[800px] h-full bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent" />
+                    <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-purple-600/20 blur-[150px] rounded-full" />
                 </div>
 
                 <div className="container mx-auto px-4 md:px-8 relative z-10">
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
                         <div className="flex items-center gap-8">
                             <div className="relative group">
-                                <div className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-4xl font-black text-white shadow-[0_20px_50px_rgba(249,115,22,0.4)] group-hover:scale-105 transition-transform duration-500">
+                                <div className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 flex items-center justify-center text-4xl font-black text-white shadow-[0_20px_50px_rgba(99,102,241,0.35)] group-hover:scale-105 transition-transform duration-500">
                                     {user.displayName?.[0] || "A"}
                                 </div>
                                 <div className={`absolute -bottom-2 -right-2 w-8 h-8 ${isOnline ? 'bg-green-500 shadow-[0_0_20px_#22c55e]' : 'bg-zinc-700'} border-4 border-zinc-900 rounded-full transition-all duration-500`} />
                             </div>
                             <div>
-                                <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em] mb-2">Master Consultant</p>
+                                <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em] mb-2">🔮 Vedic Expert Console</p>
                                 <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none">Master {user.displayName?.split(' ')[0] || "Astrologer"}</h1>
                                 <div className="flex items-center gap-4 mt-4">
                                     <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
@@ -309,7 +309,7 @@ export default function AstrologerDashboard() {
                                     className={`w-full h-14 px-8 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all ${
                                         alertsUnlocked 
                                             ? "bg-zinc-900 text-green-400 border border-green-500/30" 
-                                            : "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-2xl shadow-orange-500/20 hover:scale-[1.02]"
+                                            : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-2xl shadow-indigo-500/20 hover:scale-[1.02]"
                                     }`}
                                 >
                                     {alertsUnlocked ? (
@@ -328,7 +328,7 @@ export default function AstrologerDashboard() {
                             
                             <Button
                                 onClick={() => window.open(`/profile/${user.uid}`, '_blank')}
-                                className="w-full sm:w-auto bg-white text-black hover:bg-orange-500 hover:text-white font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] px-8 h-14 transition-all shadow-xl"
+                                className="w-full sm:w-auto bg-white text-black hover:bg-indigo-600 hover:text-white font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] px-8 h-14 transition-all shadow-xl"
                             >
                                 Public Profile
                             </Button>
@@ -344,7 +344,7 @@ export default function AstrologerDashboard() {
                     {[
                         { label: "Total Earnings", value: "₹" + (userData?.totalEarnings || "0"), icon: IndianRupee, color: "text-green-500", bg: "bg-green-500/10", border: "border-green-500/20" },
                         { label: "Today's Consults", value: "8", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-                        { label: "Active Seekers", value: userData?.consultations || "0", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
+                        { label: "Active Seekers", value: userData?.consultations || "0", icon: Users, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
                         { label: "Expert Rating", value: Number(userData?.rating || 5.0).toFixed(1), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
                     ].map((stat, i) => (
                         <div key={i} className="glass bg-zinc-900 border border-white/5 p-8 rounded-[2.5rem] group hover:border-white/20 transition-all hover:-translate-y-1 relative overflow-hidden">
@@ -376,7 +376,7 @@ export default function AstrologerDashboard() {
                             <Button 
                                 onClick={() => router.push('/astrologer/availability')}
                                 variant="ghost" 
-                                className="text-[10px] uppercase font-bold tracking-widest text-orange-500 hover:text-orange-400 hover:bg-transparent px-0"
+                                className="text-[10px] uppercase font-bold tracking-widest text-indigo-400 hover:text-indigo-300 hover:bg-transparent px-0"
                             >
                                 Manage Schedule
                             </Button>
@@ -476,9 +476,9 @@ export default function AstrologerDashboard() {
                                      const typeIcon = booking.type === 'video' ? '🎥' : booking.type === 'audio' ? '🎙️' : '💬';
 
                                     return (
-                                        <div key={booking.id} className={`glass bg-zinc-900 border p-3 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${isActive && index === 0 && activeTab === 'upcoming' ? 'border-orange-500/30 ring-1 ring-orange-500/20 bg-orange-500/[0.02]' : isCompleted ? 'border-zinc-800/30 opacity-60' : 'border-white/5 hover:border-zinc-700'}`}>
+                                        <div key={booking.id} className={`glass bg-zinc-900 border p-3 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${isActive && index === 0 && activeTab === 'upcoming' ? 'border-purple-500/30 ring-1 ring-purple-500/20 bg-purple-500/[0.02]' : isCompleted ? 'border-zinc-800/30 opacity-60' : 'border-white/5 hover:border-zinc-700'}`}>
                                             <div className="flex items-center gap-3 w-full md:w-auto">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-md shrink-0 ${isActive && index === 0 ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30 shadow-lg shadow-orange-500/10' : 'bg-zinc-800 text-zinc-500 border border-zinc-700/50'}`}>
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-md shrink-0 ${isActive && index === 0 ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-lg shadow-indigo-500/10' : 'bg-zinc-800 text-zinc-500 border border-zinc-700/50'}`}>
                                                     {bookingDate.getDate()}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
