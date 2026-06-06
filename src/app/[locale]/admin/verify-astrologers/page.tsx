@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -9,7 +9,7 @@ import { collection, query, where, getDocs, doc, updateDoc } from "firebase/fire
 import { db } from "@/lib/firebase";
 import { toast } from "react-hot-toast";
 import { CheckCircle, XCircle, Download, Clock, Star } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type PendingAstrologer = {
     uid: string;
@@ -27,9 +27,10 @@ type PendingAstrologer = {
     createdAt: string;
 };
 
-export default function VerifyAstrologersPage() {
+function VerifyAstrologersPageContent() {
     const { userData, loading: authLoading } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [astrologers, setAstrologers] = useState<PendingAstrologer[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAstrologer, setSelectedAstrologer] = useState<PendingAstrologer | null>(null);
@@ -39,12 +40,42 @@ export default function VerifyAstrologersPage() {
     useEffect(() => {
         if (!authLoading) {
             if (!userData) {
-                router.push("/login?redirect=/admin/verify-astrologers");
+                const currentPath = window.location.pathname + window.location.search;
+                router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
             } else if (userData.role !== "admin") {
                 router.push("/");
             }
         }
     }, [authLoading, userData, router]);
+
+    useEffect(() => {
+        if (!authLoading && userData && userData.role === "admin") {
+            const approveUid = searchParams.get("approve");
+            const rejectUid = searchParams.get("reject");
+
+            if (approveUid) {
+                // Immediately remove the search parameter to avoid multiple updates on reload
+                const url = new URL(window.location.href);
+                url.searchParams.delete("approve");
+                window.history.replaceState({}, "", url.pathname + url.search);
+
+                handleApprove(approveUid);
+            } else if (rejectUid) {
+                if (!loading) {
+                    const matched = astrologers.find(a => a.uid === rejectUid);
+                    if (matched) {
+                        setSelectedAstrologer(matched);
+                        toast.success(`Loaded application for ${matched.displayName}. Please enter rejection reason below.`);
+                        
+                        // Clear the param
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete("reject");
+                        window.history.replaceState({}, "", url.pathname + url.search);
+                    }
+                }
+            }
+        }
+    }, [authLoading, userData, loading, astrologers, searchParams]);
 
     useEffect(() => {
         fetchPendingAstrologers();
@@ -286,5 +317,17 @@ export default function VerifyAstrologersPage() {
             </div>
             <Footer />
         </main>
+    );
+}
+
+export default function VerifyAstrologersPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <VerifyAstrologersPageContent />
+        </Suspense>
     );
 }
