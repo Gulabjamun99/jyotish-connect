@@ -145,22 +145,41 @@ export default function AstrologerOnboardingPage() {
 
         setLoading(true);
         const toastId = toast.loading("Invoking stars and building your Master Console...");
+
+        const withTimeout = (promise: Promise<any>, timeoutMs: number) => {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs))
+            ]);
+        };
+
         try {
             let photoURL = userData?.photoURL || "";
             let certificationURL = "";
 
             if (photoFile) {
                 toast.loading("Uploading your divine portrait...", { id: toastId });
-                const photoRef = ref(storage, `astrologers/${user.uid}/profile.jpg`);
-                await uploadBytes(photoRef, photoFile);
-                photoURL = await getDownloadURL(photoRef);
+                try {
+                    const photoRef = ref(storage, `astrologers/${user.uid}/profile.jpg`);
+                    await withTimeout(uploadBytes(photoRef, photoFile), 10000);
+                    photoURL = await getDownloadURL(photoRef);
+                } catch (err) {
+                    console.error("Storage upload failed for profile photo:", err);
+                    toast.error("Failed to upload photo to cloud storage. Using default avatar.", { duration: 5000 });
+                    photoURL = photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200";
+                }
             }
 
             if (certFile) {
                 toast.loading("Uploading certifications...", { id: toastId });
-                const certRef = ref(storage, `astrologers/${user.uid}/certification.pdf`);
-                await uploadBytes(certRef, certFile);
-                certificationURL = await getDownloadURL(certRef);
+                try {
+                    const certRef = ref(storage, `astrologers/${user.uid}/certification.pdf`);
+                    await withTimeout(uploadBytes(certRef, certFile), 10000);
+                    certificationURL = await getDownloadURL(certRef);
+                } catch (err) {
+                    console.error("Storage upload failed for certificate:", err);
+                    toast.error("Failed to upload certification. Continuing registration...", { duration: 5000 });
+                }
             }
 
             toast.loading("Finalizing destiny records...", { id: toastId });
