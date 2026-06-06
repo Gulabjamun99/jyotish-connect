@@ -37,50 +37,6 @@ function VerifyAstrologersPageContent() {
     const [rejectionReason, setRejectionReason] = useState("");
     const [actionLoading, setActionLoading] = useState(false);
 
-    useEffect(() => {
-        if (!authLoading) {
-            if (!userData) {
-                const currentPath = window.location.pathname + window.location.search;
-                router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
-            } else if (userData.role !== "admin") {
-                router.push("/");
-            }
-        }
-    }, [authLoading, userData, router]);
-
-    useEffect(() => {
-        if (!authLoading && userData && userData.role === "admin") {
-            const approveUid = searchParams.get("approve");
-            const rejectUid = searchParams.get("reject");
-
-            if (approveUid) {
-                // Immediately remove the search parameter to avoid multiple updates on reload
-                const url = new URL(window.location.href);
-                url.searchParams.delete("approve");
-                window.history.replaceState({}, "", url.pathname + url.search);
-
-                handleApprove(approveUid);
-            } else if (rejectUid) {
-                if (!loading) {
-                    const matched = astrologers.find(a => a.uid === rejectUid);
-                    if (matched) {
-                        setSelectedAstrologer(matched);
-                        toast.success(`Loaded application for ${matched.displayName}. Please enter rejection reason below.`);
-                        
-                        // Clear the param
-                        const url = new URL(window.location.href);
-                        url.searchParams.delete("reject");
-                        window.history.replaceState({}, "", url.pathname + url.search);
-                    }
-                }
-            }
-        }
-    }, [authLoading, userData, loading, astrologers, searchParams]);
-
-    useEffect(() => {
-        fetchPendingAstrologers();
-    }, []);
-
     const fetchPendingAstrologers = async () => {
         try {
             const q = query(
@@ -142,6 +98,52 @@ function VerifyAstrologersPageContent() {
             setActionLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!authLoading) {
+            if (!userData) {
+                const currentPath = window.location.pathname + window.location.search;
+                router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+            } else if (userData.role !== "admin") {
+                router.push("/");
+            }
+        }
+    }, [authLoading, userData, router]);
+
+    useEffect(() => {
+        if (!authLoading && userData && userData.role === "admin") {
+            const approveUid = searchParams.get("approve");
+            const rejectUid = searchParams.get("reject");
+
+            if (approveUid) {
+                // Immediately remove the search parameter to avoid multiple updates on reload
+                const url = new URL(window.location.href);
+                url.searchParams.delete("approve");
+                window.history.replaceState({}, "", url.pathname + url.search);
+
+                handleApprove(approveUid);
+            } else if (rejectUid) {
+                if (!loading) {
+                    const matched = astrologers.find(a => a.uid === rejectUid);
+                    if (matched) {
+                        setSelectedAstrologer(matched);
+                        toast.success(`Loaded application for ${matched.displayName}. Please enter rejection reason below.`);
+                        
+                        // Clear the param
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete("reject");
+                        window.history.replaceState({}, "", url.pathname + url.search);
+                    }
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authLoading, userData, loading, astrologers, searchParams]);
+
+    useEffect(() => {
+        fetchPendingAstrologers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (authLoading || loading) {
         return (
