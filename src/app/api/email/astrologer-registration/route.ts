@@ -105,8 +105,19 @@ export async function POST(req: Request) {
                     ` : ''}
 
                     <div style="text-align: center; margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 30px;">
-                        <a href="https://jyotish-connect-nine.vercel.app/admin/verify-astrologers" style="background: #581c87; color: white; padding: 16px 32px; text-decoration: none; border-radius: 16px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 10px 15px -3px rgba(88, 28, 135, 0.3);">
-                            Go to Admin Panel to Verify Profile
+                        <h4 style="margin: 0 0 15px; color: #1e293b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Quick Actions</h4>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <a href="https://jyotish-connect-nine.vercel.app/api/admin/verify-astrologer-direct?uid=${uid}&action=approve" style="background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 13px; display: inline-block; margin: 5px; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.2);">
+                                ✅ Approve & Make Live
+                            </a>
+                            <a href="https://jyotish-connect-nine.vercel.app/api/admin/verify-astrologer-direct?uid=${uid}&action=reject" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 13px; display: inline-block; margin: 5px; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);">
+                                ❌ Reject Profile
+                            </a>
+                        </div>
+                        
+                        <a href="https://jyotish-connect-nine.vercel.app/admin/verify-astrologers" style="color: #581c87; font-weight: bold; font-size: 13px; text-decoration: underline; display: inline-block;">
+                            Go to Admin Console Dashboard
                         </a>
                         <p style="margin: 10px 0 0; font-size: 11px; color: #94a3b8;">Review and align this guide's cosmic status.</p>
                     </div>

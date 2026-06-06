@@ -37,8 +37,12 @@ export default function VerifyAstrologersPage() {
     const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
-        if (!authLoading && userData?.role !== "admin") {
-            router.push("/");
+        if (!authLoading) {
+            if (!userData) {
+                router.push("/login?redirect=/admin/verify-astrologers");
+            } else if (userData.role !== "admin") {
+                router.push("/");
+            }
         }
     }, [authLoading, userData, router]);
 
