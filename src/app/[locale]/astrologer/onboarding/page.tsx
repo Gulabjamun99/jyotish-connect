@@ -224,6 +224,33 @@ export default function AstrologerOnboardingPage() {
                 });
             }
 
+            // Trigger administrative notification email for verification review
+            try {
+                await fetch("/api/email/astrologer-registration", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        uid: user.uid,
+                        displayName: formData.displayName,
+                        email: formData.email,
+                        phoneNumber: formData.phoneNumber,
+                        govIdNumber: formData.govIdNumber,
+                        photoURL: photoURL || userData?.photoURL || "",
+                        experience: Number(formData.experience),
+                        specializations: formData.specializations,
+                        focusAreas: formData.focusAreas,
+                        languages: formData.languages,
+                        bio: formData.bio,
+                        education: formData.education,
+                        certificationURL: certificationURL || userData?.certificationURL || ""
+                    })
+                });
+            } catch (emailErr) {
+                console.error("Failed to notify administrator via email:", emailErr);
+            }
+
             toast.success("Profile Activated! You are now live.", { id: toastId });
             router.push("/astrologer/dashboard");
         } catch (error: any) {
