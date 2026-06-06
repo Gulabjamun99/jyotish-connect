@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 interface EmailOptions {
     to: string;
@@ -10,22 +12,7 @@ interface EmailOptions {
 export async function sendEmail({ to, subject, html, ics }: EmailOptions) {
     console.log("📧 Attempting to send email to:", to);
 
-    // Dynamic Import to handle missing package in some environments
-    let nodemailer;
-    let Resend;
-    try {
-        nodemailer = await import('nodemailer');
-    } catch (e) {
-        console.warn("⚠️ Nodemailer not installed.");
-    }
-    try {
-        const resendModule = await import('resend');
-        Resend = resendModule.Resend;
-    } catch (e) {
-        console.warn("⚠️ Resend not installed.");
-    }
-
-    if (nodemailer && process.env.SMTP_HOST) {
+    if (process.env.SMTP_HOST) {
         // Real Email Sending via SMTP
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
@@ -37,8 +24,10 @@ export async function sendEmail({ to, subject, html, ics }: EmailOptions) {
             },
         });
 
+        const senderEmail = process.env.SMTP_USER || 'no-reply@jyotishconnect.com';
+
         await transporter.sendMail({
-            from: '"JyotishConnect" <no-reply@jyotishconnect.com>',
+            from: `"JyotishConnect" <${senderEmail}>`,
             to,
             subject,
             html,
@@ -51,7 +40,7 @@ export async function sendEmail({ to, subject, html, ics }: EmailOptions) {
         console.log("✅ Email sent successfully via SMTP.");
         return { success: true, method: 'smtp' };
 
-    } else if (Resend && process.env.RESEND_API_KEY) {
+    } else if (process.env.RESEND_API_KEY) {
         // Fallback to Resend
         const resend = new Resend(process.env.RESEND_API_KEY);
         const { data, error } = await resend.emails.send({
