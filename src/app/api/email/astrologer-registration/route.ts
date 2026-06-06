@@ -5,20 +5,24 @@ export async function POST(req: Request) {
     try {
         const payload = await req.json();
         const {
-            uid,
-            displayName,
-            email,
-            phoneNumber,
-            govIdNumber,
-            photoURL,
-            experience,
-            specializations,
-            focusAreas,
-            languages,
-            bio,
-            education,
-            certificationURL
+            uid = "",
+            displayName = "New Expert",
+            email = "",
+            phoneNumber = "",
+            govIdNumber = "",
+            photoURL = "",
+            experience = 0,
+            specializations = [],
+            focusAreas = [],
+            languages = [],
+            bio = "",
+            education = "",
+            certificationURL = ""
         } = payload;
+
+        const specs = Array.isArray(specializations) ? specializations : [];
+        const areas = Array.isArray(focusAreas) ? focusAreas : [];
+        const langs = Array.isArray(languages) ? languages : [];
 
         const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'enjoylifeauw@gmail.com';
 
@@ -67,21 +71,21 @@ export async function POST(req: Request) {
                     <div style="margin-bottom: 25px;">
                         <h3 style="margin: 0 0 8px; color: #581c87; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Vedic Specializations</h3>
                         <div style="margin-top: 5px;">
-                            ${specializations.map((spec: string) => `<span style="display: inline-block; background: #f3e8ff; color: #6b21a8; padding: 4px 12px; margin: 4px 4px 4px 0; border-radius: 20px; font-size: 12px; font-weight: bold;">${spec}</span>`).join('')}
+                            ${specs.map((spec: string) => `<span style="display: inline-block; background: #f3e8ff; color: #6b21a8; padding: 4px 12px; margin: 4px 4px 4px 0; border-radius: 20px; font-size: 12px; font-weight: bold;">${spec}</span>`).join('')}
                         </div>
                     </div>
 
                     <div style="margin-bottom: 25px;">
                         <h3 style="margin: 0 0 8px; color: #581c87; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Focus Areas</h3>
                         <div style="margin-top: 5px;">
-                            ${focusAreas.map((area: string) => `<span style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 12px; margin: 4px 4px 4px 0; border-radius: 20px; font-size: 12px; font-weight: bold;">${area}</span>`).join('')}
+                            ${areas.map((area: string) => `<span style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 12px; margin: 4px 4px 4px 0; border-radius: 20px; font-size: 12px; font-weight: bold;">${area}</span>`).join('')}
                         </div>
                     </div>
 
                     <div style="margin-bottom: 25px;">
                         <h3 style="margin: 0 0 8px; color: #581c87; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Languages</h3>
                         <div style="margin-top: 5px;">
-                            ${languages.map((lang: string) => `<span style="display: inline-block; background: #f0fdf4; color: #166534; padding: 4px 12px; margin: 4px 4px 4px 0; border-radius: 20px; font-size: 12px; font-weight: bold;">${lang}</span>`).join('')}
+                            ${langs.map((lang: string) => `<span style="display: inline-block; background: #f0fdf4; color: #166534; padding: 4px 12px; margin: 4px 4px 4px 0; border-radius: 20px; font-size: 12px; font-weight: bold;">${lang}</span>`).join('')}
                         </div>
                     </div>
 
