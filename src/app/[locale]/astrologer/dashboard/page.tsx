@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { UseProtectedRoute } from "@/hooks/useProtectedRoute";
 import { Button } from "@/components/ui/button";
-import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User, Star, Volume2, VolumeX } from "lucide-react";
+import { Calendar, IndianRupee, Users, Clock, TrendingUp, AlertCircle, FileText, User, Star, Volume2, VolumeX, RefreshCw, Send } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect, useRef } from "react";
 import { subscribeAstrologerBookings } from "@/services/firestore";
@@ -53,6 +53,58 @@ const playCosmicChime = () => {
 export default function AstrologerDashboard() {
     const { user, userData, loading } = UseProtectedRoute(["astrologer"]);
     const router = useRouter();
+
+    // Resend verification alert state
+    const [isResending, setIsResending] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
+
+    const handleResendVerification = async () => {
+        if (!user || !userData) return;
+        setIsResending(true);
+        const toastId = toast.loading("Resending application details to Owner/Admin...");
+        try {
+            const res = await fetch("/api/email/astrologer-registration", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    displayName: userData.displayName || user.displayName || "New Expert",
+                    email: userData.email || user.email || "",
+                    phoneNumber: userData.phoneNumber || user.phoneNumber || "",
+                    govIdNumber: userData.govIdNumber || "",
+                    photoURL: userData.photoURL || user.photoURL || "",
+                    experience: Number(userData.experience || 0),
+                    specializations: userData.specializations || [],
+                    focusAreas: userData.focusAreas || [],
+                    languages: userData.languages || [],
+                    bio: userData.bio || "",
+                    education: userData.education || "",
+                    certificationURL: userData.certificationURL || ""
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success("Verification request successfully sent to Admin!", { id: toastId });
+                setCooldown(60);
+            } else {
+                toast.error("Failed to resend request: " + (data.error || "Unknown Error"), { id: toastId });
+            }
+        } catch (err) {
+            console.error("Resend verification error:", err);
+            toast.error("Network error. Failed to resend request.", { id: toastId });
+        } finally {
+            setIsResending(false);
+        }
+    };
     const [bookings, setBookings] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -217,9 +269,28 @@ export default function AstrologerDashboard() {
                             <p className="text-foreground/40 font-medium italic leading-relaxed text-xs">"Patience is the ornament of the wise. Expect alignment within 24-48 solar hours."</p>
                         </div>
 
-                        <Button variant="ghost" className="text-foreground/20 hover:text-primary uppercase tracking-[0.4em] font-black text-[10px] transition-colors" onClick={() => router.push('/')}>
-                            Return to Sanctuary
-                        </Button>
+                        <div className="flex flex-col gap-4 items-center">
+                            <Button
+                                onClick={handleResendVerification}
+                                disabled={isResending || cooldown > 0}
+                                className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isResending ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Send className="w-4 h-4" />
+                                )}
+                                {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend Details to Owner/Admin"}
+                            </Button>
+
+                            <Button 
+                                variant="ghost" 
+                                className="text-foreground/40 hover:text-primary uppercase tracking-[0.4em] font-black text-[10px] transition-colors" 
+                                onClick={() => router.push('/')}
+                            >
+                                Return to Sanctuary
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 <Footer />
