@@ -211,6 +211,7 @@ export default function AstrologerOnboardingPage() {
                 displayName: formData.displayName,
                 phoneNumber: formData.phoneNumber,
                 photoURL: photoURL || userData?.photoURL || "",
+                role: "astrologer",
                 profileComplete: true,
                 updatedAt: new Date().toISOString()
             }, { merge: true });
