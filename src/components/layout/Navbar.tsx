@@ -138,6 +138,9 @@ export function Navbar() {
 
                         {user ? (
                             <div className="flex items-center gap-2">
+                                <span className="text-[9px] text-primary font-black uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/10 mr-2">
+                                    {user.email || user.phoneNumber} ({role || "no-role"})
+                                </span>
                                 <Link href={dashboardHref}>
                                     <Button className="h-9 px-4 rounded-lg orange-gradient font-black text-[9px] uppercase tracking-widest text-white shadow-md shadow-primary/10">
                                         {tNav("dashboard")}
