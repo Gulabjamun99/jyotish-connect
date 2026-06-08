@@ -207,7 +207,7 @@ export function Navbar() {
                                                     <span className="text-amber-400 text-[10px]">👤</span>
                                                     <span>User Dashboard</span>
                                                 </Link>
-                                                <Link href={`/astrologer/profile/${user.uid}`} className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                <Link href={`/profile/${user.uid}`} className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
                                                     <span className="text-primary text-[10px]">🌐</span>
                                                     <span>My Public Profile</span>
                                                 </Link>
@@ -298,7 +298,7 @@ export function Navbar() {
                                     <>
                                         <Link href="/astrologer/dashboard" className="block text-sm font-medium text-indigo-400">🔮 Astrologer Dashboard</Link>
                                         <Link href="/user/dashboard" className="block text-sm font-medium text-amber-400">👤 User Dashboard</Link>
-                                        <Link href={`/astrologer/profile/${user.uid}`} className="block text-sm font-medium text-primary">🌐 My Public Profile</Link>
+                                        <Link href={`/profile/${user.uid}`} className="block text-sm font-medium text-primary">🌐 My Public Profile</Link>
                                     </>
                                 )}
                                 {role === "user" && (
