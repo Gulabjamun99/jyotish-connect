@@ -51,7 +51,7 @@ const playCosmicChime = () => {
 };
 
 export default function AstrologerDashboard() {
-    const { user, userData, loading } = UseProtectedRoute(["astrologer"]);
+    const { user, userData, role, loading } = UseProtectedRoute(["astrologer"]);
     const router = useRouter();
 
     // Resend verification alert state
@@ -211,11 +211,11 @@ export default function AstrologerDashboard() {
     useEffect(() => {
         if (userData && !loading) {
             // Redirect to onboarding if profile not complete
-            if (!userData.profileComplete) {
+            if (role !== "admin" && !userData.profileComplete) {
                 router.push("/astrologer/onboarding");
             }
         }
-    }, [userData, loading, router]);
+    }, [userData, loading, role, router]);
 
     if (loading || !user) {
         return (
@@ -238,7 +238,7 @@ export default function AstrologerDashboard() {
     }
 
     // Show pending verification screen
-    if (userData?.profileComplete && !userData?.verified) {
+    if (role !== "admin" && userData?.profileComplete && !userData?.verified) {
         return (
             <main className="min-h-screen flex flex-col bg-transparent overflow-hidden selection:bg-primary/30">
                 <Navbar />

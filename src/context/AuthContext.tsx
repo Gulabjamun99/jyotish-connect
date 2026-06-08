@@ -50,7 +50,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             // Force admin role for developer/owner accounts
                             const emailLower = authUser.email?.toLowerCase();
                             if (emailLower === "enjoylifeauw@gmail.com" || 
-                                emailLower === "en.joy.life.auw@gmail.com" || 
                                 emailLower === "admin@jyotishconnect.com") {
                                 userRole = "admin";
                                 data.role = "admin";
@@ -106,7 +105,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                                     if (astroSnap.exists()) {
                                         const emailLower = authUser.email?.toLowerCase();
                                         if (emailLower === "enjoylifeauw@gmail.com" || 
-                                            emailLower === "en.joy.life.auw@gmail.com" || 
                                             emailLower === "admin@jyotishconnect.com") {
                                             setRole("admin");
                                         } else {
@@ -117,7 +115,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                                         // User exists in Auth but no DB record yet
                                         const emailLower = authUser.email?.toLowerCase();
                                         if (emailLower === "enjoylifeauw@gmail.com" || 
-                                            emailLower === "en.joy.life.auw@gmail.com" || 
                                             emailLower === "admin@jyotishconnect.com") {
                                             
                                             // Auto-create admin user doc
