@@ -266,7 +266,12 @@ export default function HoroscopePage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     type: "horoscope",
-                    data: { sign, date: new Date(), lat: 22.9734, lng: 78.6569, locale }
+                    data: { 
+                        sign, 
+                        date: new Date(), 
+                        locale,
+                        timezoneOffset: -new Date().getTimezoneOffset() / 60
+                    }
                 }),
                 signal: AbortSignal.timeout(4000),
             });

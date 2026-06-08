@@ -9,6 +9,7 @@ interface Message {
     id: string;
     sender: "user" | "astrologer";
     senderName: string;
+    senderId?: string;
     text: string;
     time: string;
 }
@@ -22,9 +23,10 @@ interface ChatInterfaceProps {
     timeLeft?: number;
     onEndSession: () => void;
     participantRole: string;
+    userId: string;
 }
 
-export function ChatInterface({ consultationId, userName, astrologerName, onSendMessage, messages, timeLeft = 0, onEndSession, participantRole }: ChatInterfaceProps) {
+export function ChatInterface({ consultationId, userName, astrologerName, onSendMessage, messages, timeLeft = 0, onEndSession, participantRole, userId }: ChatInterfaceProps) {
     const [inputText, setInputText] = useState("");
     
     const isAstro = participantRole === "astrologer";
@@ -93,6 +95,7 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
             id: Date.now().toString(),
             sender: isAstro ? "astrologer" : "user",
             senderName: isAstro ? astrologerName : userName,
+            senderId: userId,
             text: inputText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
@@ -142,7 +145,9 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                 )}
 
                 {messages.map((msg) => {
-                    const isMyMessage = msg.sender === participantRole;
+                    const isMyMessage = msg.senderId === userId || 
+                                        (msg.senderId === "astrologer" && participantRole === "astrologer") ||
+                                        (msg.senderId === "user" && participantRole === "user");
                     return (
                         <div
                             key={msg.id}
@@ -190,6 +195,7 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                                 id: Date.now().toString(),
                                 sender: isAstro ? "astrologer" : "user",
                                 senderName: isAstro ? astrologerName : userName,
+                                senderId: userId,
                                 text: greet.text,
                                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             };

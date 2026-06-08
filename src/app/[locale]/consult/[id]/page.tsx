@@ -173,6 +173,7 @@ export default function ConsultPage() {
                                     id: entry.id || `${index}_${entry.time}`,
                                     sender: isAstro ? 'astrologer' : 'user',
                                     senderName: entry.speaker,
+                                    senderId: entry.senderId || (isAstro ? 'astrologer' : 'user'),
                                     text: entry.text,
                                     time: entry.time
                                 };
@@ -308,7 +309,13 @@ export default function ConsultPage() {
                             const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
                             setTranscript(prev => [...prev, { speaker, text, time }]);
-                            addTranscriptLine(id, { speaker, text, time });
+                            addTranscriptLine(id, { 
+                                speaker, 
+                                text, 
+                                time,
+                                role: participantRole,
+                                senderId: user?.uid || 'anonymous'
+                            } as any);
                         }
                     }
                 };
@@ -488,7 +495,8 @@ export default function ConsultPage() {
             speaker: message.senderName,
             text: message.text,
             time: message.time,
-            role: participantRole
+            role: participantRole,
+            senderId: user?.uid || 'anonymous'
         } as any);
     };
 
@@ -518,6 +526,7 @@ export default function ConsultPage() {
                         timeLeft={timeLeft}
                         onEndSession={handleDisconnect}
                         participantRole={participantRole}
+                        userId={user?.uid || 'anonymous'}
                     />
                 </div>
             ) : (

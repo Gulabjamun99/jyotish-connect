@@ -10,7 +10,7 @@ export function getZodiacSign(longitude: number): string {
     return signs[signId];
 }
 
-export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9734, lng: number = 78.6569, jdSunrise?: number, jdSunset?: number) {
+export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9734, lng: number = 78.6569, jdSunrise?: number, jdSunset?: number, timezoneOffset?: number) {
     const sun = planets.find(p => p.name === "Sun");
     const moon = planets.find(p => p.name === "Moon");
 
@@ -33,8 +33,10 @@ export function calculatePanchang(date: Date, planets: any[], lat: number = 22.9
     // 4. Vara (Weekday)
     const vara = date.getDay(); // 0 is Sunday
 
-    // 5. Sunrise & Sunset Calculation for IST
-    const istOffset = 5.5;
+    // 5. Sunrise & Sunset Calculation
+    const istOffset = timezoneOffset !== undefined 
+        ? timezoneOffset 
+        : (lng !== undefined ? Math.round(lng / 15 * 2) / 2 : 5.5);
     let sunriseIST = 0;
     let sunsetIST = 0;
 
@@ -188,7 +190,7 @@ export function calculateVimshottari(nakshatraId: number, longitude: number, bir
     };
 }
 
-export async function getFullAstrologyData(date: Date, lat: number, lng: number) {
+export async function getFullAstrologyData(date: Date, lat: number, lng: number, timezoneOffset?: number) {
     const service = await AstrologyService.getInstance();
     const data = await service.calculatePlanets(date, lat, lng);
 
@@ -216,7 +218,7 @@ export async function getFullAstrologyData(date: Date, lat: number, lng: number)
     });
 
     // Pass high precision sunrise/sunset from Swiss Ephemeris
-    const panchang = calculatePanchang(date, planetsWithVaisheshika, lat, lng, data.sunrise, data.sunset);
+    const panchang = calculatePanchang(date, planetsWithVaisheshika, lat, lng, data.sunrise, data.sunset, timezoneOffset);
     const moon = planetsWithVaisheshika.find(p => p.name === "Moon");
     const dasha = moon ? calculateVimshottari(moon.nakshatraId, moon.longitude, date) : null;
 
