@@ -16,13 +16,13 @@ export async function GET(req: Request) {
         const url = new URL(req.url);
         const origin = url.origin;
 
-        // Redirect directly to the admin verification panel with query parameters
+        // Redirect directly to the admin verification panel with query parameters (using the locale prefix to guarantee query parameters are not stripped by next-intl middleware redirects)
         // This lets the browser execute the Firestore write with client-side admin authorization,
         // bypassing server-side IAM/gRPC permission issues.
         if (action === 'approve') {
-            return NextResponse.redirect(`${origin}/admin/verify-astrologers?approve=${uid}`);
+            return NextResponse.redirect(`${origin}/en/admin/verify-astrologers?approve=${uid}`);
         } else if (action === 'reject') {
-            return NextResponse.redirect(`${origin}/admin/verify-astrologers?reject=${uid}`);
+            return NextResponse.redirect(`${origin}/en/admin/verify-astrologers?reject=${uid}`);
         }
 
         return new NextResponse('<h1>Invalid Action</h1>', {

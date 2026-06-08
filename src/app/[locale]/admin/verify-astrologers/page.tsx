@@ -28,7 +28,7 @@ type PendingAstrologer = {
 };
 
 function VerifyAstrologersPageContent() {
-    const { userData, loading: authLoading } = useAuth();
+    const { userData, role, loading: authLoading } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
     const [astrologers, setAstrologers] = useState<PendingAstrologer[]>([]);
@@ -104,14 +104,14 @@ function VerifyAstrologersPageContent() {
             if (!userData) {
                 const currentPath = window.location.pathname + window.location.search;
                 router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
-            } else if (userData.role !== "admin") {
+            } else if (role !== "admin") {
                 router.push("/");
             }
         }
-    }, [authLoading, userData, router]);
+    }, [authLoading, userData, role, router]);
 
     useEffect(() => {
-        if (!authLoading && userData && userData.role === "admin") {
+        if (!authLoading && role === "admin") {
             const approveUid = searchParams.get("approve");
             const rejectUid = searchParams.get("reject");
 
@@ -138,7 +138,7 @@ function VerifyAstrologersPageContent() {
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authLoading, userData, loading, astrologers, searchParams]);
+    }, [authLoading, role, loading, astrologers, searchParams]);
 
     useEffect(() => {
         fetchPendingAstrologers();
@@ -153,7 +153,7 @@ function VerifyAstrologersPageContent() {
         );
     }
 
-    if (userData?.role !== "admin") {
+    if (role !== "admin") {
         return null;
     }
 

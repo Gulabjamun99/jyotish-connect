@@ -48,10 +48,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             let userRole = data.role || "user";
 
                             // Force admin role for developer/owner accounts
-                            if (authUser.email === "enjoylifeauw@gmail.com" || 
-                                authUser.email === "en.joy.life.auw@gmail.com" || 
-                                authUser.email === "admin@jyotishconnect.com") {
+                            const emailLower = authUser.email?.toLowerCase();
+                            if (emailLower === "enjoylifeauw@gmail.com" || 
+                                emailLower === "en.joy.life.auw@gmail.com" || 
+                                emailLower === "admin@jyotishconnect.com") {
                                 userRole = "admin";
+                                data.role = "admin";
                                 
                                 // Auto-sync role to Firestore if not already set
                                 if (data.role !== "admin") {
@@ -106,9 +108,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                                         setUserData(astroSnap.data());
                                     } else {
                                         // User exists in Auth but no DB record yet
-                                        if (authUser.email === "enjoylifeauw@gmail.com" || 
-                                            authUser.email === "en.joy.life.auw@gmail.com" || 
-                                            authUser.email === "admin@jyotishconnect.com") {
+                                        const emailLower = authUser.email?.toLowerCase();
+                                        if (emailLower === "enjoylifeauw@gmail.com" || 
+                                            emailLower === "en.joy.life.auw@gmail.com" || 
+                                            emailLower === "admin@jyotishconnect.com") {
                                             
                                             // Auto-create admin user doc
                                             const userRef = doc(db, "users", authUser.uid);
