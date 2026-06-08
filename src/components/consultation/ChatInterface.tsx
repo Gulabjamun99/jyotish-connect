@@ -146,24 +146,30 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                 )}
 
                 {messages.map((msg) => {
-                    const isMyMessage = msg.senderId === userId || 
-                                        (!!msg.senderName && msg.senderName === localName);
+                    const isMyMessage = (participantRole === 'user' && msg.sender === 'user') ||
+                                        ((participantRole === 'astrologer' || participantRole === 'admin') && msg.sender === 'astrologer') ||
+                                        (userId !== 'anonymous' && msg.senderId === userId);
+                    const isUserMsg = msg.sender === 'user';
+                    const displayName = isMyMessage 
+                        ? "You" 
+                        : (msg.sender === 'user' ? userName : astrologerName);
                     return (
                         <div
                             key={msg.id}
-                            className={`flex ${isMyMessage ? "justify-end" : "justify-start"}`}
+                            className={`flex ${isUserMsg ? "justify-end" : "justify-start"}`}
                         >
                             <div className="max-w-[70%]">
-                                <div className={`text-[10px] font-bold text-muted-foreground mb-1 px-2 ${isMyMessage ? "text-right" : "text-left"}`}>
-                                    {isMyMessage ? "You" : msg.senderName} • {msg.time}
+                                <div className={`text-[10px] font-bold text-muted-foreground mb-1 px-2 ${isUserMsg ? "text-right" : "text-left"}`}>
+                                    {displayName} • {msg.time}
                                 </div>
                                 <div
-                                    className={`p-4 rounded-2xl shadow-md ${isMyMessage
-                                        ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-tr-sm"
-                                        : "bg-zinc-900 border border-white/5 text-slate-100 rounded-tl-sm"
+                                    className={`p-4 rounded-2xl shadow-md ${isUserMsg
+                                        ? "bg-white text-zinc-950 rounded-tr-sm border border-zinc-200/80"
+                                        : "bg-emerald-50 text-zinc-950 rounded-tl-sm border border-emerald-100"
                                         }`}
+                                    style={{ color: '#09090b' }} // Make absolutely sure it's dark text on both bubbles
                                 >
-                                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                    <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
                                 </div>
                             </div>
                         </div>

@@ -164,11 +164,13 @@ export default function ConsultPage() {
                         if (data.transcript && Array.isArray(data.transcript)) {
                             const mappedMessages = data.transcript.map((entry: any, index: number) => {
                                 const isAstro = entry.role === 'astrologer' || 
-                                                entry.speaker === astrologerName || 
-                                                entry.speaker === remoteName || 
-                                                entry.speaker?.toLowerCase() === 'astrologer' ||
-                                                entry.speaker?.toLowerCase()?.includes('acharya') ||
-                                                entry.speaker?.toLowerCase()?.includes('purohit');
+                                                entry.role === 'admin' ||
+                                                (entry.role !== 'user' && (
+                                                    entry.speaker === astrologerName || 
+                                                    entry.speaker?.toLowerCase() === 'astrologer' ||
+                                                    entry.speaker?.toLowerCase()?.includes('acharya') ||
+                                                    entry.speaker?.toLowerCase()?.includes('purohit')
+                                                ));
                                 return {
                                     id: entry.id || `${index}_${entry.time}`,
                                     sender: isAstro ? 'astrologer' : 'user',
