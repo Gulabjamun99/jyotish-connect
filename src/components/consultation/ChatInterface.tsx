@@ -30,6 +30,7 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
     const [inputText, setInputText] = useState("");
     
     const isAstro = participantRole === "astrologer";
+    const localName = isAstro ? astrologerName : userName;
     const quickGreetings = [
         { label: isAstro ? "🙏 Ashirwad" : "🙏 Pranam", text: isAstro ? "🙏 Kalyan ho, Subh Ashirwad!" : "🙏 Pranam Acharya ji!" },
         { label: "🌸 Namaskar", text: "🌸 Namaskar!" },
@@ -146,8 +147,7 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
 
                 {messages.map((msg) => {
                     const isMyMessage = msg.senderId === userId || 
-                                        (msg.senderId === "astrologer" && participantRole === "astrologer") ||
-                                        (msg.senderId === "user" && participantRole === "user");
+                                        (!!msg.senderName && msg.senderName === localName);
                     return (
                         <div
                             key={msg.id}
