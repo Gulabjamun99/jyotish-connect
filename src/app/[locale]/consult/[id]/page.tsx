@@ -521,7 +521,7 @@ export default function ConsultPage() {
                 <div className="flex-grow h-[calc(100vh-64px)]">
                     <ChatInterface
                         consultationId={id}
-                        userName={user?.displayName || seekerName || "You"}
+                        userName={seekerName || "Seeker"}
                         astrologerName={astrologerName || "Acharya"}
                         onSendMessage={handleSendMessage}
                         messages={messages}
