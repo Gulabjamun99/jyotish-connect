@@ -174,30 +174,58 @@ export function Navbar() {
 
                                     {/* Navigation Links */}
                                     <div className="space-y-1">
-                                        <Link href={dashboardHref} className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
-                                            <span className="text-primary text-[10px]">💻</span>
-                                            <span>My Dashboard</span>
-                                        </Link>
-
+                                        {/* Admin Options */}
                                         {role === "admin" && (
-                                            <Link href="/admin/verify-astrologers" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
-                                                <span className="text-purple-400 text-[10px]">🛡️</span>
-                                                <span>Verify Astrologers</span>
-                                            </Link>
+                                            <>
+                                                <Link href="/admin" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-purple-400 text-[10px]">🛡️</span>
+                                                    <span>Admin Dashboard</span>
+                                                </Link>
+                                                <Link href="/astrologer/dashboard" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-indigo-400 text-[10px]">🔮</span>
+                                                    <span>Astrologer Dashboard</span>
+                                                </Link>
+                                                <Link href="/user/dashboard" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-amber-400 text-[10px]">👤</span>
+                                                    <span>User Dashboard</span>
+                                                </Link>
+                                                <Link href="/admin/verify-astrologers" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-red-400 text-[10px]">✅</span>
+                                                    <span>Verify Astrologers</span>
+                                                </Link>
+                                            </>
                                         )}
 
+                                        {/* Astrologer Options */}
                                         {role === "astrologer" && (
-                                            <Link href={`/astrologer/profile/${user.uid}`} className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
-                                                <span className="text-indigo-400 text-[10px]">🔮</span>
-                                                <span>My Public Profile</span>
-                                            </Link>
+                                            <>
+                                                <Link href="/astrologer/dashboard" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-indigo-400 text-[10px]">🔮</span>
+                                                    <span>Astrologer Dashboard</span>
+                                                </Link>
+                                                <Link href="/user/dashboard" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-amber-400 text-[10px]">👤</span>
+                                                    <span>User Dashboard</span>
+                                                </Link>
+                                                <Link href={`/astrologer/profile/${user.uid}`} className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-primary text-[10px]">🌐</span>
+                                                    <span>My Public Profile</span>
+                                                </Link>
+                                            </>
                                         )}
 
+                                        {/* Regular Seeker Options */}
                                         {role === "user" && (
-                                            <Link href="/user/profile/edit" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
-                                                <span className="text-amber-400 text-[10px]">👤</span>
-                                                <span>Edit Profile</span>
-                                            </Link>
+                                            <>
+                                                <Link href="/user/dashboard" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-amber-400 text-[10px]">👤</span>
+                                                    <span>User Dashboard</span>
+                                                </Link>
+                                                <Link href="/user/profile/edit" className="flex items-center gap-2.5 w-full text-left px-3 py-2 hover:bg-white/5 rounded-xl text-[11px] font-bold text-foreground/80 hover:text-white transition-all">
+                                                    <span className="text-primary text-[10px]">⚙️</span>
+                                                    <span>Edit Profile</span>
+                                                </Link>
+                                            </>
                                         )}
                                     </div>
 
@@ -256,9 +284,30 @@ export function Navbar() {
                     </div>
                     {user ? (
                         <div className="space-y-4">
-                            <Link href={dashboardHref} className="block text-sm font-medium underline">
-                                My Dashboard
-                            </Link>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">My Panels</p>
+                            <div className="space-y-3.5 pl-2">
+                                {role === "admin" && (
+                                    <>
+                                        <Link href="/admin" className="block text-sm font-medium text-purple-400">🛡️ Admin Dashboard</Link>
+                                        <Link href="/astrologer/dashboard" className="block text-sm font-medium text-indigo-400">🔮 Astrologer Dashboard</Link>
+                                        <Link href="/user/dashboard" className="block text-sm font-medium text-amber-400">👤 User Dashboard</Link>
+                                        <Link href="/admin/verify-astrologers" className="block text-sm font-medium text-red-400">✅ Verify Astrologers</Link>
+                                    </>
+                                )}
+                                {role === "astrologer" && (
+                                    <>
+                                        <Link href="/astrologer/dashboard" className="block text-sm font-medium text-indigo-400">🔮 Astrologer Dashboard</Link>
+                                        <Link href="/user/dashboard" className="block text-sm font-medium text-amber-400">👤 User Dashboard</Link>
+                                        <Link href={`/astrologer/profile/${user.uid}`} className="block text-sm font-medium text-primary">🌐 My Public Profile</Link>
+                                    </>
+                                )}
+                                {role === "user" && (
+                                    <>
+                                        <Link href="/user/dashboard" className="block text-sm font-medium text-amber-400">👤 User Dashboard</Link>
+                                        <Link href="/user/profile/edit" className="block text-sm font-medium text-primary">⚙️ Edit Profile</Link>
+                                    </>
+                                )}
+                            </div>
                             <Button onClick={handleLogout} variant="destructive" className="w-full justify-center">
                                 Logout
                             </Button>
