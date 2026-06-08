@@ -56,12 +56,22 @@ export function Navbar() {
         window.location.href = url;
     };
 
+    const dashboardHref = role === "admin" 
+        ? "/admin" 
+        : role === "astrologer" 
+            ? "/astrologer/dashboard" 
+            : "/user/dashboard";
+
     const navLinks = [
         { href: "/search", label: tNav("find_astrologers") },
         { href: "/horoscope", label: tNav("daily_horoscope") },
         { href: "/kundli", label: tNav("free_kundli") },
         { href: "/kundli/matching", label: tNav("matching") },
     ];
+
+    if (role === "admin") {
+        navLinks.push({ href: "/admin/verify-astrologers", label: "Verify Astrologers" });
+    }
 
     const languages = [
         { code: "en", name: "English" },
@@ -128,7 +138,7 @@ export function Navbar() {
 
                         {user ? (
                             <div className="flex items-center gap-2">
-                                <Link href={role === "astrologer" ? "/astrologer/dashboard" : "/user/dashboard"}>
+                                <Link href={dashboardHref}>
                                     <Button className="h-9 px-4 rounded-lg orange-gradient font-black text-[9px] uppercase tracking-widest text-white shadow-md shadow-primary/10">
                                         {tNav("dashboard")}
                                     </Button>
@@ -180,7 +190,7 @@ export function Navbar() {
                     </div>
                     {user ? (
                         <div className="space-y-4">
-                            <Link href={role === "astrologer" ? "/astrologer/dashboard" : "/user/dashboard"} className="block text-sm font-medium underline">
+                            <Link href={dashboardHref} className="block text-sm font-medium underline">
                                 My Dashboard
                             </Link>
                             <Button onClick={handleLogout} variant="destructive" className="w-full justify-center">
