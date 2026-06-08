@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { useEffect } from "react";
 
 export function UseProtectedRoute(allowedRoles: string[] = ["user", "astrologer", "admin"]) {
@@ -13,7 +13,7 @@ export function UseProtectedRoute(allowedRoles: string[] = ["user", "astrologer"
         if (!loading) {
             if (!user) {
                 router.push(`/login?redirect=${pathname}`);
-            } else if (role && !allowedRoles.includes(role)) {
+            } else if (role && role !== "admin" && !allowedRoles.includes(role)) {
                 router.push("/unauthorized");
             }
         }

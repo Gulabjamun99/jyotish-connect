@@ -9,7 +9,8 @@ import { collection, query, where, getDocs, doc, updateDoc } from "firebase/fire
 import { db } from "@/lib/firebase";
 import { toast } from "react-hot-toast";
 import { CheckCircle, XCircle, Download, Clock, Star } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 type PendingAstrologer = {
     uid: string;
