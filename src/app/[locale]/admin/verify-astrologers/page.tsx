@@ -19,12 +19,14 @@ type PendingAstrologer = {
     photoURL: string;
     experience: number;
     specializations: string[];
+    focusAreas?: string[];
     languages: string[];
     consultationRate: number;
     bio: string;
     education: string;
     certificationURL?: string;
     createdAt: string;
+    govIdNumber?: string;
 };
 
 function VerifyAstrologersPageContent() {
@@ -145,6 +147,14 @@ function VerifyAstrologersPageContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Auto-select the first pending astrologer on list update if no query action parameters are present
+    useEffect(() => {
+        const hasParam = searchParams.get("approve") || searchParams.get("reject");
+        if (astrologers.length > 0 && !selectedAstrologer && !hasParam) {
+            setSelectedAstrologer(astrologers[0]);
+        }
+    }, [astrologers, selectedAstrologer, searchParams]);
+
     if (authLoading || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -180,7 +190,13 @@ function VerifyAstrologersPageContent() {
                             {astrologers.map(astro => (
                                 <div
                                     key={astro.uid}
-                                    onClick={() => setSelectedAstrologer(astro)}
+                                    onClick={() => {
+                                        setSelectedAstrologer(astro);
+                                        // Smooth scroll to details on small devices
+                                        setTimeout(() => {
+                                            document.getElementById("astrologer-details-panel")?.scrollIntoView({ behavior: "smooth" });
+                                        }, 100);
+                                    }}
                                     className={`glass p-4 rounded-2xl cursor-pointer transition-all hover:border-orange-500/50 ${selectedAstrologer?.uid === astro.uid ? "border-orange-500 bg-orange-500/5" : ""
                                         }`}
                                 >
@@ -201,7 +217,7 @@ function VerifyAstrologersPageContent() {
                         </div>
 
                         {/* Details */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2" id="astrologer-details-panel">
                             {selectedAstrologer ? (
                                 <div className="glass p-8 rounded-3xl space-y-6">
                                     <div className="flex items-start gap-6">
@@ -219,7 +235,7 @@ function VerifyAstrologersPageContent() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="bg-secondary/30 p-4 rounded-xl">
                                             <p className="text-xs text-muted-foreground mb-1">Experience</p>
                                             <p className="font-bold">{selectedAstrologer.experience} years</p>
@@ -227,6 +243,10 @@ function VerifyAstrologersPageContent() {
                                         <div className="bg-secondary/30 p-4 rounded-xl">
                                             <p className="text-xs text-muted-foreground mb-1">Rate</p>
                                             <p className="font-bold">₹{selectedAstrologer.consultationRate}/min</p>
+                                        </div>
+                                        <div className="bg-secondary/30 p-4 rounded-xl">
+                                            <p className="text-xs text-muted-foreground mb-1">Govt ID / Passport</p>
+                                            <p className="font-bold text-red-500">{selectedAstrologer.govIdNumber || "Not Provided"}</p>
                                         </div>
                                     </div>
 
@@ -240,6 +260,19 @@ function VerifyAstrologersPageContent() {
                                             ))}
                                         </div>
                                     </div>
+
+                                    {selectedAstrologer.focusAreas && selectedAstrologer.focusAreas.length > 0 && (
+                                        <div>
+                                            <h3 className="font-bold mb-2">Focus Areas</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedAstrologer.focusAreas.map(area => (
+                                                    <span key={area} className="px-3 py-1 bg-sky-500/10 text-sky-500 rounded-full text-sm">
+                                                        {area}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div>
                                         <h3 className="font-bold mb-2">Languages</h3>

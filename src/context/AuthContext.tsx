@@ -104,7 +104,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             unsubscribeAstro = onSnapshot(doc(db, "astrologers", authUser.uid),
                                 (astroSnap: any) => {
                                     if (astroSnap.exists()) {
-                                        setRole("astrologer");
+                                        const emailLower = authUser.email?.toLowerCase();
+                                        if (emailLower === "enjoylifeauw@gmail.com" || 
+                                            emailLower === "en.joy.life.auw@gmail.com" || 
+                                            emailLower === "admin@jyotishconnect.com") {
+                                            setRole("admin");
+                                        } else {
+                                            setRole("astrologer");
+                                        }
                                         setUserData(astroSnap.data());
                                     } else {
                                         // User exists in Auth but no DB record yet
