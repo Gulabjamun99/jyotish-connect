@@ -140,6 +140,15 @@ export default function AstrologerOnboardingPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = error => reject(error);
+        });
+    };
+
     const handleSubmit = async () => {
         if (!validateStep() || !user) return;
 
@@ -164,9 +173,14 @@ export default function AstrologerOnboardingPage() {
                     await withTimeout(uploadBytes(photoRef, photoFile), 10000);
                     photoURL = await getDownloadURL(photoRef);
                 } catch (err) {
-                    console.error("Storage upload failed for profile photo:", err);
-                    toast.error("Failed to upload photo to cloud storage. Using default avatar.", { duration: 5000 });
-                    photoURL = photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200";
+                    console.error("Storage upload failed for profile photo, trying base64 fallback:", err);
+                    try {
+                        photoURL = await fileToBase64(photoFile);
+                    } catch (base64Err) {
+                        console.error("Base64 conversion failed:", base64Err);
+                        toast.error("Failed to upload photo. Using default avatar.", { duration: 5000 });
+                        photoURL = photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200";
+                    }
                 }
             }
 
@@ -177,8 +191,13 @@ export default function AstrologerOnboardingPage() {
                     await withTimeout(uploadBytes(certRef, certFile), 10000);
                     certificationURL = await getDownloadURL(certRef);
                 } catch (err) {
-                    console.error("Storage upload failed for certificate:", err);
-                    toast.error("Failed to upload certification. Continuing registration...", { duration: 5000 });
+                    console.error("Storage upload failed for certificate, trying base64 fallback:", err);
+                    try {
+                        certificationURL = await fileToBase64(certFile);
+                    } catch (base64Err) {
+                        console.error("Base64 conversion failed for cert:", base64Err);
+                        toast.error("Failed to upload certification.", { duration: 5000 });
+                    }
                 }
             }
 
