@@ -80,6 +80,16 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         }
 
         // 4. Final safety check: if last message is from user, extract it and leave rest in history
+        // Keep only the last 3 turns (last 6 messages) to prevent context bloating and rate limits/503 errors
+        const maxHistoryMessages = 6;
+        if (history.length > maxHistoryMessages) {
+            history = history.slice(-maxHistoryMessages);
+            // If the sliced history starts with model, remove it to keep user-first alternating logic
+            while (history.length > 0 && history[0].role === 'model') {
+                history.shift();
+            }
+        }
+
         const latestMessage = history.pop();
         if (!latestMessage) {
             return new Response(JSON.stringify({ error: "No user message found to process." }), { status: 400 });
@@ -150,7 +160,10 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
 
             try {
                 const errJson = JSON.parse(errText);
-                if (errJson.error?.code === 429 || errJson.error?.status === "RESOURCE_EXHAUSTED") {
+                const isServiceUnavailable = response.status === 503 || errJson.error?.code === 503 || errJson.error?.status === "UNAVAILABLE";
+                const isRateLimit = response.status === 429 || errJson.error?.code === 429 || errJson.error?.status === "RESOURCE_EXHAUSTED";
+                
+                if (isRateLimit || isServiceUnavailable) {
                     isQuotaError = true;
                     errorMessage = "Sarvagya is currently in high demand by seekers across the globe. Spikes in cosmic demand are usually temporary. Please try again in 1-2 minutes.";
                 } else if (errJson.error?.message) {
