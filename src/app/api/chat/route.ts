@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 
 // Using standard Node runtime to ensure full process.env access for the API key
 // export const runtime = "edge";
