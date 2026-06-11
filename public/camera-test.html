@@ -77,12 +77,19 @@
 
         function log(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
-            logDiv.innerHTML += `<div style="color: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#60a5fa'}">[${timestamp}] ${message}</div>`;
+            const entry = document.createElement('div');
+            entry.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#60a5fa';
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         function showStatus(message, type) {
-            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            statusDiv.textContent = '';
+            const statusBox = document.createElement('div');
+            statusBox.className = `status ${type}`;
+            statusBox.textContent = message;
+            statusDiv.appendChild(statusBox);
         }
 
         // Initial checks
