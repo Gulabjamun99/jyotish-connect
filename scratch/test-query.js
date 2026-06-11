@@ -1,12 +1,12 @@
 const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, getDocs, deleteDoc, doc } = require("firebase/firestore");
+const { getFirestore, collection, query, where, getDocs } = require("firebase/firestore");
 
 const fs = require('fs');
 const path = require('path');
 
 let firebaseConfig = {};
 try {
-    const envPath = path.join(__dirname, '.env.local');
+    const envPath = path.join(__dirname, '..', '.env.local');
     if (fs.existsSync(envPath)) {
         const envContent = fs.readFileSync(envPath, 'utf8');
         const getEnv = (key) => {
@@ -38,28 +38,34 @@ firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function deleteDemos() {
+async function testQuery() {
     try {
-        console.log("Fetching astrologers...");
-        const snapshot = await getDocs(collection(db, "astrologers"));
-        let count = 0;
-
-        for (const child of snapshot.docs) {
-            if (child.id !== "1i5Fj2u7VrexYbvPfVDIX7NX9Dd2") { // Keep c kumar
-                await deleteDoc(doc(db, "astrologers", child.id));
-                console.log(`Deleted demo: ${child.data().displayName || child.id}`);
-                count++;
-            } else {
-                console.log(`Kept real astrologer: ${child.data().displayName} (${child.id})`);
-            }
+        const uid = "nhcGLdYHMVX0WHu1CcpYwLvPxqg2";
+        console.log(`Checking user/astrologer documents for UID: ${uid}...`);
+        
+        const { doc, getDoc } = require("firebase/firestore");
+        
+        const userRef = doc(db, "users", uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            console.log("Users document exists:", JSON.stringify(userSnap.data(), null, 2));
+        } else {
+            console.log("Users document does NOT exist.");
         }
-
-        console.log(`Finished deleting ${count} demo astrologers.`);
+        
+        const astroRef = doc(db, "astrologers", uid);
+        const astroSnap = await getDoc(astroRef);
+        if (astroSnap.exists()) {
+            console.log("Astrologers document exists:", JSON.stringify(astroSnap.data(), null, 2));
+        } else {
+            console.log("Astrologers document does NOT exist.");
+        }
+        
         process.exit(0);
     } catch (e) {
-        console.error(e);
+        console.error("Query failed:", e);
         process.exit(1);
     }
 }
 
-deleteDemos();
+testQuery();
