@@ -49,12 +49,17 @@ You possess deep wisdom of the stars and human destiny.
 ## User's Known Context Data:
 ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provided yet. You MUST collect ALL 4 details (Name, DOB, TOB, Place) before giving any analysis."}`;
 
-        // Force direct read from process.env
-        const apiKey = process.env.OPENROUTER_API_KEY || "";
-        if (!apiKey) {
+        // Support multiple API keys separated by commas for rate limit rotation
+        const apiKeysString = process.env.OPENROUTER_API_KEY || "";
+        const apiKeys = apiKeysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
+        
+        if (apiKeys.length === 0) {
             console.error("CRITICAL: OPENROUTER_API_KEY is missing in process.env");
             return new Response(JSON.stringify({ error: "Cosmic connection (API Key) is missing." }), { status: 500 });
         }
+
+        // Randomly pick one key to distribute the load
+        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
         // 1. Filter out empty or invalid messages
         const validMessages = messages.filter(m => m && typeof m.content === 'string' && m.content.trim().length > 0);
