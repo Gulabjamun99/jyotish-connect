@@ -49,119 +49,176 @@ You possess deep wisdom of the stars and human destiny.
 ## User's Known Context Data:
 ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provided yet. You MUST collect ALL 4 details (Name, DOB, TOB, Place) before giving any analysis."}`;
 
-        // Support multiple API keys separated by commas for rate limit rotation
-        const apiKeysString = process.env.OPENROUTER_API_KEY || "";
-        const apiKeys = apiKeysString.split(',').map(k => k.trim()).filter(k => k.length > 0);
-        
-        if (apiKeys.length === 0) {
-            console.error("CRITICAL: OPENROUTER_API_KEY is missing in process.env");
+        // Force direct read from process.env
+        const apiKey = process.env.GEMINI_API_KEY || "";
+        if (!apiKey) {
+            console.error("CRITICAL: GEMINI_API_KEY is missing in process.env");
             return new Response(JSON.stringify({ error: "Cosmic connection (API Key) is missing." }), { status: 500 });
         }
 
-        // Randomly pick one key to distribute the load
-        const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-
+        // Construct chat history format — Gemini requires contents to start with 'user' and alternate roles
         // 1. Filter out empty or invalid messages
         const validMessages = messages.filter(m => m && typeof m.content === 'string' && m.content.trim().length > 0);
         
-        // 2. Map to OpenRouter (OpenAI) format
+        // 2. Map to Gemini format
         let history = validMessages.map((m: any) => ({
-            role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.content.trim()
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.content.trim() }]
         }));
+
+        // 3. Ensure alternating roles and starting with 'user'
+        // Skip leading model messages
+        while (history.length > 0 && history[0].role === 'model') {
+            history.shift();
+        }
 
         if (history.length === 0) {
             return new Response(JSON.stringify({ error: "No valid user messages found." }), { status: 400 });
         }
 
-        // Keep the last 20 messages to prevent losing context
+        // 4. Final safety check: if last message is from user, extract it and leave rest in history
+        // Keep only the last 3 turns (last 6 messages) to prevent context bloating and rate limits/503 errors
+        // Keep the last 20 messages to prevent losing context (e.g. birth details) while avoiding massive payloads
         const maxHistoryMessages = 20;
         if (history.length > maxHistoryMessages) {
             history = history.slice(-maxHistoryMessages);
+            // If the sliced history starts with model, remove it to keep user-first alternating logic
+            while (history.length > 0 && history[0].role === 'model') {
+                history.shift();
+            }
         }
 
-        const latestMessage = history[history.length - 1];
+        const latestMessage = history.pop();
+        if (!latestMessage) {
+            return new Response(JSON.stringify({ error: "No user message found to process." }), { status: 400 });
+        }
 
         // Inject latest contextData into the current message to ensure immediate context visibility
         if (contextData) {
-            const originalText = latestMessage.content;
-            latestMessage.content = `[CURRENT ASTROLOGICAL CONTEXT: ${JSON.stringify(contextData)}]\n\n${originalText}`;
+            const originalText = latestMessage.parts[0]?.text || "";
+            latestMessage.parts[0].text = `[CURRENT ASTROLOGICAL CONTEXT: ${JSON.stringify(contextData)}]\n\n${originalText}`;
+        }
+        
+        // Double check roles alternate after pop. If empty, it's fine. 
+        // If not empty, ensures and alternates.
+        // Gemini requires strict alternation: user -> model -> user -> model
+        // Since latestMessage is ALWAYS 'user', cleanHistory MUST end with 'model'.
+        const cleanHistory = [];
+        let expectedRole = 'user';
+        for (const msg of history) {
+            if (msg.role === expectedRole) {
+                cleanHistory.push(msg);
+                expectedRole = expectedRole === 'user' ? 'model' : 'user';
+            }
+        }
+        // If the last message was 'user', we cannot append another 'user' message immediately.
+        // We must drop the last 'user' message to maintain strict alternation.
+        if (cleanHistory.length > 0 && cleanHistory[cleanHistory.length - 1].role === 'user') {
+            cleanHistory.pop();
         }
 
-        const apiUrl = `https://openrouter.ai/api/v1/chat/completions`;
+        // Reverting to gemini-2.0-flash per user request.
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
         
+        // v1 does NOT support "systemInstruction" field. 
+        // We must prepend it to the first user message.
+        const firstMessage = cleanHistory.length > 0 ? cleanHistory[0] : latestMessage;
+        
+        // Inject system prompt into the first user message
+        const originalText = firstMessage.parts[0]?.text || "";
+        const combinedFirstMessageText = `[SYSTEM INSTRUCTION: ${systemInstruction}]\n\nUser Question: ${originalText}`;
+        
+        // Update the first message in our payload
+        if (cleanHistory.length > 0) {
+            cleanHistory[0].parts[0].text = combinedFirstMessageText;
+        } else {
+            latestMessage.parts[0].text = combinedFirstMessageText;
+        }
+
         const requestBody = {
-            model: "google/gemini-2.0-flash-lite-preview-02-05:free", // using the free fast model
-            messages: [
-                { role: "system", content: systemInstruction },
-                ...history
+            contents: [
+                ...cleanHistory,
+                latestMessage
             ],
-            stream: true
+            generationConfig: {
+                temperature: 0.7,
+                topP: 0.8,
+                maxOutputTokens: 2048, // Increased for complete answers
+            }
         };
+
+        console.log("Gemini Request Body (v1 Prepended):", JSON.stringify(requestBody, null, 2).substring(0, 500) + "...");
 
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://jyotishconnect.com',
-                'X-Title': 'JyotishConnect Sarvagya'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
             const errText = await response.text();
-            console.error("OpenRouter API Error details:", errText);
-            let errorMessage = "The celestial currents are heavy with traffic right now. Please wait for a few moments for the stars to align.";
+            console.error("Gemini API Error details:", errText);
             
+            let errorMessage = "The celestial currents are heavy with traffic right now. Please wait for a few moments for the stars to align.";
+            let isQuotaError = false;
+
             try {
                 const errJson = JSON.parse(errText);
-                if (response.status === 429) {
-                    errorMessage = "Sarvagya is currently in high demand by seekers across the globe. Please try again in 1-2 minutes.";
+                const isServiceUnavailable = response.status === 503 || errJson.error?.code === 503 || errJson.error?.status === "UNAVAILABLE";
+                const isRateLimit = response.status === 429 || errJson.error?.code === 429 || errJson.error?.status === "RESOURCE_EXHAUSTED";
+                
+                if (isRateLimit || isServiceUnavailable) {
+                    isQuotaError = true;
+                    errorMessage = "Sarvagya is currently in high demand by seekers across the globe. Spikes in cosmic demand are usually temporary. Please try again in 1-2 minutes.";
                 } else if (errJson.error?.message) {
                     errorMessage = errJson.error.message;
                 }
             } catch (e) {}
             
-            return new Response(JSON.stringify({ error: errorMessage }), {
+            return new Response(JSON.stringify({ error: errorMessage, isQuota: isQuotaError }), {
                 status: response.status,
                 headers: { "Content-Type": "application/json" }
             });
         }
 
-        // Process the SSE stream from OpenRouter (OpenAI format)
+        // Process the SSE stream from Google and yield only the text parts
         const encoder = new TextEncoder();
         const decoder = new TextDecoder();
-        let buffer = ""; 
+        let buffer = ""; // Buffer to handle partial lines across chunks
         
         const transformStream = new TransformStream({
             async transform(chunk, controller) {
                 buffer += decoder.decode(chunk, { stream: true });
                 const lines = buffer.split('\n');
                 
+                // Keep the last partial line in the buffer
                 buffer = lines.pop() || "";
                 
                 for (const line of lines) {
                     const trimmedLine = line.trim();
                     if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
-                    if (trimmedLine === 'data: [DONE]') continue;
                     
                     try {
                         const json = JSON.parse(trimmedLine.substring(6));
-                        const content = json.choices?.[0]?.delta?.content;
+                        // Support both standard and candidate-based formats
+                        const content = json.candidates?.[0]?.content?.parts?.[0]?.text || 
+                                      json.content?.parts?.[0]?.text;
                         
                         if (content) {
                             controller.enqueue(encoder.encode(content));
                         }
-                    } catch (e) {}
+                    } catch (e) {
+                        // Skip malformed JSON lines
+                    }
                 }
             },
             flush(controller) {
-                if (buffer.startsWith('data: ') && buffer.trim() !== 'data: [DONE]') {
+                // Handle any remaining text in the buffer
+                if (buffer.startsWith('data: ')) {
                     try {
                         const json = JSON.parse(buffer.substring(6));
-                        const content = json.choices?.[0]?.delta?.content;
+                        const content = json.candidates?.[0]?.content?.parts?.[0]?.text || 
+                                      json.content?.parts?.[0]?.text;
                         if (content) controller.enqueue(encoder.encode(content));
                     } catch (e) {}
                 }
@@ -170,7 +227,7 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
 
         return new Response(response.body!.pipeThrough(transformStream), {
             headers: {
-                "Content-Type": "text/event-stream",
+                "Content-Type": "text/plain; charset=utf-8",
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
             },
