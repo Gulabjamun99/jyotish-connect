@@ -101,13 +101,20 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         
         // Double check roles alternate after pop. If empty, it's fine. 
         // If not empty, ensures and alternates.
+        // Gemini requires strict alternation: user -> model -> user -> model
+        // Since latestMessage is ALWAYS 'user', cleanHistory MUST end with 'model'.
         const cleanHistory = [];
-        let nextRole = 'user';
+        let expectedRole = 'user';
         for (const msg of history) {
-            if (msg.role === nextRole) {
+            if (msg.role === expectedRole) {
                 cleanHistory.push(msg);
-                nextRole = nextRole === 'user' ? 'model' : 'user';
+                expectedRole = expectedRole === 'user' ? 'model' : 'user';
             }
+        }
+        // If the last message was 'user', we cannot append another 'user' message immediately.
+        // We must drop the last 'user' message to maintain strict alternation.
+        if (cleanHistory.length > 0 && cleanHistory[cleanHistory.length - 1].role === 'user') {
+            cleanHistory.pop();
         }
 
         // gemini-2.0-flash had a "limit: 0" quota error. 
