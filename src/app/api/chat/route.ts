@@ -81,7 +81,8 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
 
         // 4. Final safety check: if last message is from user, extract it and leave rest in history
         // Keep only the last 3 turns (last 6 messages) to prevent context bloating and rate limits/503 errors
-        const maxHistoryMessages = 6;
+        // Keep the last 20 messages to prevent losing context (e.g. birth details) while avoiding massive payloads
+        const maxHistoryMessages = 20;
         if (history.length > maxHistoryMessages) {
             history = history.slice(-maxHistoryMessages);
             // If the sliced history starts with model, remove it to keep user-first alternating logic

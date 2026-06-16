@@ -83,8 +83,20 @@ export function Sarvagya({ userData }: SarvagyaProps) {
 
     // Parser to extract birth details from conversation text
     const extractBirthDetailsFromText = (allMessages: Message[]) => {
-        const text = allMessages.map(m => m.content).join(" ");
+        // Join with comma to preserve distinct messages, especially for fallback parsing
+        const text = allMessages.map(m => m.content).join(", ");
         const details: BirthDetails = { ...birthDetails };
+
+        // 0. Dedicated name message check: if a user just sends "Rohit Kumar"
+        allMessages.forEach(m => {
+            if (m.role === 'user') {
+                const content = m.content.trim();
+                // If it's 1-3 words, mostly letters, it's likely a name
+                if (/^[A-Za-z\s]{3,40}$/.test(content) && content.split(/\s+/).length <= 3) {
+                    details.name = content;
+                }
+            }
+        });
 
         // 1. DOB extraction (DD/MM/YYYY or DD-MM-YYYY or DDMMYYYY)
         const dobMatch = text.match(/\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\b/);
@@ -116,9 +128,9 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         }
 
         // 3. Name extraction (e.g. "My name is Renu" or "Name: Renu" or first word of comma separated list)
-        const nameMatch = text.match(/name\s*(?:is|:)?\s*([A-Za-z]+)\b/i) || text.match(/\bI\s+am\s+([A-Za-z]+)\b/i);
-        if (nameMatch) {
-            details.name = nameMatch[1];
+        const nameMatch = text.match(/name\s*(?:is|:)?\s*([A-Za-z]+\s*[A-Za-z]*\s*[A-Za-z]*)\b/i) || text.match(/\bI\s+am\s+([A-Za-z]+\s*[A-Za-z]*\s*[A-Za-z]*)\b/i);
+        if (nameMatch && !details.name) {
+            details.name = nameMatch[1].trim();
         }
 
         // 4. Place extraction
