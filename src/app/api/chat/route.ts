@@ -117,9 +117,8 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
             cleanHistory.pop();
         }
 
-        // gemini-2.0-flash had a "limit: 0" quota error. 
-        // Switching to gemini-flash-latest on v1beta which is in the verified model list.
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&key=${apiKey}`;
+        // Reverting to gemini-2.0-flash per user request.
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         // v1 does NOT support "systemInstruction" field. 
         // We must prepend it to the first user message.
