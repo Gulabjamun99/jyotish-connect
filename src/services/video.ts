@@ -122,24 +122,28 @@ export async function makeCall(
                 }
             };
 
-            // Create SDP Offer
+            // 1. Clean slate BEFORE sending offer to prevent race conditions
+            console.log('🧹 [Caller] Cleaning up stale signaling data...');
+            try {
+                await updateDoc(roomRef, { 
+                    answer: deleteField(),
+                    offer: deleteField(),
+                    callerCandidates: [],
+                    calleeCandidates: []
+                });
+            } catch (e) {
+                // Ignore if document doesn't exist yet
+            }
+
+            // 2. Create SDP Offer
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            // Save offer to Firestore (clear stale signaling data)
-            console.log('📤 [Caller] Saving offer to Firestore...');
+            // 3. Save offer to Firestore (triggers Callee)
+            console.log('📤 [Caller] Saving new offer to Firestore...');
             await setDoc(roomRef, {
-                offer: { type: offer.type, sdp: offer.sdp },
-                callerCandidates: [],
-                calleeCandidates: [],
+                offer: { type: offer.type, sdp: offer.sdp }
             }, { merge: true });
-
-            // Remove any stale answer
-            try {
-                await updateDoc(roomRef, { answer: deleteField() });
-            } catch (e) {
-                // Ignore if answer field doesn't exist
-            }
 
             console.log('✅ [Caller] Offer saved. Listening for answer...');
 

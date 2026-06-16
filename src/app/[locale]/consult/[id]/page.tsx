@@ -27,7 +27,8 @@ export default function ConsultPage() {
     const consultationType = (searchParams.get("type") as "video" | "audio" | "chat") || "video";
 
     // Auto-detect participant role from auth context OR forced URL param (useful for local testing)
-    const participantRole = searchParams.get("role") || role || "user";
+    const rawRole = searchParams.get("role") || role || "user";
+    const participantRole = rawRole === "admin" ? "astrologer" : rawRole;
 
     // Connection States
     const [isJoined, setIsJoined] = useState(false); // Lobby vs Room state
