@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface AudioInterfaceProps {
     stream: MediaStream | null;
+    remoteStream?: MediaStream | null;
     micOn: boolean;
     onToggleMic: () => void;
     onDisconnect: () => void;
@@ -16,6 +17,7 @@ interface AudioInterfaceProps {
 
 export function AudioInterface({
     stream,
+    remoteStream,
     micOn,
     onToggleMic,
     onDisconnect,
@@ -26,6 +28,36 @@ export function AudioInterface({
     const [audioLevel, setAudioLevel] = useState(0);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<number | null>(null);
+    const remoteAudioRef = useRef<HTMLAudioElement>(null);
+
+    // Attach remote stream to hidden audio element for reliable playback
+    useEffect(() => {
+        const audioEl = remoteAudioRef.current;
+        if (!audioEl || !remoteStream) return;
+
+        audioEl.srcObject = remoteStream;
+        audioEl.muted = false;
+        audioEl.volume = 1.0;
+
+        const tryPlay = () => {
+            audioEl.play().catch((err) => {
+                console.warn('🔇 Autoplay blocked for remote audio, will retry on user gesture:', err);
+                // Retry on any user interaction
+                const resumeAudio = () => {
+                    audioEl.play().catch(() => {});
+                    document.removeEventListener('click', resumeAudio);
+                    document.removeEventListener('touchstart', resumeAudio);
+                };
+                document.addEventListener('click', resumeAudio, { once: true });
+                document.addEventListener('touchstart', resumeAudio, { once: true });
+            });
+        };
+        tryPlay();
+
+        return () => {
+            audioEl.srcObject = null;
+        };
+    }, [remoteStream]);
 
     useEffect(() => {
         if (!stream) return;
@@ -64,6 +96,8 @@ export function AudioInterface({
 
     return (
         <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-background via-background to-primary/5 p-8">
+            {/* Hidden audio element to play remote participant's audio */}
+            <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: 'none' }} />
             {/* Background Glows */}
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 blur-[120px] rounded-full pointer-events-none" />

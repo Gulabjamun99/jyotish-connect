@@ -54,9 +54,30 @@ export function VideoInterface({
     }, [stream]);
 
     useEffect(() => {
-        if (remoteVideoRef.current && remoteStream) {
-            remoteVideoRef.current.srcObject = remoteStream;
-        }
+        const videoEl = remoteVideoRef.current;
+        if (!videoEl || !remoteStream) return;
+
+        videoEl.srcObject = remoteStream;
+        videoEl.muted = false; // Ensure remote audio is NOT muted
+        videoEl.volume = 1.0;
+
+        const tryPlay = () => {
+            videoEl.play().catch((err) => {
+                console.warn('🔇 Autoplay blocked for remote video, will retry on user gesture:', err);
+                const resumePlayback = () => {
+                    videoEl.play().catch(() => {});
+                    document.removeEventListener('click', resumePlayback);
+                    document.removeEventListener('touchstart', resumePlayback);
+                };
+                document.addEventListener('click', resumePlayback, { once: true });
+                document.addEventListener('touchstart', resumePlayback, { once: true });
+            });
+        };
+        tryPlay();
+
+        return () => {
+            videoEl.srcObject = null;
+        };
     }, [remoteStream]);
 
     // Update caption when transcript changes

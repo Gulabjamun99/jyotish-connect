@@ -578,21 +578,16 @@ export default function ConsultPage() {
                             )}
                             {/* Render Audio or Video Interface based on consultation type */}
                             {consultationType === 'audio' ? (
-                                <>
-                                    {/* Hidden audio element to play remote stream */}
-                                    {remoteStream && (
-                                        <audio autoPlay ref={(el) => { if (el && remoteStream) el.srcObject = remoteStream; }} />
-                                    )}
-                                    <AudioInterface
-                                        stream={stream}
-                                        micOn={micOn}
-                                        onToggleMic={toggleMic}
-                                        onDisconnect={handleDisconnect}
-                                        userName={user?.displayName || "You"}
-                                        astrologerName={remoteName}
-                                        timeLeft={timeLeft}
-                                    />
-                                </>
+                                <AudioInterface
+                                    stream={stream}
+                                    remoteStream={remoteStream}
+                                    micOn={micOn}
+                                    onToggleMic={toggleMic}
+                                    onDisconnect={handleDisconnect}
+                                    userName={user?.displayName || "You"}
+                                    astrologerName={remoteName}
+                                    timeLeft={timeLeft}
+                                />
                             ) : (
                                 <VideoInterface
                                     stream={stream}
