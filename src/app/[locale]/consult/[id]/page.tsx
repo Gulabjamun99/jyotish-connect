@@ -493,13 +493,15 @@ export default function ConsultPage() {
 
     const handleSendMessage = (message: any) => {
         setMessages(prev => [...prev, message]);
+        // Normalize admin role to astrologer for transcript consistency
+        const normalizedRole = participantRole === 'admin' ? 'astrologer' : participantRole;
         addTranscriptLine(id, {
             speaker: message.senderName,
             text: message.text,
             time: message.time,
-            role: participantRole,
+            role: normalizedRole,
             senderId: user?.uid || 'anonymous'
-        } as any);
+        });
     };
 
     return (

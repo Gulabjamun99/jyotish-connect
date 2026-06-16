@@ -208,7 +208,7 @@ export const startConsultation = async (id: string, data: any) => {
     }
 };
 
-export const addTranscriptLine = async (id: string, entry: { speaker: string, text: string, time: string }) => {
+export const addTranscriptLine = async (id: string, entry: { speaker: string, text: string, time: string, role?: string, senderId?: string }) => {
     const docRef = doc(db, "consultations", id);
     await updateDoc(docRef, {
         transcript: arrayUnion(sanitize(entry))

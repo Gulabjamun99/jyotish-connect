@@ -90,7 +90,7 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
     const handleSend = () => {
         if (!inputText.trim()) return;
 
-        const isAstro = participantRole === "astrologer";
+        const isAstro = participantRole === "astrologer" || participantRole === "admin";
 
         const newMessage: Message = {
             id: Date.now().toString(),
@@ -146,24 +146,27 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                 )}
 
                 {messages.map((msg) => {
-                    const isMyMessage = (participantRole === 'user' && msg.sender === 'user') ||
-                                        ((participantRole === 'astrologer' || participantRole === 'admin') && msg.sender === 'astrologer') ||
-                                        (userId !== 'anonymous' && msg.senderId === userId);
-                    const isUserMsg = msg.sender === 'user';
+                    // Determine if this message was sent by ME (the current participant)
+                    // Admin role is treated as astrologer for chat purposes
+                    const myRole = participantRole === 'admin' ? 'astrologer' : participantRole;
+                    const isMyMessage = msg.sender === myRole || 
+                                        (msg.senderId && msg.senderId !== 'anonymous' && msg.senderId !== 'user' && msg.senderId !== 'astrologer' && msg.senderId === userId);
+                    
+                    // Display name: "You" for own messages, actual name for other side
                     const displayName = isMyMessage 
                         ? "You" 
-                        : (msg.sender === 'user' ? userName : astrologerName);
+                        : (msg.sender === 'astrologer' ? astrologerName : userName);
                     return (
                         <div
                             key={msg.id}
-                            className={`flex ${isUserMsg ? "justify-end" : "justify-start"}`}
+                            className={`flex ${isMyMessage ? "justify-end" : "justify-start"}`}
                         >
                             <div className="max-w-[70%]">
-                                <div className={`text-[10px] font-bold text-muted-foreground mb-1 px-2 ${isUserMsg ? "text-right" : "text-left"}`}>
+                                <div className={`text-[10px] font-bold text-muted-foreground mb-1 px-2 ${isMyMessage ? "text-right" : "text-left"}`}>
                                     {displayName} • {msg.time}
                                 </div>
                                 <div
-                                    className={`p-4 rounded-2xl shadow-md ${isUserMsg
+                                    className={`p-4 rounded-2xl shadow-md ${isMyMessage
                                         ? "bg-white text-zinc-950 rounded-tr-sm border border-zinc-200/80"
                                         : "bg-emerald-50 text-zinc-950 rounded-tl-sm border border-emerald-100"
                                         }`}
