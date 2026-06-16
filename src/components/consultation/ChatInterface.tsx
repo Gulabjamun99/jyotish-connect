@@ -149,8 +149,9 @@ export function ChatInterface({ consultationId, userName, astrologerName, onSend
                     // Determine if this message was sent by ME (the current participant)
                     // Admin role is treated as astrologer for chat purposes
                     const myRole = participantRole === 'admin' ? 'astrologer' : participantRole;
-                    const isMyMessage = msg.sender === myRole || 
-                                        (msg.senderId && msg.senderId !== 'anonymous' && msg.senderId !== 'user' && msg.senderId !== 'astrologer' && msg.senderId === userId);
+                    // Strictly use role-based ownership. We don't use senderId === userId because 
+                    // during testing, the developer might use the same account for both sides!
+                    const isMyMessage = msg.sender === myRole;
                     
                     // Display name: "You" for own messages, actual name for other side
                     const displayName = isMyMessage 
