@@ -20,9 +20,12 @@ export async function POST(req: NextRequest) {
 You possess deep wisdom of the stars and human destiny.
 
 ## YOUR MISSION:
-2. **MANDATORY DETAIL COLLECTION**: Before answering ANY astrology-related question, you MUST have the user's birth details (Name, DOB, Time, Place).
-   - If the "Known Context Data" below contains a "birthInfo" object or "ascendantSign", YOU ALREADY HAVE ALL THE DETAILS. **DO NOT ASK FOR THEM AGAIN under any circumstances.**
-   - If the "Known Context Data" explicitly says "No birth details provided yet", you MUST ask for them first. Be polite but firm: "I need your full name, date of birth, time of birth, and place of birth to look into your planetary alignment."
+1. **MANDATORY DETAIL COLLECTION**: Before answering ANY astrology-related question, you MUST have the user's birth details:
+   - Full Name
+   - Date of Birth (DD/MM/YYYY)
+   - Time of Birth (HH:MM AM/PM)
+   - Place of Birth (City, Country)
+   If any of these are missing in the "Known Context Data" below, you MUST ask for them first. Be polite but firm: "I need your [missing fields] to look into your planetary alignment."
 
 2. **THOROUGH BUT CONCISE ANSWERS**: 
    - Provide a complete answer to the user's query.
@@ -78,8 +81,7 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
 
         // 4. Final safety check: if last message is from user, extract it and leave rest in history
         // Keep only the last 3 turns (last 6 messages) to prevent context bloating and rate limits/503 errors
-        // Keep the last 20 messages to prevent losing context (e.g. birth details) while avoiding massive payloads
-        const maxHistoryMessages = 20;
+        const maxHistoryMessages = 6;
         if (history.length > maxHistoryMessages) {
             history = history.slice(-maxHistoryMessages);
             // If the sliced history starts with model, remove it to keep user-first alternating logic
@@ -101,24 +103,18 @@ ${contextData ? JSON.stringify(contextData, null, 2) : "No birth details provide
         
         // Double check roles alternate after pop. If empty, it's fine. 
         // If not empty, ensures and alternates.
-        // Gemini requires strict alternation: user -> model -> user -> model
-        // Since latestMessage is ALWAYS 'user', cleanHistory MUST end with 'model'.
         const cleanHistory = [];
-        let expectedRole = 'user';
+        let nextRole = 'user';
         for (const msg of history) {
-            if (msg.role === expectedRole) {
+            if (msg.role === nextRole) {
                 cleanHistory.push(msg);
-                expectedRole = expectedRole === 'user' ? 'model' : 'user';
+                nextRole = nextRole === 'user' ? 'model' : 'user';
             }
         }
-        // If the last message was 'user', we cannot append another 'user' message immediately.
-        // We must drop the last 'user' message to maintain strict alternation.
-        if (cleanHistory.length > 0 && cleanHistory[cleanHistory.length - 1].role === 'user') {
-            cleanHistory.pop();
-        }
 
-        // Reverting to gemini-2.0-flash per user request.
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+        // gemini-2.0-flash had a "limit: 0" quota error. 
+        // Switching to gemini-flash-latest on v1beta which is in the verified model list.
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         // v1 does NOT support "systemInstruction" field. 
         // We must prepend it to the first user message.

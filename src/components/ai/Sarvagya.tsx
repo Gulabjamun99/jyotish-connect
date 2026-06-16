@@ -83,20 +83,8 @@ export function Sarvagya({ userData }: SarvagyaProps) {
 
     // Parser to extract birth details from conversation text
     const extractBirthDetailsFromText = (allMessages: Message[]) => {
-        // Join with comma to preserve distinct messages, especially for fallback parsing
-        const text = allMessages.map(m => m.content).join(", ");
+        const text = allMessages.map(m => m.content).join(" ");
         const details: BirthDetails = { ...birthDetails };
-
-        // 0. Dedicated name message check: if a user just sends "Rohit Kumar"
-        allMessages.forEach(m => {
-            if (m.role === 'user') {
-                const content = m.content.trim();
-                // If it's 1-3 words, mostly letters, it's likely a name
-                if (/^[A-Za-z\s]{3,40}$/.test(content) && content.split(/\s+/).length <= 3) {
-                    details.name = content;
-                }
-            }
-        });
 
         // 1. DOB extraction (DD/MM/YYYY or DD-MM-YYYY or DDMMYYYY)
         const dobMatch = text.match(/\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\b/);
@@ -128,9 +116,9 @@ export function Sarvagya({ userData }: SarvagyaProps) {
         }
 
         // 3. Name extraction (e.g. "My name is Renu" or "Name: Renu" or first word of comma separated list)
-        const nameMatch = text.match(/name\s*(?:is|:)?\s*([A-Za-z]+\s*[A-Za-z]*\s*[A-Za-z]*)\b/i) || text.match(/\bI\s+am\s+([A-Za-z]+\s*[A-Za-z]*\s*[A-Za-z]*)\b/i);
-        if (nameMatch && !details.name) {
-            details.name = nameMatch[1].trim();
+        const nameMatch = text.match(/name\s*(?:is|:)?\s*([A-Za-z]+)\b/i) || text.match(/\bI\s+am\s+([A-Za-z]+)\b/i);
+        if (nameMatch) {
+            details.name = nameMatch[1];
         }
 
         // 4. Place extraction
@@ -372,7 +360,7 @@ export function Sarvagya({ userData }: SarvagyaProps) {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: "model",
-                content: error.message || "The cosmic energy channels are highly active right now. Please try again."
+                content: "The cosmic energy channels are highly active right now, causing temporary planetary interference. The stars are realigning. Please try asking your question again in a few moments. ✨"
             }]);
         } finally {
             setIsLoading(false);
