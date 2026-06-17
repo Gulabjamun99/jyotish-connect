@@ -26,9 +26,16 @@ export default function ConsultPage() {
     const isDemo = searchParams.get("demo") === "true";
     const consultationType = (searchParams.get("type") as "video" | "audio" | "chat") || "video";
 
-    // Auto-detect participant role from auth context OR forced URL param (useful for local testing)
-    const rawRole = searchParams.get("role") || role || "user";
-    const participantRole = rawRole === "admin" ? "astrologer" : rawRole;
+    // Auto-detect participant role:
+    // 1. URL ?role= param takes priority (astrologer dashboard passes ?role=astrologer)
+    // 2. If no URL param: admin defaults to 'user' (admin testing the call acts as user)
+    //    Only explicit 'astrologer' role (from URL or auth) maps to astrologer
+    const urlRole = searchParams.get("role");
+    const participantRole: string = urlRole === 'astrologer' 
+        ? 'astrologer' 
+        : (urlRole === 'user' || !urlRole) 
+            ? (role === 'astrologer' ? 'astrologer' : 'user')
+            : 'user';
 
     // Connection States
     const [isJoined, setIsJoined] = useState(false); // Lobby vs Room state
@@ -55,6 +62,9 @@ export default function ConsultPage() {
         console.log(`🔍 ${msg}`);
         setDebugLog(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()} ${msg}`]);
     };
+
+    // Log role detection for debugging
+    console.log(`🎭 Role Detection: authRole=${role}, urlRole=${urlRole}, resolved=${participantRole}`);
 
     const [transcript, setTranscript] = useState<{ speaker: string, text: string, time: string }[]>([]);
     const [messages, setMessages] = useState<any[]>([]); // For chat mode
