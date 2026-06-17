@@ -598,7 +598,18 @@ export default function ConsultPage() {
                                     <div className="text-center space-y-4 glass p-10 rounded-3xl border border-orange-500/20 max-w-lg">
                                         <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
                                         <p className="text-white font-bold text-lg">Establishing connection...</p>
-                                        <p className="text-white/40 text-sm">Connecting to the other participant</p>
+                                        <p className="text-white/40 text-sm">Role: {participantRole} | Connecting to the other participant</p>
+                                        {/* Debug Log Panel */}
+                                        <div className="mt-4 bg-black/60 rounded-xl p-3 text-left max-h-40 overflow-y-auto border border-white/10">
+                                            <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-2">Live Debug Log</p>
+                                            {debugLog.length === 0 ? (
+                                                <p className="text-[11px] text-white/30 font-mono">Waiting for logs...</p>
+                                            ) : (
+                                                debugLog.map((log, i) => (
+                                                    <p key={i} className="text-[11px] text-green-400/80 font-mono leading-relaxed">{log}</p>
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
