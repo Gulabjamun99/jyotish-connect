@@ -78,18 +78,36 @@ export async function makeCall(
             console.log('📞 [Caller] Creating WebRTC offer...');
             pc = new RTCPeerConnection(configuration);
 
-            // Add local tracks only if localStream is available
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    pc?.addTrack(track, localStream);
-                });
+            // Add local tracks — log each track for debugging
+            const localTracks = localStream ? localStream.getTracks() : [];
+            console.log(`📞 [Caller] Local stream has ${localTracks.length} tracks:`, localTracks.map(t => `${t.kind}:${t.enabled ? 'enabled' : 'disabled'}(${t.readyState})`));
+
+            if (localTracks.length === 0) {
+                console.warn('⚠️ [Caller] No local tracks! Remote side will NOT hear/see us.');
             }
 
-            // Resolve when we get the remote stream
+            localTracks.forEach(track => {
+                pc?.addTrack(track, localStream);
+                console.log(`📞 [Caller] Added ${track.kind} track to peer connection`);
+            });
+
+            // Collect ALL remote tracks into a single MediaStream
+            // (audio and video ontrack events may fire separately)
+            const remoteStream = new MediaStream();
+            let resolved = false;
+
             pc.ontrack = event => {
-                console.log('✅ [Caller] Received remote stream!');
-                clearTimeout(timeout);
-                resolve(event.streams[0]);
+                console.log(`✅ [Caller] Received remote track: ${event.track.kind} (${event.track.readyState})`);
+                
+                // Add each remote track to our collected stream
+                remoteStream.addTrack(event.track);
+
+                // Resolve on first track arrival (subsequent tracks are added to same stream)
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    resolve(remoteStream);
+                }
             };
 
             // Debug logs
@@ -109,43 +127,66 @@ export async function makeCall(
 
             const roomRef = doc(db, "consultations", roomId);
 
-            // Send ICE candidates to Firestore
+            // Queue ICE candidates until after the offer is saved to prevent race conditions
+            let offerSaved = false;
+            const pendingCallerCandidates: RTCIceCandidateInit[] = [];
+
+            // Send ICE candidates to Firestore (with queuing)
             pc.onicecandidate = async event => {
                 if (event.candidate) {
-                    try {
-                        await updateDoc(roomRef, {
-                            callerCandidates: arrayUnion(event.candidate.toJSON())
-                        });
-                    } catch (e) {
-                        console.error("[Caller] ICE candidate save failed", e);
+                    if (!offerSaved) {
+                        // Queue candidates until offer is saved and arrays are initialized
+                        pendingCallerCandidates.push(event.candidate.toJSON());
+                        console.log(`⏳ [Caller] Queued ICE candidate (offer not saved yet). Queue size: ${pendingCallerCandidates.length}`);
+                    } else {
+                        try {
+                            await updateDoc(roomRef, {
+                                callerCandidates: arrayUnion(event.candidate.toJSON())
+                            });
+                        } catch (e) {
+                            console.error("[Caller] ICE candidate save failed", e);
+                        }
                     }
                 }
             };
 
-            // 1. Clean slate BEFORE sending offer to prevent race conditions
+            // 1. Clean slate — use setDoc (not updateDoc) so it works even if doc doesn't exist
             console.log('🧹 [Caller] Cleaning up stale signaling data...');
-            try {
-                await updateDoc(roomRef, { 
-                    answer: deleteField(),
-                    offer: deleteField(),
-                    callerCandidates: [],
-                    calleeCandidates: []
-                });
-            } catch (e) {
-                // Ignore if document doesn't exist yet
-            }
+            await setDoc(roomRef, {
+                answer: deleteField(),
+                offer: deleteField(),
+                callerCandidates: [],
+                calleeCandidates: []
+            }, { merge: true });
 
             // 2. Create SDP Offer
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
-            // 3. Save offer to Firestore (triggers Callee)
+            // 3. Save offer to Firestore (triggers Callee) + initialize ICE candidate arrays
             console.log('📤 [Caller] Saving new offer to Firestore...');
             await setDoc(roomRef, {
-                offer: { type: offer.type, sdp: offer.sdp }
+                offer: { type: offer.type, sdp: offer.sdp },
+                callerCandidates: [],
+                calleeCandidates: []
             }, { merge: true });
 
-            console.log('✅ [Caller] Offer saved. Listening for answer...');
+            // Mark offer as saved, then flush any queued ICE candidates
+            offerSaved = true;
+            console.log(`✅ [Caller] Offer saved. Flushing ${pendingCallerCandidates.length} queued ICE candidates...`);
+
+            for (const candidate of pendingCallerCandidates) {
+                try {
+                    await updateDoc(roomRef, {
+                        callerCandidates: arrayUnion(candidate)
+                    });
+                } catch (e) {
+                    console.error("[Caller] Failed to flush queued ICE candidate:", e);
+                }
+            }
+            pendingCallerCandidates.length = 0;
+
+            console.log('✅ [Caller] Listening for answer...');
 
             // Listen for Answer + Callee ICE Candidates
             const addedCandidates = new Set<string>();
@@ -226,17 +267,34 @@ export function answerCall(
 
     pc = new RTCPeerConnection(configuration);
 
-    // Add local tracks only if localStream is available
-    if (localStream) {
-        localStream.getTracks().forEach(track => {
-            pc?.addTrack(track, localStream);
-        });
+    // Add local tracks — log each track for debugging
+    const localTracks = localStream ? localStream.getTracks() : [];
+    console.log(`📱 [Callee] Local stream has ${localTracks.length} tracks:`, localTracks.map(t => `${t.kind}:${t.enabled ? 'enabled' : 'disabled'}(${t.readyState})`));
+
+    if (localTracks.length === 0) {
+        console.warn('⚠️ [Callee] No local tracks! Remote side will NOT hear/see us.');
     }
 
-    // Resolve when we get the remote stream
+    localTracks.forEach(track => {
+        pc?.addTrack(track, localStream);
+        console.log(`📱 [Callee] Added ${track.kind} track to peer connection`);
+    });
+
+    // Collect ALL remote tracks into a single MediaStream
+    const remoteStream = new MediaStream();
+    let notified = false;
+
     pc.ontrack = event => {
-        console.log('✅ [Callee] Received remote stream!');
-        onRemoteStream(event.streams[0]);
+        console.log(`✅ [Callee] Received remote track: ${event.track.kind} (${event.track.readyState})`);
+        
+        // Add each remote track to our collected stream
+        remoteStream.addTrack(event.track);
+
+        // Notify on first track (subsequent tracks are added to same stream)
+        if (!notified) {
+            notified = true;
+            onRemoteStream(remoteStream);
+        }
     };
 
     // Debug logs
@@ -249,15 +307,24 @@ export function answerCall(
 
     const roomRef = doc(db, "consultations", roomId);
 
-    // Send ICE candidates to Firestore
+    // Queue ICE candidates until after the answer is saved
+    let answerSaved = false;
+    const pendingCalleeCandidates: RTCIceCandidateInit[] = [];
+
+    // Send ICE candidates to Firestore (with queuing)
     pc.onicecandidate = async event => {
         if (event.candidate) {
-            try {
-                await updateDoc(roomRef, {
-                    calleeCandidates: arrayUnion(event.candidate.toJSON())
-                });
-            } catch (e) {
-                console.error("[Callee] ICE candidate save failed", e);
+            if (!answerSaved) {
+                pendingCalleeCandidates.push(event.candidate.toJSON());
+                console.log(`⏳ [Callee] Queued ICE candidate (answer not saved yet). Queue size: ${pendingCalleeCandidates.length}`);
+            } else {
+                try {
+                    await updateDoc(roomRef, {
+                        calleeCandidates: arrayUnion(event.candidate.toJSON())
+                    });
+                } catch (e) {
+                    console.error("[Callee] ICE candidate save failed", e);
+                }
             }
         }
     };
@@ -289,6 +356,20 @@ export function answerCall(
                         answer: { type: answer.type, sdp: answer.sdp }
                     });
                     console.log("✅ [Callee] Answer saved!");
+
+                    // Mark answer as saved, then flush any queued ICE candidates
+                    answerSaved = true;
+                    console.log(`✅ [Callee] Flushing ${pendingCalleeCandidates.length} queued ICE candidates...`);
+                    for (const candidate of pendingCalleeCandidates) {
+                        try {
+                            await updateDoc(roomRef, {
+                                calleeCandidates: arrayUnion(candidate)
+                            });
+                        } catch (e) {
+                            console.error("[Callee] Failed to flush queued ICE candidate:", e);
+                        }
+                    }
+                    pendingCalleeCandidates.length = 0;
                 }
 
                 while (queuedCandidates.length > 0) {

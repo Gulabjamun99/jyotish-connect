@@ -256,9 +256,29 @@ export default function ConsultPage() {
                     addDebug(`❌ All media failed: ${audioErr.message}`);
                     setPermissionDenied(true);
                     setShowPermissionGuide(true);
-                    toast.warn("Camera/mic blocked. Joining in listen/chat-only mode.", { duration: 6000 });
-                    // Fallback to empty stream so Peer Connection doesn't fail
-                    activeStream = new MediaStream();
+                    toast.error("Camera/mic blocked. Joining in listen-only mode.", { duration: 6000 });
+                    // Create a silent audio track so WebRTC SDP negotiation
+                    // still includes audio direction — otherwise the remote side
+                    // cannot send us audio either (no audio m-line in SDP).
+                    try {
+                        const ctx = new AudioContext();
+                        const oscillator = ctx.createOscillator();
+                        const dst = ctx.createMediaStreamDestination();
+                        oscillator.connect(dst);
+                        oscillator.start();
+                        // The oscillator produces a tone, but we mute it via gain
+                        const gainNode = ctx.createGain();
+                        gainNode.gain.value = 0;
+                        oscillator.disconnect();
+                        oscillator.connect(gainNode);
+                        gainNode.connect(dst);
+                        activeStream = dst.stream;
+                        addDebug('✅ Created silent audio placeholder for SDP negotiation');
+                    } catch (silentErr) {
+                        // Last resort: truly empty stream
+                        activeStream = new MediaStream();
+                        addDebug('⚠️ Even silent audio failed, using empty stream');
+                    }
                     setStream(activeStream);
                 }
             }
