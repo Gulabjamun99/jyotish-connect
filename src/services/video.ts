@@ -3,6 +3,7 @@ import { doc, setDoc, updateDoc, onSnapshot, arrayUnion, deleteField } from "fir
 
 let pc: RTCPeerConnection | null = null;
 let unsubRoom: (() => void) | null = null;
+let currentConnectionId: string | null = null;
 
 /**
  * ICE Server Configuration
@@ -57,9 +58,13 @@ export async function initializePeer(userId: string): Promise<string> {
  */
 export async function makeCall(
     roomId: string,
-    localStream: MediaStream
-): Promise<MediaStream> {
+    localStream: MediaStream,
+    onConnectionStateChange?: (state: RTCPeerConnectionState) => void
+): Promise<{ remoteStream: MediaStream; connectionId: string }> {
     disconnectPeer();
+
+    const connectionId = Math.random().toString(36).substring(2, 11) + "_" + Date.now();
+    console.log(`📞 [Caller] Initializing call with connectionId: ${connectionId}`);
 
     return new Promise(async (resolve, reject) => {
         if (!db) {
@@ -92,21 +97,17 @@ export async function makeCall(
             });
 
             // Collect ALL remote tracks into a single MediaStream
-            // (audio and video ontrack events may fire separately)
             const remoteStream = new MediaStream();
             let resolved = false;
 
             pc.ontrack = event => {
                 console.log(`✅ [Caller] Received remote track: ${event.track.kind} (${event.track.readyState})`);
-                
-                // Add each remote track to our collected stream
                 remoteStream.addTrack(event.track);
 
-                // Resolve on first track arrival (subsequent tracks are added to same stream)
                 if (!resolved) {
                     resolved = true;
                     clearTimeout(timeout);
-                    resolve(remoteStream);
+                    resolve({ remoteStream, connectionId });
                 }
             };
 
@@ -119,6 +120,9 @@ export async function makeCall(
             };
             pc.onconnectionstatechange = () => {
                 console.log(`🔗 [Caller] Connection State: ${pc?.connectionState}`);
+                if (onConnectionStateChange && pc) {
+                    onConnectionStateChange(pc.connectionState);
+                }
                 if (pc?.connectionState === 'failed') {
                     clearTimeout(timeout);
                     reject(new Error("WebRTC connection failed."));
@@ -135,7 +139,6 @@ export async function makeCall(
             pc.onicecandidate = async event => {
                 if (event.candidate) {
                     if (!offerSaved) {
-                        // Queue candidates until offer is saved and arrays are initialized
                         pendingCallerCandidates.push(event.candidate.toJSON());
                         console.log(`⏳ [Caller] Queued ICE candidate (offer not saved yet). Queue size: ${pendingCallerCandidates.length}`);
                     } else {
@@ -155,6 +158,7 @@ export async function makeCall(
             try {
                 // Try updateDoc first (works if doc exists)
                 await updateDoc(roomRef, {
+                    connectionId: connectionId,
                     answer: deleteField(),
                     offer: deleteField(),
                     callerCandidates: [],
@@ -165,6 +169,7 @@ export async function makeCall(
                 console.log('🧹 [Caller] Doc not found, creating fresh signaling doc...');
                 try {
                     await setDoc(roomRef, {
+                        connectionId: connectionId,
                         callerCandidates: [],
                         calleeCandidates: []
                     }, { merge: true });
@@ -183,6 +188,7 @@ export async function makeCall(
             console.log('📤 [Caller] Saving offer to Firestore...');
             await setDoc(roomRef, {
                 offer: { type: offer.type, sdp: offer.sdp },
+                connectionId: connectionId,
                 callerCandidates: [],
                 calleeCandidates: []
             }, { merge: true });
@@ -212,6 +218,12 @@ export async function makeCall(
             unsubRoom = onSnapshot(roomRef, async (snapshot: any) => {
                 const data = snapshot.data();
                 if (!data || !pc) return;
+
+                // Guard: Only process responses for our connectionId
+                if (data.connectionId !== connectionId) {
+                    console.log(`⏳ [Caller] Ignoring snapshot with different connectionId: ${data.connectionId} (current: ${connectionId})`);
+                    return;
+                }
 
                 // Handle Answer
                 if (!pc.currentRemoteDescription && data.answer) {
@@ -272,7 +284,8 @@ export async function makeCall(
 export function answerCall(
     roomId: string,
     localStream: MediaStream,
-    onRemoteStream: (stream: MediaStream) => void
+    onRemoteStream: (stream: MediaStream) => void,
+    onConnectionStateChange?: (state: RTCPeerConnectionState) => void
 ): void {
     disconnectPeer();
     if (!db) {
@@ -281,126 +294,141 @@ export function answerCall(
     }
 
     console.log('📱 [Callee] Setting up and listening for offer...');
-
-    pc = new RTCPeerConnection(configuration);
-
-    // Add local tracks — log each track for debugging
-    const localTracks = localStream ? localStream.getTracks() : [];
-    console.log(`📱 [Callee] Local stream has ${localTracks.length} tracks:`, localTracks.map(t => `${t.kind}:${t.enabled ? 'enabled' : 'disabled'}(${t.readyState})`));
-
-    if (localTracks.length === 0) {
-        console.warn('⚠️ [Callee] No local tracks! Remote side will NOT hear/see us.');
-    }
-
-    localTracks.forEach(track => {
-        pc?.addTrack(track, localStream);
-        console.log(`📱 [Callee] Added ${track.kind} track to peer connection`);
-    });
-
-    // Collect ALL remote tracks into a single MediaStream
-    const remoteStream = new MediaStream();
-    let notified = false;
-
-    pc.ontrack = event => {
-        console.log(`✅ [Callee] Received remote track: ${event.track.kind} (${event.track.readyState})`);
-        
-        // Add each remote track to our collected stream
-        remoteStream.addTrack(event.track);
-
-        // Notify on first track (subsequent tracks are added to same stream)
-        if (!notified) {
-            notified = true;
-            onRemoteStream(remoteStream);
-        }
-    };
-
-    // Debug logs
-    pc.oniceconnectionstatechange = () => {
-        console.log(`🧊 [Callee] ICE State: ${pc?.iceConnectionState}`);
-    };
-    pc.onconnectionstatechange = () => {
-        console.log(`🔗 [Callee] Connection State: ${pc?.connectionState}`);
-    };
-
     const roomRef = doc(db, "consultations", roomId);
 
-    // Queue ICE candidates until after the answer is saved
     let answerSaved = false;
-    const pendingCalleeCandidates: RTCIceCandidateInit[] = [];
-
-    // Send ICE candidates to Firestore (with queuing)
-    pc.onicecandidate = async event => {
-        if (event.candidate) {
-            if (!answerSaved) {
-                pendingCalleeCandidates.push(event.candidate.toJSON());
-                console.log(`⏳ [Callee] Queued ICE candidate (answer not saved yet). Queue size: ${pendingCalleeCandidates.length}`);
-            } else {
-                try {
-                    await updateDoc(roomRef, {
-                        calleeCandidates: arrayUnion(event.candidate.toJSON())
-                    });
-                } catch (e) {
-                    console.error("[Callee] ICE candidate save failed", e);
-                }
-            }
-        }
-    };
-
-    let answerCreated = false;
+    let pendingCalleeCandidates: RTCIceCandidateInit[] = [];
     const addedCandidates = new Set<string>();
     const queuedCandidates: any[] = [];
+    
+    currentConnectionId = null;
 
-    // Subscribe immediately — onSnapshot fires with current doc state first
     unsubRoom = onSnapshot(roomRef, async (snapshot: any) => {
         const data = snapshot.data();
-        if (!data || !pc) return;
+        if (!data) return;
 
-        // Process Offer when it appears
-        if (data.offer && !answerCreated) {
-            console.log("📥 [Callee] Got offer! Creating answer...");
-            answerCreated = true;
+        const incomingConnectionId = data.connectionId;
+        if (!incomingConnectionId) {
+            console.log("⏳ [Callee] Waiting for connectionId from Caller...");
+            return;
+        }
 
-            try {
-                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                console.log("✅ [Callee] Remote description set successfully. Draining queued candidates...");
+        // If connectionId changes, we must tear down and start a fresh peer connection!
+        if (incomingConnectionId !== currentConnectionId) {
+            console.log(`🔄 [Callee] New connectionId detected: ${incomingConnectionId} (old: ${currentConnectionId}). Resetting peer connection.`);
+            currentConnectionId = incomingConnectionId;
+            
+            // Clean up previous connection if any
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
 
-                const answer = await pc.createAnswer();
-                if (answer && pc) {
-                    await pc.setLocalDescription(answer);
+            // Reset local variables for the new session
+            answerSaved = false;
+            pendingCalleeCandidates = [];
+            addedCandidates.clear();
+            queuedCandidates.length = 0;
 
-                    console.log("📤 [Callee] Saving answer to Firestore...");
-                    await updateDoc(roomRef, {
-                        answer: { type: answer.type, sdp: answer.sdp }
-                    });
-                    console.log("✅ [Callee] Answer saved!");
+            // Initialize new PeerConnection
+            pc = new RTCPeerConnection(configuration);
 
-                    // Mark answer as saved, then flush any queued ICE candidates
-                    answerSaved = true;
-                    console.log(`✅ [Callee] Flushing ${pendingCalleeCandidates.length} queued ICE candidates...`);
-                    for (const candidate of pendingCalleeCandidates) {
+            pc.onconnectionstatechange = () => {
+                console.log(`🔗 [Callee] Connection State: ${pc?.connectionState}`);
+                if (onConnectionStateChange && pc) {
+                    onConnectionStateChange(pc.connectionState);
+                }
+            };
+
+            pc.oniceconnectionstatechange = () => {
+                console.log(`🧊 [Callee] ICE State: ${pc?.iceConnectionState}`);
+            };
+
+            // Re-add local tracks
+            const localTracks = localStream ? localStream.getTracks() : [];
+            console.log(`📱 [Callee] Re-adding ${localTracks.length} local tracks for new connection`);
+            localTracks.forEach(track => {
+                pc?.addTrack(track, localStream);
+                console.log(`📱 [Callee] Added ${track.kind} track to peer connection`);
+            });
+
+            // Track collection
+            const remoteStream = new MediaStream();
+            let notified = false;
+            pc.ontrack = event => {
+                console.log(`✅ [Callee] Received remote track: ${event.track.kind} (${event.track.readyState})`);
+                remoteStream.addTrack(event.track);
+                if (!notified) {
+                    notified = true;
+                    onRemoteStream(remoteStream);
+                }
+            };
+
+            // Candidate handler
+            pc.onicecandidate = async event => {
+                if (event.candidate) {
+                    if (!answerSaved) {
+                        pendingCalleeCandidates.push(event.candidate.toJSON());
+                        console.log(`⏳ [Callee] Queued candidate (answer not saved yet). Queue size: ${pendingCalleeCandidates.length}`);
+                    } else {
                         try {
                             await updateDoc(roomRef, {
-                                calleeCandidates: arrayUnion(candidate)
+                                calleeCandidates: arrayUnion(event.candidate.toJSON())
                             });
                         } catch (e) {
-                            console.error("[Callee] Failed to flush queued ICE candidate:", e);
+                              console.error("[Callee] ICE candidate save failed", e);
                         }
                     }
-                    pendingCalleeCandidates.length = 0;
                 }
+            };
+        }
 
+        // TS Safety check
+        if (!pc) return;
+
+        // Process Offer if present and answer not saved yet
+        if (data.offer && !answerSaved && pc.signalingState === 'stable') {
+            console.log("📥 [Callee] Got offer! Setting remote description & creating answer...");
+            try {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                console.log("✅ [Callee] Remote description set successfully. Creating answer...");
+
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+
+                console.log("📤 [Callee] Saving answer to Firestore...");
+                await updateDoc(roomRef, {
+                    answer: { type: answer.type, sdp: answer.sdp }
+                });
+                console.log("✅ [Callee] Answer saved!");
+
+                answerSaved = true;
+                
+                // Flush queued candidates
+                console.log(`✅ [Callee] Flushing ${pendingCalleeCandidates.length} queued ICE candidates...`);
+                for (const candidate of pendingCalleeCandidates) {
+                    try {
+                        await updateDoc(roomRef, {
+                            calleeCandidates: arrayUnion(candidate)
+                        });
+                    } catch (e) {
+                        console.error("[Callee] Failed to flush queued ICE candidate:", e);
+                    }
+                }
+                pendingCalleeCandidates.length = 0;
+
+                // Drain remote candidates
                 while (queuedCandidates.length > 0) {
                     const cand = queuedCandidates.shift();
                     try {
                         await pc.addIceCandidate(new RTCIceCandidate(cand));
-                        console.log("✅ [Callee] Drained queued candidate successfully.");
+                        console.log("✅ [Callee] Drained remote candidate successfully.");
                     } catch (e) {
-                        console.error("❌ [Callee] Failed to add drained candidate:", e);
+                        console.error("❌ [Callee] Failed to add remote candidate:", e);
                     }
                 }
             } catch (e) {
                 console.error("[Callee] Error processing offer:", e);
-                answerCreated = false; // Allow retry on next snapshot
             }
         }
 

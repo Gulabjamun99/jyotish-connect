@@ -72,6 +72,8 @@ export default function ConsultPage() {
 
     const recognitionRef = useRef<any>(null);
     const recognitionStoppedRef = useRef(false); // flag to prevent restart after disconnect
+    const lastReconnectTimeRef = useRef(0);
+    const reconnectAttemptsRef = useRef(0);
 
     // 1. Initial Setup: Get Media for Lobby & Listen to Presence
     useEffect(() => {
@@ -206,6 +208,60 @@ export default function ConsultPage() {
     }, [authLoading, id, consultationType, participantRole, user]);
 
 
+    // Retry connection handler
+    const handleRetryConnection = async () => {
+        const now = Date.now();
+        // Prevent reconnecting more than once every 5 seconds
+        if (now - lastReconnectTimeRef.current < 5000) {
+            addDebug('⏳ [Reconnect] Suppressing rapid reconnect request (rate limit).');
+            return;
+        }
+        lastReconnectTimeRef.current = now;
+        
+        reconnectAttemptsRef.current += 1;
+        addDebug(`🔄 Reconnecting attempt #${reconnectAttemptsRef.current}...`);
+
+        setConnectionStatus('connecting');
+        disconnectPeer();
+        if (stream) {
+            try {
+                if (participantRole === 'astrologer') {
+                    answerCall(id, stream, 
+                        (remoteStream) => {
+                            setRemoteStream(remoteStream);
+                            setConnectionStatus('connected');
+                            toast.success("Devotee Connected!");
+                        },
+                        (state) => {
+                            addDebug(`🔗 [Astrologer Connection State]: ${state}`);
+                            if (state === 'connected') {
+                                setConnectionStatus('connected');
+                            } else if (state === 'failed' || state === 'disconnected') {
+                                setConnectionStatus('connecting');
+                            }
+                        }
+                    );
+                } else {
+                    const { remoteStream: rStream } = await makeCall(id, stream, (state) => {
+                        addDebug(`🔗 [User Connection State]: ${state}`);
+                        if (state === 'connected') {
+                            setConnectionStatus('connected');
+                        } else if (state === 'failed' || state === 'disconnected') {
+                            addDebug('⚠️ [User Connection State] failed/disconnected. Triggering auto-reconnect...');
+                            handleRetryConnection();
+                        }
+                    });
+                    setRemoteStream(rStream);
+                    setConnectionStatus('connected');
+                    toast.success("Connected to Acharya!");
+                }
+            } catch (e: any) {
+                setConnectionStatus('failed');
+                toast.error(e?.message || "Retry failed. Please refresh the page.");
+            }
+        }
+    };
+
     // 2. Join Room Logic (Called when "Join Now" clicked)
     const handleJoinRoom = async () => {
         setIsJoined(true);
@@ -308,17 +364,36 @@ export default function ConsultPage() {
 
             if (participantRole === 'astrologer') {
                 addDebug('📱 Astrologer: Setting up listener for offer...');
-                answerCall(id, activeStream, (remoteStream) => {
-                    addDebug('✅ Astrologer: Got remote stream!');
-                    setRemoteStream(remoteStream);
-                    setConnectionStatus('connected');
-                    toast.success("Devotee Connected!");
-                });
+                answerCall(id, activeStream, 
+                    (remoteStream) => {
+                        addDebug('✅ Astrologer: Got remote stream!');
+                        setRemoteStream(remoteStream);
+                        setConnectionStatus('connected');
+                        toast.success("Devotee Connected!");
+                    },
+                    (state) => {
+                        addDebug(`🔗 [Astrologer Connection State]: ${state}`);
+                        if (state === 'connected') {
+                            setConnectionStatus('connected');
+                        } else if (state === 'failed' || state === 'disconnected') {
+                            addDebug('⚠️ [Astrologer Connection State] failed/disconnected.');
+                            setConnectionStatus('connecting');
+                        }
+                    }
+                );
                 addDebug('📱 Astrologer: Listener active, waiting for User offer...');
             } else {
                 addDebug('👤 User: Creating offer...');
                 try {
-                    const rStream = await makeCall(id, activeStream);
+                    const { remoteStream: rStream } = await makeCall(id, activeStream, (state) => {
+                        addDebug(`🔗 [User Connection State]: ${state}`);
+                        if (state === 'connected') {
+                            setConnectionStatus('connected');
+                        } else if (state === 'failed' || state === 'disconnected') {
+                            addDebug('⚠️ [User Connection State] failed/disconnected. Triggering auto-reconnect...');
+                            handleRetryConnection();
+                        }
+                    });
                     addDebug('✅ User: Got remote stream!');
                     setRemoteStream(rStream);
                     setConnectionStatus('connected');
@@ -391,30 +466,7 @@ export default function ConsultPage() {
         }
     };
 
-    // Retry connection handler
-    const handleRetryConnection = async () => {
-        setConnectionStatus('connecting');
-        disconnectPeer();
-        if (stream) {
-            try {
-                if (participantRole === 'astrologer') {
-                    answerCall(id, stream, (remoteStream) => {
-                        setRemoteStream(remoteStream);
-                        setConnectionStatus('connected');
-                        toast.success("Devotee Connected!");
-                    });
-                } else {
-                    const rStream = await makeCall(id, stream);
-                    setRemoteStream(rStream);
-                    setConnectionStatus('connected');
-                    toast.success("Connected to Acharya!");
-                }
-            } catch (e: any) {
-                setConnectionStatus('failed');
-                toast.error(e?.message || "Retry failed. Please refresh the page.");
-            }
-        }
-    };
+    // Retry connection handler is defined above
 
     // Timer Logic
     useEffect(() => {
