@@ -150,26 +150,43 @@ export async function makeCall(
                 }
             };
 
-            // 1. Clean slate — use setDoc (not updateDoc) so it works even if doc doesn't exist
+            // 1. Clean slate — clear stale signaling data
             console.log('🧹 [Caller] Cleaning up stale signaling data...');
-            await setDoc(roomRef, {
-                answer: deleteField(),
-                offer: deleteField(),
-                callerCandidates: [],
-                calleeCandidates: []
-            }, { merge: true });
+            try {
+                // Try updateDoc first (works if doc exists)
+                await updateDoc(roomRef, {
+                    answer: deleteField(),
+                    offer: deleteField(),
+                    callerCandidates: [],
+                    calleeCandidates: []
+                });
+            } catch (cleanupErr) {
+                // Doc doesn't exist yet — create it with empty signaling fields
+                console.log('🧹 [Caller] Doc not found, creating fresh signaling doc...');
+                try {
+                    await setDoc(roomRef, {
+                        callerCandidates: [],
+                        calleeCandidates: []
+                    }, { merge: true });
+                } catch (createErr) {
+                    console.error('[Caller] Could not create signaling doc:', createErr);
+                }
+            }
 
             // 2. Create SDP Offer
+            console.log('📞 [Caller] Creating SDP offer...');
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
+            console.log('✅ [Caller] Local description set');
 
-            // 3. Save offer to Firestore (triggers Callee) + initialize ICE candidate arrays
-            console.log('📤 [Caller] Saving new offer to Firestore...');
+            // 3. Save offer to Firestore (triggers Callee)
+            console.log('📤 [Caller] Saving offer to Firestore...');
             await setDoc(roomRef, {
                 offer: { type: offer.type, sdp: offer.sdp },
                 callerCandidates: [],
                 calleeCandidates: []
             }, { merge: true });
+            console.log('✅ [Caller] Offer saved to Firestore!');
 
             // Mark offer as saved, then flush any queued ICE candidates
             offerSaved = true;

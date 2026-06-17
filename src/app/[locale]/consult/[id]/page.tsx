@@ -285,6 +285,14 @@ export default function ConsultPage() {
         }
         addDebug(`✅ Media stream ready (tracks: ${activeStream ? activeStream.getTracks()?.length : 0})`);
 
+        // Guard: if stream is STILL null, we cannot proceed with WebRTC
+        if (!activeStream) {
+            addDebug('❌ No media stream available after all retries. Cannot start call.');
+            setConnectionStatus('failed');
+            toast.error('Camera/Mic not available. Please grant permission and refresh.');
+            return;
+        }
+
         try {
             await initializePeer(participantRole);
 
