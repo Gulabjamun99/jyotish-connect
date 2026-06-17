@@ -75,6 +75,29 @@ export default function ConsultPage() {
     const lastReconnectTimeRef = useRef(0);
     const reconnectAttemptsRef = useRef(0);
 
+    const getRobustUserMedia = async (video: boolean, audio: boolean): Promise<MediaStream> => {
+        if (!navigator.mediaDevices) {
+            throw new Error("WebRTC media devices are not supported in this browser context.");
+        }
+        try {
+            return await navigator.mediaDevices.getUserMedia({ video, audio });
+        } catch (err: any) {
+            console.warn("Primary getUserMedia failed, trying fallback...", err);
+            if (video && (err.name === 'NotFoundError' || err.name === 'NotReadableError' || err.name === 'OverconstrainedError')) {
+                try {
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+                    toast('Camera not found or unavailable — using microphone only', { icon: '🎙️' });
+                    setVideoOn(false);
+                    return fallbackStream;
+                } catch (audioErr) {
+                    console.error("Audio-only fallback also failed:", audioErr);
+                    throw audioErr;
+                }
+            }
+            throw err;
+        }
+    };
+
     // 1. Initial Setup: Get Media for Lobby & Listen to Presence
     useEffect(() => {
         if (authLoading) return;
@@ -83,13 +106,7 @@ export default function ConsultPage() {
             // Get Local Media (Skip for chat)
             if (consultationType !== "chat") {
                 try {
-                    if (!navigator.mediaDevices) {
-                        throw new Error("WebRTC media devices are not supported in this browser context (or requires HTTPS).");
-                    }
-                    const localStream = await navigator.mediaDevices.getUserMedia({
-                        video: consultationType === "video",
-                        audio: true
-                    });
+                    const localStream = await getRobustUserMedia(consultationType === "video", true);
                     setStream(localStream);
                     setPermissionDenied(false);
                 } catch (err: any) {
@@ -98,8 +115,10 @@ export default function ConsultPage() {
                     if (isPermissionErr) {
                         setPermissionDenied(true);
                         setShowPermissionGuide(true);
+                        toast.error("Camera/mic access is blocked. Please allow permissions in your browser settings.");
+                    } else {
+                        toast.error(err.message || "Requested device not found.");
                     }
-                    toast.error(err.message || "Please allow camera/mic access");
                 }
             }
 
@@ -298,55 +317,34 @@ export default function ConsultPage() {
         if (!activeStream) {
             addDebug('⚠️ No stream yet, retrying camera/mic...');
             try {
-                if (!navigator.mediaDevices) {
-                    throw new Error("WebRTC media devices are not supported in this browser context.");
-                }
-                activeStream = await navigator.mediaDevices.getUserMedia({
-                    video: consultationType === "video",
-                    audio: true
-                });
+                activeStream = await getRobustUserMedia(consultationType === "video", true);
                 setStream(activeStream);
                 setPermissionDenied(false);
                 addDebug(`✅ Media retry succeeded (tracks: ${activeStream.getTracks()?.length || 0})`);
             } catch (mediaErr: any) {
-                addDebug(`⚠️ Media retry failed: ${mediaErr.message}`);
-                // Try audio-only fallback
+                addDebug(`❌ All media failed: ${mediaErr.message}`);
+                setPermissionDenied(true);
+                setShowPermissionGuide(true);
+                toast.error("Camera/mic blocked or missing. Joining in listen-only mode.", { duration: 6000 });
+                // Create a silent audio track so WebRTC SDP negotiation still works
                 try {
-                    activeStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                    setStream(activeStream);
-                    setVideoOn(false);
-                    setPermissionDenied(false);
-                    addDebug('✅ Audio-only fallback succeeded');
-                    toast('Camera denied — joining with audio only', { icon: '🎙️' });
-                } catch (audioErr: any) {
-                    addDebug(`❌ All media failed: ${audioErr.message}`);
-                    setPermissionDenied(true);
-                    setShowPermissionGuide(true);
-                    toast.error("Camera/mic blocked. Joining in listen-only mode.", { duration: 6000 });
-                    // Create a silent audio track so WebRTC SDP negotiation
-                    // still includes audio direction — otherwise the remote side
-                    // cannot send us audio either (no audio m-line in SDP).
-                    try {
-                        const ctx = new AudioContext();
-                        const oscillator = ctx.createOscillator();
-                        const dst = ctx.createMediaStreamDestination();
-                        oscillator.connect(dst);
-                        oscillator.start();
-                        // The oscillator produces a tone, but we mute it via gain
-                        const gainNode = ctx.createGain();
-                        gainNode.gain.value = 0;
-                        oscillator.disconnect();
-                        oscillator.connect(gainNode);
-                        gainNode.connect(dst);
-                        activeStream = dst.stream;
-                        addDebug('✅ Created silent audio placeholder for SDP negotiation');
-                    } catch (silentErr) {
-                        // Last resort: truly empty stream
-                        activeStream = new MediaStream();
-                        addDebug('⚠️ Even silent audio failed, using empty stream');
-                    }
-                    setStream(activeStream);
+                    const ctx = new AudioContext();
+                    const oscillator = ctx.createOscillator();
+                    const dst = ctx.createMediaStreamDestination();
+                    oscillator.connect(dst);
+                    oscillator.start();
+                    const gainNode = ctx.createGain();
+                    gainNode.gain.value = 0;
+                    oscillator.disconnect();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(dst);
+                    activeStream = dst.stream;
+                    addDebug('✅ Created silent audio placeholder for SDP negotiation');
+                } catch (silentErr) {
+                    activeStream = new MediaStream();
+                    addDebug('⚠️ Even silent audio failed, using empty stream');
                 }
+                setStream(activeStream);
             }
         }
         addDebug(`✅ Media stream ready (tracks: ${activeStream ? activeStream.getTracks()?.length : 0})`);
