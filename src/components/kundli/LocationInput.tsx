@@ -23,6 +23,19 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
     const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceTimer = useRef<any>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         // If the current value matches what we just selected, don't search
@@ -80,7 +93,7 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
     };
 
     return (
-        <div className="relative">
+        <div ref={containerRef} className="relative">
             <div className="relative">
                 <Input
                     ref={inputRef}
@@ -88,6 +101,7 @@ export function LocationInput({ value, onChange, required }: LocationInputProps)
                     placeholder="Search city or location..."
                     value={value}
                     onChange={(e) => {
+                        setSelectedLocation(null);
                         onChange(e.target.value);
                     }}
                     required={required}
