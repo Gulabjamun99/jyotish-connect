@@ -14,14 +14,14 @@ import { DetailCard, DetailRow } from "@/components/kundli/DetailCard";
 import { AshtakvargaHeatmap } from "@/components/astrology/AshtakvargaHeatmap";
 // import { calculatePlanets, calculatePanchang, calculateVimshottari, calculateDivisionalCharts, calculateDoshas, calculateYogas } from "@/lib/astrology/calculator";
 import { generateLifePredictions } from "@/lib/astrology/prediction-engine";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { translateSign, translatePlanet, getTrans } from "@/lib/astrology/i18n";
 import html2canvas from "html2canvas";
 
 export default function KundliPage() {
     const _SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
     const locale = useLocale();
-    const kundliData: any = getTrans(locale);
+    const t = useTranslations("Index");
     const [formData, setFormData] = useState({
         name: "",
         gender: "Male",
@@ -47,13 +47,11 @@ export default function KundliPage() {
     const pdfD10Ref = useRef<HTMLDivElement>(null);
 
     const l = (key: string, fallback: string) => {
-        if (!kundliData || !kundliData.Index) return fallback;
-        const keys = key.split('.');
-        let val: any = kundliData.Index;
-        for (const k of keys) {
-            val = val?.[k];
+        try {
+            return t.has(key) ? t(key) : fallback;
+        } catch {
+            return fallback;
         }
-        return val || fallback;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
