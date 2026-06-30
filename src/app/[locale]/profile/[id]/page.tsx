@@ -42,6 +42,7 @@ export default function ProfilePage() {
                     verified: data.verified || false,
                     bio: data.bio || "Experienced astrologer ready to guide you.",
                     online: data.isOnline ?? false,
+                    status: data.status || (data.isOnline ? "online" : "offline"),
                     experience: data.experience || 0,
                     education: data.education || "",
                     specializations: data.specializations || [],
@@ -163,10 +164,22 @@ export default function ProfilePage() {
                             <div className="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-zinc-800 shadow-2xl relative z-10">
                                 <img src={profile.image} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             </div>
-                            {profile.online && (
+                            {profile.status === 'online' && (
                                 <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-green-500/30 text-green-500 text-[10px] font-black uppercase tracking-widest backdrop-blur-md z-20 shadow-xl">
                                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
                                     Online
+                                </div>
+                            )}
+                            {profile.status === 'busy' && (
+                                <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-red-500/30 text-red-500 text-[10px] font-black uppercase tracking-widest backdrop-blur-md z-20 shadow-xl">
+                                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_#ef4444]" />
+                                    Busy
+                                </div>
+                            )}
+                            {profile.status === 'offline' && (
+                                <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-500/30 text-zinc-400 text-[10px] font-black uppercase tracking-widest backdrop-blur-md z-20 shadow-xl">
+                                    <div className="w-2 h-2 rounded-full bg-zinc-500" />
+                                    Offline
                                 </div>
                             )}
                         </div>

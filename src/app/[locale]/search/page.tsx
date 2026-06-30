@@ -172,12 +172,31 @@ export default function SearchPage() {
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]" />
                                         <div className="flex flex-col p-8 glass border-primary/5 rounded-[2.5rem] hover:border-primary/20 transition-all relative overflow-hidden h-full">
 
-                                            {astro.isOnline && (
-                                                <div className="absolute top-6 left-6 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse border border-green-500/20">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,1)]" />
-                                                    Online
-                                                </div>
-                                            )}
+                                             {(() => {
+                                                 const status = astro.status || (astro.isOnline ? "online" : "offline");
+                                                 if (status === "online") {
+                                                     return (
+                                                         <div className="absolute top-6 left-6 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse border border-green-500/20">
+                                                             <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,1)]" />
+                                                             Online
+                                                         </div>
+                                                     );
+                                                 } else if (status === "busy") {
+                                                     return (
+                                                         <div className="absolute top-6 left-6 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse border border-red-500/20">
+                                                             <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]" />
+                                                             Busy
+                                                         </div>
+                                                     );
+                                                 } else {
+                                                     return (
+                                                         <div className="absolute top-6 left-6 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-500/10 text-zinc-400 text-[9px] font-black uppercase tracking-[0.2em] border border-zinc-500/20">
+                                                             <div className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
+                                                             Offline
+                                                         </div>
+                                                     );
+                                                 }
+                                             })()}
 
                                             <div className="flex gap-6 mb-8 relative pt-4">
                                                 <div className="w-24 h-24 rounded-3xl bg-primary/5 overflow-hidden flex-shrink-0 border border-primary/10 shadow-2xl transition-transform group-hover:scale-105 group-hover:-rotate-3">

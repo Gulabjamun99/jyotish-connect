@@ -340,7 +340,7 @@ export default function AstrologerDashboard() {
                                         setIsUpdatingStatus(true);
                                         setIsOnline(true);
                                         try {
-                                            await updateDoc(doc(db, "astrologers", user.uid), { isOnline: true });
+                                            await updateDoc(doc(db, "astrologers", user.uid), { isOnline: true, status: "online" });
                                             toast.success("Divine Connection Active!");
                                         } catch(e) { 
                                             toast.error("Failed to update status"); 
@@ -349,7 +349,7 @@ export default function AstrologerDashboard() {
                                         setIsUpdatingStatus(false);
                                     }}
                                     className={`flex-1 sm:flex-none h-14 px-8 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all ${isOnline ? "bg-green-600 text-white shadow-2xl shadow-green-500/20" : "bg-transparent text-zinc-500 hover:text-white"}`}
-                                >
+                                  >
                                     {isOnline && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
                                     Go Online
                                 </Button>
@@ -359,7 +359,7 @@ export default function AstrologerDashboard() {
                                         setIsUpdatingStatus(true);
                                         setIsOnline(false);
                                         try {
-                                            await updateDoc(doc(db, "astrologers", user.uid), { isOnline: false });
+                                            await updateDoc(doc(db, "astrologers", user.uid), { isOnline: false, status: "offline" });
                                             toast.success("Taking a Celestial Break");
                                         } catch(e) { 
                                             toast.error("Failed to update status");

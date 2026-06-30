@@ -98,6 +98,41 @@ export default function ConsultPage() {
         }
     };
 
+    // Presence check and Auto-Busy state for Astrologers
+    useEffect(() => {
+        if (authLoading || participantRole !== 'astrologer' || !user || !db) return;
+
+        const setBusy = async () => {
+            try {
+                await updateDoc(doc(db, "astrologers", user.uid), { status: "busy" });
+                console.log("Astrologer marked as busy in Firestore");
+            } catch (e) {
+                console.error("Failed to set status to busy:", e);
+            }
+        };
+        setBusy();
+
+        const setOnline = async () => {
+            try {
+                await updateDoc(doc(db, "astrologers", user.uid), { status: "online" });
+                console.log("Astrologer marked as online in Firestore");
+            } catch (e) {
+                console.error("Failed to set status to online:", e);
+            }
+        };
+
+        const handleUnload = () => {
+            setOnline();
+        };
+
+        window.addEventListener("beforeunload", handleUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleUnload);
+            setOnline();
+        };
+    }, [authLoading, participantRole, user]);
+
     // 1. Initial Setup: Get Media for Lobby & Listen to Presence
     useEffect(() => {
         if (authLoading) return;
