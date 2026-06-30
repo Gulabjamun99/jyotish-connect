@@ -125,7 +125,16 @@
         "positive": "Positive Aspects",
         "negative": "Cautions",
         "transaction_history": "Transaction History",
-        "no_transactions": "No transactions recorded yet in this timeline."
+        "no_transactions": "No transactions recorded yet in this timeline.",
+        "spiritual_remedies": "Spiritual Remedies",
+        "mahadasha_remedy": "Mahadasha Remedy",
+        "mahadasha_remedy_desc": " Mahadasha is active. Chant the corresponding Beej Mantra 108 times daily, preferably in the morning after sunrise.",
+        "saturn_remedy": "Shani Remedy",
+        "saturn_remedy_desc": "Offer water to the Peepal tree on Saturdays and donate black sesame, urad dal, or mustard oil. Establish a Shani Yantra in your home.",
+        "mars_remedy": "Mangal Remedy",
+        "mars_remedy_desc": "Recite Hanuman Chalisa on Tuesdays. Donate coral or red lentils wrapped in red cloth. Blood donation is also highly beneficial.",
+        "surya_remedy": "Surya Remedy",
+        "surya_remedy_desc": "Offer water mixed with red flowers and sandalwood to the Sun every morning. Recite Aditya Hridayam. Wear a ruby or copper ring on your right hand."
     },
     "Nav": {
         "find_astrologers": "Find Astrologers",

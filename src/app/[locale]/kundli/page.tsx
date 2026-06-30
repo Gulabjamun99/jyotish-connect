@@ -96,7 +96,7 @@ export default function KundliPage() {
             const nakshatraId = moonPlanet?.nakshatraId || 0;
             const baseChart = {
                 ...fullData,
-                dateStr: birthDate.toLocaleDateString('en-IN'),
+                dateStr: birthDate.toISOString(),
                 ascendantSign: ascPlanet?.sign || "Aries",
                 ascendantLongitude: fullData.ascendant || (ascPlanet?.longitude ?? 0),
                 moonSign: moonPlanet?.sign || "Aries",
@@ -712,10 +712,10 @@ export default function KundliPage() {
                                             </h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {[
-                                                    { title: l('mahadasha_remedy','Mahadasha Remedy'), desc: `${translatePlanet(chart.dasha?.currentLords?.[0] || 'Sun', locale)} ${l('mahadasha_remedy_desc','ki Mahadasha chal rahi hai. Inke Beej Mantra ka 108 baar jaap karo pratidin, visheshkar subah surya darshan ke baad.')}` },
-                                                    { title: l('saturn_remedy','Shani Remedy'), desc: l('saturn_remedy_desc','Shanivar ko peeple ke ped ko jal chadhaein aur kale til, urad dal ya sarson ka tel daan karo. Shani yantra ghar mein sthaapit karein.') },
-                                                    { title: l('mars_remedy','Mangal Remedy'), desc: l('mars_remedy_desc','Mangalwar ko hanuman chalisa padhein. Lal kapde mein moonga ya lal matar baandh ke donate karein. Raktdaan bhi falaydayak hai.') },
-                                                    { title: l('surya_remedy','Surya Remedy'), desc: l('surya_remedy_desc','Pratidin subah surya ko lal pushp aur chandan milakar jal chadhaein. Aditya Hridayam ka paath karein. Ruby ya tambe ki anguthi daayen haath mein pehnen.') },
+                                                    { title: l('mahadasha_remedy','Mahadasha Remedy'), desc: `${translatePlanet(chart.dasha?.currentLords?.[0] || 'Sun', locale)}${l('mahadasha_remedy_desc',' Mahadasha is active. Chant the corresponding Beej Mantra 108 times daily, preferably in the morning after sunrise.')}` },
+                                                    { title: l('saturn_remedy','Shani Remedy'), desc: l('saturn_remedy_desc','Offer water to the Peepal tree on Saturdays and donate black sesame, urad dal, or mustard oil. Establish a Shani Yantra in your home.') },
+                                                    { title: l('mars_remedy','Mangal Remedy'), desc: l('mars_remedy_desc','Recite Hanuman Chalisa on Tuesdays. Donate coral or red lentils wrapped in red cloth. Blood donation is also highly beneficial.') },
+                                                    { title: l('surya_remedy','Surya Remedy'), desc: l('surya_remedy_desc','Offer water mixed with red flowers and sandalwood to the Sun every morning. Recite Aditya Hridayam. Wear a ruby or copper ring on your right hand.') },
                                                 ].map((rem, ri) => (
                                                     <div key={ri} className="bg-white/5 p-5 rounded-2xl border border-white/10">
                                                         <div className="text-sm font-black text-orange-400 uppercase tracking-widest mb-2">{rem.title}</div>
